@@ -113,19 +113,20 @@ A measured identity-handling refactor reduced **retained Python allocations afte
 
 ### Performance
 
-Measured on one Linux laptop (Intel Core Ultra 5, 14 GB, Python 3.13, SQLite 3.51.1, headless Chromium 153) with the installed wheel, through the application's own controls. Absolute times varied by up to about 1.9× between sessions on this machine, so read them as indicative; the scaling is the finding. [Methodology, all results and limits](docs/PERFORMANCE.md)
+Measured on one Linux laptop (Intel Core Ultra 5, 14 GB RAM, Python 3.13, SQLite 3.51.1, headless Chromium 153) with a wheel **built locally** from this repository (`scripts/build_release.py`) and checked by the installed-wheel tests, driven through the application's own controls. **No prebuilt wheel has been released or published**; binary distribution is on hold pending third-party notices ([release status](docs/RELEASE_STATUS.md)). Absolute times varied by up to about 2× between sessions on this machine, so treat them as indicative; the scaling behaviour is the more reliable finding. [Methodology, all results and limits](docs/PERFORMANCE.md)
 
 | Measure | Result |
 |---|---|
-| Runtime dependencies / wheel | None beyond Python ≥ 3.11 · 0.91 MB wheel · frontend 2.3 MB raw, 0.79 MB gzip |
-| Service memory | ≈ 28 MB RSS idle, ≈ 31 MB with the interface loaded, within 2 MB from a 16 KB to a 91 MB database; peak 45 MB while verifying a 100,000-row table (Python service only) |
-| Service start to usable interface | ≈ 0.65 s median in a fresh browser context (0.24 s on a warm reload); the read-only capture of a 91 MB database adds ≈ 0.18 s |
-| Table, row and foreign-key interactions | open table ≈ 30–40 ms · inspect row ≈ 70–110 ms · follow a foreign key ≈ 220 ms |
-| 500 records on the canvas, no relationships displayed | 21 MB browser JS heap (heap only); no long tasks during a scripted pan, zoom and drag |
-| 500 relationships expanded at once | ≈ 11 s to place, then ≈ 15 s of further main-thread work; **dense canvases are slow** (see limitations) |
-| Table identity verification | 100,000 rows: 1.1 s first open, 35 ms after. 1,000,000 rows: refused by the existing limits (browsable, not placeable) |
+| Local wheel | One 0.91 MB wheel, no runtime dependencies beyond Python ≥ 3.11. Frontend 2.3 MB raw, 0.79 MB gzip |
+| Python service memory (RSS) | ≈ 28 MiB idle, ≈ 31 MiB with the interface loaded, within 2 MiB from a 16 KiB to a 91 MiB database; peak 45 MiB while verifying a 100,000-row table. Browser memory is not included |
+| Start to usable interface | ≈ 0.65 s from service start in a fresh browser context for databases up to about 10 MiB (≈ 0.82 s for a 91 MiB one, because the read-only capture copies the file); ≈ 0.2–0.3 s on a warm reload |
+| Single interactions | Open table ≈ 30–40 ms · inspect row ≈ 70–110 ms · follow a foreign key ≈ 220–240 ms |
+| Canvas, records only | 500 records: 21 MiB browser JS heap (heap only, not the whole browser process); no long tasks in a scripted pan, zoom and drag |
+| Canvas, relationships | 200 relationships expanded at once: ≈ 1.5 s. **500: ≈ 11 s to place, then ≈ 15 s of further main-thread work.** Cost grows faster than linearly, and profiling points at the renderer's animation timeline. **Dense canvases are slow** |
+| Identity verification | 100,000 rows: 1.1 s on first open, 35 ms after. 1,000,000 rows: refused within the existing limits (browsable, not placeable) |
+| Retained Python allocations (traced, not process memory) | 52.4 MB → 0.8 MB after verifying a 91,966-row table (`tracemalloc`); reproduced as 55.2 MB → 0.27 MB on a generated 100,000-row table. Peak during verification is still 11.4 MB |
 
-Frame timings come from headless Chromium with software rendering and are not representative of a GPU-accelerated desktop. [Reproduce with `benchmarks/run_all.sh`](docs/PERFORMANCE.md#reproducing).
+File sizes and `tracemalloc` figures are decimal MB; process, heap and database sizes are MiB (2²⁰ bytes). Single machine, headless software-rendered browser, star-shaped relationships only, at most 500 records or relationships. Not measured: React re-renders, long-running memory, macOS, Windows, GPU rendering. [Reproduce with `benchmarks/run_all.sh`](docs/PERFORMANCE.md#reproducing).
 
 ## Current limitations
 

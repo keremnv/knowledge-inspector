@@ -17,3 +17,7 @@ KI_EXECUTABLE=/tmp/ki-test-venv/bin/ki npx playwright test -c playwright.app.con
 ```
 
 Use `-c playwright.app.config.ts` if using the Playwright command directly. The Source browser suite uses `npx playwright test -c playwright.source.config.ts`; it runs a development frontend and includes real SQLite and mocked HTTP tests. See [engineering evidence](ENGINEERING_EVIDENCE.md) for known failures and scope.
+
+## Performance benchmarks
+
+`benchmarks/run_all.sh WHEEL` measures a locally built wheel (distribution size, startup, interactions, working-set growth, Python probes) into `benchmarks/results/`, taking about 15 minutes on an otherwise idle machine. Methodology, results and limits are in the [performance report](PERFORMANCE.md#reproducing); it is not part of CI.
