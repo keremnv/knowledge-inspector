@@ -1,0 +1,7 @@
+Linux 7.0.0-38-generic x86_64
+CPU(s):                                  18
+Model name:                              Intel(R) Core(TM) Ultra 5 125H
+CPU(s) scaling MHz:                      31%
+Mem:           14575        9639        1771        2251        5747        4935
+powersave
+ki 0.1.0

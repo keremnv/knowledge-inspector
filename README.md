@@ -111,6 +111,23 @@ Separate end-to-end browser tests launch the **installed Python wheel without Vi
 
 A measured identity-handling refactor reduced **retained Python allocations after verification from 52.4 MB to 0.8 MB** in a documented 91,966-row Stack Exchange workload, measured with `tracemalloc` rather than process RSS. It preserved whole-table verification while retaining handles only for records returned to the user. [Methodology and measurements](docs/ENGINEERING_EVIDENCE.md)
 
+### Performance
+
+Measured on one Linux laptop (Intel Core Ultra 5, 14 GB RAM, Python 3.13, SQLite 3.51.1, headless Chromium 153) with a wheel **built locally** from this repository (`scripts/build_release.py`) and checked by the installed-wheel tests, driven through the application's own controls. **No prebuilt wheel has been released or published**; binary distribution is on hold pending third-party notices ([release status](docs/RELEASE_STATUS.md)). Absolute times varied by up to about 2× between sessions on this machine, so treat them as indicative; the scaling behaviour is the more reliable finding. [Methodology, all results and limits](docs/PERFORMANCE.md)
+
+| Measure | Result |
+|---|---|
+| Local wheel | One 0.91 MB wheel, no runtime dependencies beyond Python ≥ 3.11. Frontend 2.3 MB raw, 0.79 MB gzip |
+| Python service memory (RSS) | ≈ 28 MiB idle, ≈ 31 MiB with the interface loaded, within 2 MiB from a 16 KiB to a 91 MiB database; peak 45 MiB while verifying a 100,000-row table. Browser memory is not included |
+| Start to usable interface | ≈ 0.65 s from service start in a fresh browser context for databases up to about 10 MiB (≈ 0.82 s for a 91 MiB one, because the read-only capture copies the file); ≈ 0.2–0.3 s on a warm reload |
+| Single interactions | Open table ≈ 30–40 ms · inspect row ≈ 70–110 ms · follow a foreign key ≈ 220–240 ms |
+| Canvas, records only | 500 records: 21 MiB browser JS heap (heap only, not the whole browser process); no long tasks in a scripted pan, zoom and drag |
+| Canvas, relationships | 200 relationships expanded at once: ≈ 1.5 s. **500: ≈ 11 s to place, then ≈ 15 s of further main-thread work.** Cost grows faster than linearly, and profiling points at the renderer's animation timeline. **Dense canvases are slow** |
+| Identity verification | 100,000 rows: 1.1 s on first open, 35 ms after. 1,000,000 rows: refused within the existing limits (browsable, not placeable) |
+| Retained Python allocations (traced, not process memory) | 52.4 MB → 0.8 MB after verifying a 91,966-row table (`tracemalloc`); reproduced as 55.2 MB → 0.27 MB on a generated 100,000-row table. Peak during verification is still 11.4 MB |
+
+File sizes and `tracemalloc` figures are decimal MB; process, heap and database sizes are MiB (2²⁰ bytes). Single machine, headless software-rendered browser, star-shaped relationships only, at most 500 records or relationships. Not measured: React re-renders, long-running memory, macOS, Windows, GPU rendering. [Reproduce with `benchmarks/run_all.sh`](docs/PERFORMANCE.md#reproducing).
+
 ## Current limitations
 
 - **SQLite and declared relationships only.** Navigation uses declared foreign keys; relationships are not inferred from names, matching values or application conventions.
@@ -118,7 +135,7 @@ A measured identity-handling refactor reduced **retained Python allocations afte
 - **Whole-table verification is bounded.** Identity verification has a default ceiling of **200,000 rows per table**, alongside time and SQLite instruction budgets. Smaller tables can also exceed those budgets.
 - **Issued handles have separate session limits.** The session permits at most **200,000 issued record handles** and **64 MiB of accounted registry payload**, including records returned by reads but never placed on the canvas. This accounting bound is not a process-memory cap. Reads that would exceed either limit issue no new handles; previously issued handles remain valid.
 - **Connections are selective.** A missing line does not establish that two visible records are unrelated.
-- **Expansion and dense canvases.** `add all` places the current table page; `expand through` can traverse an entire relationship group. Dense arrangements can become difficult to interpret and less responsive, and remain an area for refinement.
+- **Expansion and dense canvases.** `add all` places the current table page; `expand through` can traverse an entire relationship group. Dense arrangements can become difficult to interpret and less responsive, and remain an area for refinement: expanding 500 relationships at once measured about 11 s to place ([measurements](docs/PERFORMANCE.md#working-set-growth)).
 - **Exploration is session-scoped.** The same tab can restore its canvas on refresh during a launch. A new launch starts empty; there are no saved projects.
 - **Compatibility is still being evaluated.** Testing has focused on Linux; macOS and Windows are untested. SQLite behavior follows the library supplied with Python. Tests cover SQLite 3.51.1 and 3.53.1; tight query budgets can refuse expensive incoming-reference reads. See the [validation notes](docs/SQLITE_COMPATIBILITY.md).
 
@@ -137,6 +154,8 @@ The underlying focus remains direct exploration of connected information.
 - [Build and develop Source](docs/BUILD_AND_DEVELOPMENT.md), including packaging, session details and development servers.
 - [API contract](API_CONTRACT.md), including the Source read interface.
 - [Engineering evidence](docs/ENGINEERING_EVIDENCE.md), including validation and recorded measurements.
+- [Performance measurements](docs/PERFORMANCE.md), with methodology, raw results in [`benchmarks/results`](benchmarks/results/), reproduction steps and limits.
+- [Source and wheel publication status](docs/RELEASE_STATUS.md): the source is public; no prebuilt wheel has been released.
 
 Technical reports record their implementation revisions, measurement conditions and remaining limitations.
 

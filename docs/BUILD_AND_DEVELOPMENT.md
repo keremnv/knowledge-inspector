@@ -31,3 +31,7 @@ This job covers one environment, not the full Python/SQLite or operating-system
 support range. macOS and Windows remain untested, and bounded reads can report
 that their query budget was exceeded. One timing-sensitive test (the incoming-reference page time limit) skips itself on hosts too slow to finish a million-row count in 0.1 s, so a hosted runner may report it as skipped. A passing workflow does not clear the
 separate third-party notice work required before distributing a binary wheel.
+
+## Performance benchmarks
+
+`benchmarks/run_all.sh WHEEL` measures a locally built wheel (distribution size, startup, interactions, working-set growth, Python probes) into `benchmarks/results/`, taking about 15 minutes on an otherwise idle machine. Methodology, results and limits are in the [performance report](PERFORMANCE.md#reproducing); it is not part of CI.
