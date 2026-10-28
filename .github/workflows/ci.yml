@@ -1,0 +1,74 @@
+name: Source application checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          package-manager-cache: false
+
+      - name: Report Python and SQLite versions
+        run: python -c "import sqlite3, sys; print(sys.version); print('SQLite', sqlite3.sqlite_version)"
+
+      - name: Install locked frontend dependencies
+        run: npm ci
+
+      - name: Build and inspect the Source application
+        run: python scripts/build_release.py --skip-npm-ci --out "$RUNNER_TEMP/ki-wheel"
+
+      - name: Select the locally built wheel
+        run: |
+          wheel=$(find "$RUNNER_TEMP/ki-wheel" -maxdepth 1 -name 'knowledge_inspector-*.whl' -type f -print -quit)
+          test -n "$wheel"
+          printf 'KI_WHEEL=%s\n' "$wheel" >> "$GITHUB_ENV"
+
+      - name: Test the installed wheel locally
+        run: python scripts/test_installed_wheel.py -v
+
+      - name: Prepare pinned Chinook fixture
+        run: python examples/chinook/prepare.py --view-copy
+
+      - name: Test the Source Python adapter
+        run: python -m unittest discover -s adapters/source -v
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Test Source interactions and recovery
+        run: >-
+          npx playwright test -c playwright.source.config.ts --workers 1
+          tests/source-membership-live.spec.ts
+          tests/source-errors-mocked.spec.ts
+          tests/source-canvas-motion.spec.ts
+
+      - name: Install the wheel in a fresh environment
+        run: |
+          python -m venv "$RUNNER_TEMP/ki-venv"
+          "$RUNNER_TEMP/ki-venv/bin/python" -m pip install --no-index --no-deps "$KI_WHEEL"
+
+      - name: Test the installed application in Chromium
+        env:
+          KI_EXECUTABLE: ${{ runner.temp }}/ki-venv/bin/ki
+        run: npx playwright test -c playwright.app.config.ts --workers 1
