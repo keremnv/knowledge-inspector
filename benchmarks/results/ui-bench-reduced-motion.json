@@ -1,0 +1,884 @@
+{
+  "environment": {
+    "date": "2026-10-28T16:45:38.624Z",
+    "cpu": "Intel(R) Core(TM) Ultra 5 125H",
+    "logical_cpus": 18,
+    "ram_gb": 14.2,
+    "os": "Linux 7.0.0-38-generic",
+    "node": "v22.22.1",
+    "chromium": "153.0.8010.12",
+    "headless": true,
+    "reduced_motion": true,
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "device_scale_factor": 1,
+    "ki": "ki 0.1.0",
+    "python": "3.13.12 sqlite 3.51.1",
+    "gpu_note": "headless Chromium, software rasterisation; frame timings are not representative of a GPU-accelerated desktop"
+  },
+  "growth": {
+    "reps": 3,
+    "runs": [
+      {
+        "records_only": [
+          {
+            "nodes": 50,
+            "edges": 0,
+            "last_add_page_ms": 167.4,
+            "add_page_ms_all_steps": {
+              "n": 1,
+              "median": 167.4,
+              "p95": null,
+              "min": 167.4,
+              "max": 167.4
+            },
+            "after_placement_quiet": {
+              "settled": true,
+              "busy_ms": 0,
+              "longtasks": 0,
+              "longtask_total_ms": 0,
+              "longtask_max_ms": 0
+            },
+            "frames": {
+              "frames": 161,
+              "median_ms": 16.7,
+              "p95_ms": 16.8,
+              "max_ms": 16.8,
+              "over_50ms": 0,
+              "longtasks": 0,
+              "longtask_total_ms": 0,
+              "longtask_max_ms": 0
+            },
+            "heap_after_load": {
+              "js_heap_used_mb": 9.6,
+              "js_heap_total_mb": 10.3
+            },
+            "heap_after_gestures": {
+              "js_heap_used_mb": 10.3,
+              "js_heap_total_mb": 11.3
+            },
+            "restore": {
+              "reload_to_all_records_ms": 723.5,
+              "in_page_ms": 652.1,
+              "service_requests": 54
+            }
+          },
+          {
+            "nodes": 100,
+            "edges": 0,
+            "last_add_page_ms": 185.9,
+            "add_page_ms_all_steps": {
+              "n": 2,
+              "median": 176.7,
+              "p95": null,
+              "min": 167.4,
+              "max": 185.9
+            },
+            "after_placement_quiet": {
+              "settled": true,
+              "busy_ms": 0,
+              "longtasks": 0,
+              "longtask_total_ms": 0,
+              "longtask_max_ms": 0
+            },
+            "frames": {
+              "frames": 167,
+              "median_ms": 16.7,
+              "p95_ms": 16.7,
+              "max_ms": 16.8,
+              "over_50ms": 0,
+              "longtasks": 0,
+              "longtask_total_ms": 0,
+              "longtask_max_ms": 0
+            },
+            "heap_after_load": {
+              "js_heap_used_mb": 11.1,
+              "js_heap_total_mb": 12
+            },
+            "heap_after_gestures": {
+              "js_heap_used_mb": 11.6,
+              "js_heap_total_mb": 12.3
+            },
+            "restore": {
+              "reload_to_all_records_ms": 912.6,
+              "in_page_ms": 770.9,
+              "service_requests": 104
+            }
+          },
+          {
+            "nodes": 200,
+            "edges": 0,
+            "last_add_page_ms": 257.4,
+            "add_page_ms_all_steps": {
+              "n": 4,
+              "median": 210,
+              "p95": null,
+              "min": 167.4,
+              "max": 257.4
+            },
+            "after_placement_quiet": {
+              "settled": true,
+              "busy_ms": 0,
+              "longtasks": 0,
+              "longtask_total_ms": 0,
+              "longtask_max_ms": 0
+            },
+            "frames": {
+              "frames": 178,
+              "median_ms": 16.7,
+              "p95_ms": 16.8,
+              "max_ms": 16.8,
+              "over_50ms": 0,
+              "longtasks": 0,
+              "longtask_total_ms": 0,
+              "longtask_max_ms": 0
+            },
+            "heap_after_load": {
+              "js_heap_used_mb": 13.6,
+              "js_heap_total_mb": 14.5
+            },
+            "heap_after_gestures": {
+              "js_heap_used_mb": 14.2,
+              "js_heap_total_mb": 14.8
+            },
+            "restore": {
+              "reload_to_all_records_ms": 1543.2,
+              "in_page_ms": 1359,
+              "service_requests": 204
+            }
+          },
+          {
+            "nodes": 500,
+            "edges": 0,
+            "last_add_page_ms": 661.5,
+            "add_page_ms_all_steps": {
+              "n": 10,
+              "median": 373,
+              "p95": null,
+              "min": 167.4,
+              "max": 661.5
+            },
+            "after_placement_quiet": {
+              "settled": true,
+              "busy_ms": 0,
+              "longtasks": 0,
+              "longtask_total_ms": 0,
+              "longtask_max_ms": 0
+            },
+            "frames": {
+              "frames": 187,
+              "median_ms": 16.7,
+              "p95_ms": 16.8,
+              "max_ms": 16.8,
+              "over_50ms": 0,
+              "longtasks": 0,
+              "longtask_total_ms": 0,
+              "longtask_max_ms": 0
+            },
+            "heap_after_load": {
+              "js_heap_used_mb": 20.7,
+              "js_heap_total_mb": 22
+            },
+            "heap_after_gestures": {
+              "js_heap_used_mb": 21.2,
+              "js_heap_total_mb": 22
+            },
+            "restore": {
+              "reload_to_all_records_ms": 2912.1,
+              "in_page_ms": 2906.6,
+              "service_requests": 504
+            }
+          }
+        ],
+        "with_relationships": [
+          {
+            "nodes": 51,
+            "edges": 50,
+            "expand_ms": 162.9,
+            "expand_to_paint_ms": 363.4,
+            "after_placement_quiet": {
+              "settled": true,
+              "busy_ms": 0,
+              "longtasks": 0,
+              "longtask_total_ms": 0,
+              "longtask_max_ms": 0
+            },
+            "frames": {
+              "frames": 159,
+              "median_ms": 16.7,
+              "p95_ms": 16.8,
+              "max_ms": 50,
+              "over_50ms": 0,
+              "longtasks": 2,
+              "longtask_total_ms": 114,
+              "longtask_max_ms": 60
+            },
+            "heap_after_load": {
+              "js_heap_used_mb": 12.6,
+              "js_heap_total_mb": 13.5
+            },
+            "heap_after_gestures": {
+              "js_heap_used_mb": 13.3,
+              "js_heap_total_mb": 14.3
+            },
+            "restore": {
+              "reload_to_all_records_ms": 1219.5,
+              "in_page_ms": 1050.7,
+              "service_requests": 105
+            },
+            "page_errors": []
+          },
+          {
+            "nodes": 201,
+            "edges": 200,
+            "expand_ms": 888.2,
+            "expand_to_paint_ms": 1200.8,
+            "after_placement_quiet": {
+              "settled": true,
+              "busy_ms": 0,
+              "longtasks": 0,
+              "longtask_total_ms": 0,
+              "longtask_max_ms": 0
+            },
+            "frames": {
+              "frames": 160,
+              "median_ms": 16.7,
+              "p95_ms": 33.4,
+              "max_ms": 250,
+              "over_50ms": 4,
+              "longtasks": 4,
+              "longtask_total_ms": 611,
+              "longtask_max_ms": 235
+            },
+            "heap_after_load": {
+              "js_heap_used_mb": 21.9,
+              "js_heap_total_mb": 22.5
+            },
+            "heap_after_gestures": {
+              "js_heap_used_mb": 23.8,
+              "js_heap_total_mb": 24.5
+            },
+            "restore": {
+              "reload_to_all_records_ms": 2902.2,
+              "in_page_ms": 2897.1,
+              "service_requests": 405
+            },
+            "page_errors": []
+          },
+          {
+            "nodes": 501,
+            "edges": 500,
+            "expand_ms": 4106.3,
+            "expand_to_paint_ms": 5032.1,
+            "after_placement_quiet": {
+              "settled": true,
+              "busy_ms": 0,
+              "longtasks": 0,
+              "longtask_total_ms": 0,
+              "longtask_max_ms": 0
+            },
+            "frames": {
+              "frames": 215,
+              "median_ms": 16.7,
+              "p95_ms": 83.3,
+              "max_ms": 583.3,
+              "over_50ms": 27,
+              "longtasks": 25,
+              "longtask_total_ms": 2840,
+              "longtask_max_ms": 533
+            },
+            "heap_after_load": {
+              "js_heap_used_mb": 40,
+              "js_heap_total_mb": 41.5
+            },
+            "heap_after_gestures": {
+              "js_heap_used_mb": 43.1,
+              "js_heap_total_mb": 44.3
+            },
+            "restore": {
+              "reload_to_all_records_ms": 6727.3,
+              "in_page_ms": 6722.7,
+              "service_requests": 1005
+            },
+            "page_errors": []
+          }
+        ],
+        "records_only_errors": []
+      },
+      {
+        "records_only": [
+          {
+            "nodes": 50,
+            "edges": 0,
+            "last_add_page_ms": 170.2,
+            "add_page_ms_all_steps": {
+              "n": 1,
+              "median": 170.2,
+              "p95": null,
+              "min": 170.2,
+              "max": 170.2
+            },
+            "after_placement_quiet": {
+              "settled": true,
+              "busy_ms": 0,
+              "longtasks": 0,
+              "longtask_total_ms": 0,
+              "longtask_max_ms": 0
+            },
+            "frames": {
+              "frames": 160,
+              "median_ms": 16.7,
+              "p95_ms": 16.8,
+              "max_ms": 16.8,
+              "over_50ms": 0,
+              "longtasks": 0,
+              "longtask_total_ms": 0,
+              "longtask_max_ms": 0
+            },
+            "heap_after_load": {
+              "js_heap_used_mb": 9.5,
+              "js_heap_total_mb": 10.5
+            },
+            "heap_after_gestures": {
+              "js_heap_used_mb": 10.3,
+              "js_heap_total_mb": 11.3
+            },
+            "restore": {
+              "reload_to_all_records_ms": 736.9,
+              "in_page_ms": 663.2,
+              "service_requests": 54
+            }
+          },
+          {
+            "nodes": 100,
+            "edges": 0,
+            "last_add_page_ms": 170.6,
+            "add_page_ms_all_steps": {
+              "n": 2,
+              "median": 170.4,
+              "p95": null,
+              "min": 170.2,
+              "max": 170.6
+            },
+            "after_placement_quiet": {
+              "settled": true,
+              "busy_ms": 0,
+              "longtasks": 0,
+              "longtask_total_ms": 0,
+              "longtask_max_ms": 0
+            },
+            "frames": {
+              "frames": 159,
+              "median_ms": 16.7,
+              "p95_ms": 16.7,
+              "max_ms": 16.8,
+              "over_50ms": 0,
+              "longtasks": 0,
+              "longtask_total_ms": 0,
+              "longtask_max_ms": 0
+            },
+            "heap_after_load": {
+              "js_heap_used_mb": 11.1,
+              "js_heap_total_mb": 11.8
+            },
+            "heap_after_gestures": {
+              "js_heap_used_mb": 11.6,
+              "js_heap_total_mb": 12.3
+            },
+            "restore": {
+              "reload_to_all_records_ms": 885.7,
+              "in_page_ms": 799.7,
+              "service_requests": 104
+            }
+          },
+          {
+            "nodes": 200,
+            "edges": 0,
+            "last_add_page_ms": 261.3,
+            "add_page_ms_all_steps": {
+              "n": 4,
+              "median": 203.3,
+              "p95": null,
+              "min": 170.2,
+              "max": 261.3
+            },
+            "after_placement_quiet": {
+              "settled": true,
+              "busy_ms": 0,
+              "longtasks": 0,
+              "longtask_total_ms": 0,
+              "longtask_max_ms": 0
+            },
+            "frames": {
+              "frames": 185,
+              "median_ms": 16.7,
+              "p95_ms": 16.8,
+              "max_ms": 16.8,
+              "over_50ms": 0,
+              "longtasks": 0,
+              "longtask_total_ms": 0,
+              "longtask_max_ms": 0
+            },
+            "heap_after_load": {
+              "js_heap_used_mb": 13.7,
+              "js_heap_total_mb": 14.3
+            },
+            "heap_after_gestures": {
+              "js_heap_used_mb": 14.2,
+              "js_heap_total_mb": 14.8
+            },
+            "restore": {
+              "reload_to_all_records_ms": 1556,
+              "in_page_ms": 1351.8,
+              "service_requests": 204
+            }
+          },
+          {
+            "nodes": 500,
+            "edges": 0,
+            "last_add_page_ms": 652.5,
+            "add_page_ms_all_steps": {
+              "n": 10,
+              "median": 406.2,
+              "p95": null,
+              "min": 170.2,
+              "max": 652.5
+            },
+            "after_placement_quiet": {
+              "settled": true,
+              "busy_ms": 0,
+              "longtasks": 0,
+              "longtask_total_ms": 0,
+              "longtask_max_ms": 0
+            },
+            "frames": {
+              "frames": 189,
+              "median_ms": 16.7,
+              "p95_ms": 16.7,
+              "max_ms": 33.3,
+              "over_50ms": 0,
+              "longtasks": 0,
+              "longtask_total_ms": 0,
+              "longtask_max_ms": 0
+            },
+            "heap_after_load": {
+              "js_heap_used_mb": 20.8,
+              "js_heap_total_mb": 21.5
+            },
+            "heap_after_gestures": {
+              "js_heap_used_mb": 21.3,
+              "js_heap_total_mb": 22
+            },
+            "restore": {
+              "reload_to_all_records_ms": 2971.6,
+              "in_page_ms": 2966.4,
+              "service_requests": 504
+            }
+          }
+        ],
+        "with_relationships": [
+          {
+            "nodes": 51,
+            "edges": 50,
+            "expand_ms": 180.9,
+            "expand_to_paint_ms": 388.2,
+            "after_placement_quiet": {
+              "settled": true,
+              "busy_ms": 0,
+              "longtasks": 0,
+              "longtask_total_ms": 0,
+              "longtask_max_ms": 0
+            },
+            "frames": {
+              "frames": 161,
+              "median_ms": 16.7,
+              "p95_ms": 16.8,
+              "max_ms": 50.1,
+              "over_50ms": 1,
+              "longtasks": 2,
+              "longtask_total_ms": 115,
+              "longtask_max_ms": 60
+            },
+            "heap_after_load": {
+              "js_heap_used_mb": 12.6,
+              "js_heap_total_mb": 13.5
+            },
+            "heap_after_gestures": {
+              "js_heap_used_mb": 13.2,
+              "js_heap_total_mb": 14.3
+            },
+            "restore": {
+              "reload_to_all_records_ms": 984.1,
+              "in_page_ms": 979,
+              "service_requests": 105
+            },
+            "page_errors": []
+          },
+          {
+            "nodes": 201,
+            "edges": 200,
+            "expand_ms": 966.6,
+            "expand_to_paint_ms": 1405.8,
+            "after_placement_quiet": {
+              "settled": true,
+              "busy_ms": 0,
+              "longtasks": 0,
+              "longtask_total_ms": 0,
+              "longtask_max_ms": 0
+            },
+            "frames": {
+              "frames": 159,
+              "median_ms": 16.7,
+              "p95_ms": 33.4,
+              "max_ms": 266.7,
+              "over_50ms": 6,
+              "longtasks": 5,
+              "longtask_total_ms": 687,
+              "longtask_max_ms": 247
+            },
+            "heap_after_load": {
+              "js_heap_used_mb": 21.8,
+              "js_heap_total_mb": 22.8
+            },
+            "heap_after_gestures": {
+              "js_heap_used_mb": 23.8,
+              "js_heap_total_mb": 24.8
+            },
+            "restore": {
+              "reload_to_all_records_ms": 2899.5,
+              "in_page_ms": 2895,
+              "service_requests": 405
+            },
+            "page_errors": []
+          },
+          {
+            "nodes": 501,
+            "edges": 500,
+            "expand_ms": 4242.8,
+            "expand_to_paint_ms": 4924.2,
+            "after_placement_quiet": {
+              "settled": true,
+              "busy_ms": 50,
+              "longtasks": 1,
+              "longtask_total_ms": 50,
+              "longtask_max_ms": 50
+            },
+            "frames": {
+              "frames": 211,
+              "median_ms": 16.7,
+              "p95_ms": 83.3,
+              "max_ms": 533.4,
+              "over_50ms": 30,
+              "longtasks": 26,
+              "longtask_total_ms": 2897,
+              "longtask_max_ms": 492
+            },
+            "heap_after_load": {
+              "js_heap_used_mb": 40.1,
+              "js_heap_total_mb": 41.3
+            },
+            "heap_after_gestures": {
+              "js_heap_used_mb": 43.1,
+              "js_heap_total_mb": 44.3
+            },
+            "restore": {
+              "reload_to_all_records_ms": 6594.5,
+              "in_page_ms": 6588.9,
+              "service_requests": 1005
+            },
+            "page_errors": []
+          }
+        ],
+        "records_only_errors": []
+      },
+      {
+        "records_only": [
+          {
+            "nodes": 50,
+            "edges": 0,
+            "last_add_page_ms": 166.4,
+            "add_page_ms_all_steps": {
+              "n": 1,
+              "median": 166.4,
+              "p95": null,
+              "min": 166.4,
+              "max": 166.4
+            },
+            "after_placement_quiet": {
+              "settled": true,
+              "busy_ms": 0,
+              "longtasks": 0,
+              "longtask_total_ms": 0,
+              "longtask_max_ms": 0
+            },
+            "frames": {
+              "frames": 157,
+              "median_ms": 16.7,
+              "p95_ms": 16.7,
+              "max_ms": 16.8,
+              "over_50ms": 0,
+              "longtasks": 0,
+              "longtask_total_ms": 0,
+              "longtask_max_ms": 0
+            },
+            "heap_after_load": {
+              "js_heap_used_mb": 9.5,
+              "js_heap_total_mb": 10.3
+            },
+            "heap_after_gestures": {
+              "js_heap_used_mb": 10.3,
+              "js_heap_total_mb": 11.3
+            },
+            "restore": {
+              "reload_to_all_records_ms": 707.9,
+              "in_page_ms": 639.4,
+              "service_requests": 54
+            }
+          },
+          {
+            "nodes": 100,
+            "edges": 0,
+            "last_add_page_ms": 183,
+            "add_page_ms_all_steps": {
+              "n": 2,
+              "median": 174.7,
+              "p95": null,
+              "min": 166.4,
+              "max": 183
+            },
+            "after_placement_quiet": {
+              "settled": true,
+              "busy_ms": 0,
+              "longtasks": 0,
+              "longtask_total_ms": 0,
+              "longtask_max_ms": 0
+            },
+            "frames": {
+              "frames": 163,
+              "median_ms": 16.7,
+              "p95_ms": 16.7,
+              "max_ms": 16.8,
+              "over_50ms": 0,
+              "longtasks": 0,
+              "longtask_total_ms": 0,
+              "longtask_max_ms": 0
+            },
+            "heap_after_load": {
+              "js_heap_used_mb": 11.1,
+              "js_heap_total_mb": 11.8
+            },
+            "heap_after_gestures": {
+              "js_heap_used_mb": 11.6,
+              "js_heap_total_mb": 12.5
+            },
+            "restore": {
+              "reload_to_all_records_ms": 903.6,
+              "in_page_ms": 769.1,
+              "service_requests": 104
+            }
+          },
+          {
+            "nodes": 200,
+            "edges": 0,
+            "last_add_page_ms": 257.9,
+            "add_page_ms_all_steps": {
+              "n": 4,
+              "median": 208.4,
+              "p95": null,
+              "min": 166.4,
+              "max": 257.9
+            },
+            "after_placement_quiet": {
+              "settled": true,
+              "busy_ms": 0,
+              "longtasks": 0,
+              "longtask_total_ms": 0,
+              "longtask_max_ms": 0
+            },
+            "frames": {
+              "frames": 184,
+              "median_ms": 16.7,
+              "p95_ms": 16.8,
+              "max_ms": 16.8,
+              "over_50ms": 0,
+              "longtasks": 0,
+              "longtask_total_ms": 0,
+              "longtask_max_ms": 0
+            },
+            "heap_after_load": {
+              "js_heap_used_mb": 13.7,
+              "js_heap_total_mb": 14.5
+            },
+            "heap_after_gestures": {
+              "js_heap_used_mb": 14.2,
+              "js_heap_total_mb": 15
+            },
+            "restore": {
+              "reload_to_all_records_ms": 1570.7,
+              "in_page_ms": 1393.7,
+              "service_requests": 204
+            }
+          },
+          {
+            "nodes": 500,
+            "edges": 0,
+            "last_add_page_ms": 555.8,
+            "add_page_ms_all_steps": {
+              "n": 10,
+              "median": 363.8,
+              "p95": null,
+              "min": 166.4,
+              "max": 555.8
+            },
+            "after_placement_quiet": {
+              "settled": true,
+              "busy_ms": 0,
+              "longtasks": 0,
+              "longtask_total_ms": 0,
+              "longtask_max_ms": 0
+            },
+            "frames": {
+              "frames": 185,
+              "median_ms": 16.7,
+              "p95_ms": 16.8,
+              "max_ms": 33.4,
+              "over_50ms": 0,
+              "longtasks": 0,
+              "longtask_total_ms": 0,
+              "longtask_max_ms": 0
+            },
+            "heap_after_load": {
+              "js_heap_used_mb": 20.8,
+              "js_heap_total_mb": 21.5
+            },
+            "heap_after_gestures": {
+              "js_heap_used_mb": 21.4,
+              "js_heap_total_mb": 22.3
+            },
+            "restore": {
+              "reload_to_all_records_ms": 3497.7,
+              "in_page_ms": 3492,
+              "service_requests": 504
+            }
+          }
+        ],
+        "with_relationships": [
+          {
+            "nodes": 51,
+            "edges": 50,
+            "expand_ms": 181.6,
+            "expand_to_paint_ms": 380.4,
+            "after_placement_quiet": {
+              "settled": true,
+              "busy_ms": 0,
+              "longtasks": 0,
+              "longtask_total_ms": 0,
+              "longtask_max_ms": 0
+            },
+            "frames": {
+              "frames": 161,
+              "median_ms": 16.7,
+              "p95_ms": 16.7,
+              "max_ms": 50,
+              "over_50ms": 0,
+              "longtasks": 2,
+              "longtask_total_ms": 113,
+              "longtask_max_ms": 60
+            },
+            "heap_after_load": {
+              "js_heap_used_mb": 12.5,
+              "js_heap_total_mb": 13.5
+            },
+            "heap_after_gestures": {
+              "js_heap_used_mb": 13.2,
+              "js_heap_total_mb": 14.3
+            },
+            "restore": {
+              "reload_to_all_records_ms": 1168.9,
+              "in_page_ms": 981.5,
+              "service_requests": 105
+            },
+            "page_errors": []
+          },
+          {
+            "nodes": 201,
+            "edges": 200,
+            "expand_ms": 877.2,
+            "expand_to_paint_ms": 1183.8,
+            "after_placement_quiet": {
+              "settled": true,
+              "busy_ms": 0,
+              "longtasks": 0,
+              "longtask_total_ms": 0,
+              "longtask_max_ms": 0
+            },
+            "frames": {
+              "frames": 158,
+              "median_ms": 16.7,
+              "p95_ms": 33.3,
+              "max_ms": 250,
+              "over_50ms": 4,
+              "longtasks": 4,
+              "longtask_total_ms": 608,
+              "longtask_max_ms": 234
+            },
+            "heap_after_load": {
+              "js_heap_used_mb": 21.8,
+              "js_heap_total_mb": 22.5
+            },
+            "heap_after_gestures": {
+              "js_heap_used_mb": 23.8,
+              "js_heap_total_mb": 24.8
+            },
+            "restore": {
+              "reload_to_all_records_ms": 3295.6,
+              "in_page_ms": 2906.5,
+              "service_requests": 405
+            },
+            "page_errors": []
+          },
+          {
+            "nodes": 501,
+            "edges": 500,
+            "expand_ms": 4048.9,
+            "expand_to_paint_ms": 4739,
+            "after_placement_quiet": {
+              "settled": true,
+              "busy_ms": 0,
+              "longtasks": 0,
+              "longtask_total_ms": 0,
+              "longtask_max_ms": 0
+            },
+            "frames": {
+              "frames": 205,
+              "median_ms": 16.7,
+              "p95_ms": 83.4,
+              "max_ms": 550,
+              "over_50ms": 27,
+              "longtasks": 27,
+              "longtask_total_ms": 3123,
+              "longtask_max_ms": 503
+            },
+            "heap_after_load": {
+              "js_heap_used_mb": 40.1,
+              "js_heap_total_mb": 41.8
+            },
+            "heap_after_gestures": {
+              "js_heap_used_mb": 43,
+              "js_heap_total_mb": 44
+            },
+            "restore": {
+              "reload_to_all_records_ms": 6638.6,
+              "in_page_ms": 6634.1,
+              "service_requests": 1005
+            },
+            "page_errors": []
+          }
+        ],
+        "records_only_errors": []
+      }
+    ]
+  }
+}

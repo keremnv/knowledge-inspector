@@ -1,0 +1,361 @@
+{
+  "sqlite_version": "3.51.1",
+  "rows_in_large_fixture": 50000,
+  "reports": [
+    {
+      "producer": "examples/chinook/data/Chinook_Sqlite.sqlite",
+      "before": {
+        "sha256": "bdf635be69850bd3be09c9a2dbeef7ddfb80036bd3ef3381383cd03b61e4a61a",
+        "mtime_ns": 1793202192623588427,
+        "sidecars": []
+      },
+      "after": {
+        "sha256": "bdf635be69850bd3be09c9a2dbeef7ddfb80036bd3ef3381383cd03b61e4a61a",
+        "mtime_ns": 1793202192623588427,
+        "sidecars": []
+      },
+      "plans": {
+        "exact": [
+          "SEARCH Track USING INTEGER PRIMARY KEY (rowid=?)"
+        ]
+      },
+      "measurements": [
+        {
+          "case": "Chinook broad Evil Walks",
+          "repeat": 0,
+          "ms": 62.961,
+          "vm_budget_per_phase": 10000000,
+          "phases": [
+            {
+              "vm_tick_steps": 1000
+            },
+            {
+              "vm_tick_steps": 184000
+            },
+            {
+              "vm_tick_steps": 0
+            },
+            {
+              "vm_tick_steps": 366000
+            }
+          ],
+          "returned": 1,
+          "completion": "complete",
+          "identity": "verified"
+        },
+        {
+          "case": "Chinook broad Evil Walks",
+          "repeat": 1,
+          "ms": 13.897,
+          "vm_budget_per_phase": 10000000,
+          "phases": [
+            {
+              "vm_tick_steps": 1000
+            },
+            {
+              "vm_tick_steps": 366000
+            }
+          ],
+          "returned": 1,
+          "completion": "complete",
+          "identity": "verified"
+        },
+        {
+          "case": "Chinook broad Evil Walks",
+          "repeat": 2,
+          "ms": 13.776,
+          "vm_budget_per_phase": 10000000,
+          "phases": [
+            {
+              "vm_tick_steps": 1000
+            },
+            {
+              "vm_tick_steps": 366000
+            }
+          ],
+          "returned": 1,
+          "completion": "complete",
+          "identity": "verified"
+        },
+        {
+          "case": "Chinook exact TrackId",
+          "repeat": 0,
+          "ms": 1.893,
+          "vm_budget_per_phase": 10000000,
+          "phases": [
+            {
+              "vm_tick_steps": 1000
+            },
+            {
+              "vm_tick_steps": 0
+            }
+          ],
+          "returned": 1,
+          "completion": "complete",
+          "identity": "verified"
+        },
+        {
+          "case": "Chinook exact TrackId",
+          "repeat": 1,
+          "ms": 1.813,
+          "vm_budget_per_phase": 10000000,
+          "phases": [
+            {
+              "vm_tick_steps": 1000
+            },
+            {
+              "vm_tick_steps": 0
+            }
+          ],
+          "returned": 1,
+          "completion": "complete",
+          "identity": "verified"
+        },
+        {
+          "case": "Chinook exact TrackId",
+          "repeat": 2,
+          "ms": 1.636,
+          "vm_budget_per_phase": 10000000,
+          "phases": [
+            {
+              "vm_tick_steps": 1000
+            },
+            {
+              "vm_tick_steps": 0
+            }
+          ],
+          "returned": 1,
+          "completion": "complete",
+          "identity": "verified"
+        }
+      ]
+    },
+    {
+      "producer": "/tmp/tmpu0o76wox/large.sqlite",
+      "before": {
+        "sha256": "814303aa80816dc72ef84363e73c91fda475cf7a9991e05927acca1322a028c6",
+        "mtime_ns": 1793205378238625119,
+        "sidecars": []
+      },
+      "after": {
+        "sha256": "814303aa80816dc72ef84363e73c91fda475cf7a9991e05927acca1322a028c6",
+        "mtime_ns": 1793205378238625119,
+        "sidecars": []
+      },
+      "plans": {
+        "exact": [
+          "SEARCH indexed USING INTEGER PRIMARY KEY (rowid=?)"
+        ],
+        "substring": [
+          "SCAN unindexed"
+        ]
+      },
+      "measurements": [
+        {
+          "case": "50k indexed exact cold then warm",
+          "repeat": 0,
+          "ms": 528.978,
+          "vm_budget_per_phase": 10000000,
+          "phases": [
+            {
+              "vm_tick_steps": 1000
+            },
+            {
+              "vm_tick_steps": 2650000
+            },
+            {
+              "vm_tick_steps": 0
+            },
+            {
+              "vm_tick_steps": 0
+            }
+          ],
+          "returned": 1,
+          "completion": "complete",
+          "identity": "verified"
+        },
+        {
+          "case": "50k indexed exact cold then warm",
+          "repeat": 1,
+          "ms": 0.714,
+          "vm_budget_per_phase": 10000000,
+          "phases": [
+            {
+              "vm_tick_steps": 1000
+            },
+            {
+              "vm_tick_steps": 0
+            }
+          ],
+          "returned": 1,
+          "completion": "complete",
+          "identity": "verified"
+        },
+        {
+          "case": "50k indexed exact cold then warm",
+          "repeat": 2,
+          "ms": 0.52,
+          "vm_budget_per_phase": 10000000,
+          "phases": [
+            {
+              "vm_tick_steps": 1000
+            },
+            {
+              "vm_tick_steps": 0
+            }
+          ],
+          "returned": 1,
+          "completion": "complete",
+          "identity": "verified"
+        },
+        {
+          "case": "50k unindexed sparse substring",
+          "repeat": 0,
+          "ms": 32.719,
+          "vm_budget_per_phase": 10000000,
+          "phases": [
+            {
+              "vm_tick_steps": 1000
+            },
+            {
+              "vm_tick_steps": 1200000
+            }
+          ],
+          "returned": 5,
+          "completion": "complete",
+          "identity": "no_declared_key"
+        },
+        {
+          "case": "50k unindexed sparse substring",
+          "repeat": 1,
+          "ms": 32.623,
+          "vm_budget_per_phase": 10000000,
+          "phases": [
+            {
+              "vm_tick_steps": 1000
+            },
+            {
+              "vm_tick_steps": 1200000
+            }
+          ],
+          "returned": 5,
+          "completion": "complete",
+          "identity": "no_declared_key"
+        },
+        {
+          "case": "50k unindexed sparse substring",
+          "repeat": 2,
+          "ms": 32.511,
+          "vm_budget_per_phase": 10000000,
+          "phases": [
+            {
+              "vm_tick_steps": 1000
+            },
+            {
+              "vm_tick_steps": 1200000
+            }
+          ],
+          "returned": 5,
+          "completion": "complete",
+          "identity": "no_declared_key"
+        },
+        {
+          "case": "50k unindexed absent substring",
+          "repeat": 0,
+          "ms": 33.031,
+          "vm_budget_per_phase": 10000000,
+          "phases": [
+            {
+              "vm_tick_steps": 1000
+            },
+            {
+              "vm_tick_steps": 1200000
+            }
+          ],
+          "returned": 0,
+          "completion": "complete",
+          "identity": "no_declared_key"
+        },
+        {
+          "case": "50k unindexed absent substring",
+          "repeat": 1,
+          "ms": 32.883,
+          "vm_budget_per_phase": 10000000,
+          "phases": [
+            {
+              "vm_tick_steps": 1000
+            },
+            {
+              "vm_tick_steps": 1200000
+            }
+          ],
+          "returned": 0,
+          "completion": "complete",
+          "identity": "no_declared_key"
+        },
+        {
+          "case": "50k unindexed absent substring",
+          "repeat": 2,
+          "ms": 33.096,
+          "vm_budget_per_phase": 10000000,
+          "phases": [
+            {
+              "vm_tick_steps": 1000
+            },
+            {
+              "vm_tick_steps": 1200000
+            }
+          ],
+          "returned": 0,
+          "completion": "complete",
+          "identity": "no_declared_key"
+        },
+        {
+          "case": "50k unindexed forced VM refusal",
+          "repeat": 0,
+          "ms": 0.929,
+          "vm_budget_per_phase": 10000,
+          "phases": [
+            {
+              "vm_tick_steps": 1000
+            },
+            {
+              "vm_tick_steps": 11000
+            }
+          ],
+          "error": "source_query_budget_exceeded"
+        },
+        {
+          "case": "50k unindexed forced VM refusal",
+          "repeat": 1,
+          "ms": 0.665,
+          "vm_budget_per_phase": 10000,
+          "phases": [
+            {
+              "vm_tick_steps": 1000
+            },
+            {
+              "vm_tick_steps": 11000
+            }
+          ],
+          "error": "source_query_budget_exceeded"
+        },
+        {
+          "case": "50k unindexed forced VM refusal",
+          "repeat": 2,
+          "ms": 0.644,
+          "vm_budget_per_phase": 10000,
+          "phases": [
+            {
+              "vm_tick_steps": 1000
+            },
+            {
+              "vm_tick_steps": 11000
+            }
+          ],
+          "error": "source_query_budget_exceeded"
+        }
+      ]
+    }
+  ]
+}

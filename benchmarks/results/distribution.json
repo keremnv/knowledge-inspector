@@ -1,0 +1,47 @@
+{
+  "wheel": {
+    "file": "knowledge_inspector-0.1.0-py3-none-any.whl",
+    "bytes": 911744,
+    "sha256": "39ef2343328a90f8ab8ed154597ea2d0151d8cf899c386fda0bf8396456c2e24",
+    "python_modules": 8
+  },
+  "declared_requirements": [
+    "Requires-Python: >=3.11"
+  ],
+  "installed_by_wheel_beyond_a_fresh_venv": [
+    "knowledge-inspector"
+  ],
+  "installed_bytes_in_site_packages": 2612097,
+  "frontend": {
+    "main_js": {
+      "path": "assets/index-By4Sw3L2.js",
+      "bytes": 2080304,
+      "gzip_bytes": 615875
+    },
+    "css": [
+      {
+        "path": "assets/index-VP1Kpp3t.css",
+        "bytes": 81307,
+        "gzip_bytes": 14422
+      }
+    ],
+    "js_total": {
+      "bytes": 2080304,
+      "gzip_bytes": 615875
+    },
+    "css_total": {
+      "bytes": 81307,
+      "gzip_bytes": 14422
+    },
+    "fonts": {
+      "files": 12,
+      "bytes": 154752,
+      "note": "woff2 and woff fallbacks both shipped; a browser downloads one per face"
+    },
+    "all_assets": {
+      "files": 16,
+      "bytes": 2318534,
+      "gzip_bytes": 786166
+    }
+  }
+}
