@@ -1,0 +1,35 @@
+# The installable `ki` command with its compiled frontend. Build the wheel
+# with `python3 scripts/build_release.py` (README: "Build a release wheel"):
+# the frontend must be built and staged first, or setup.py refuses.
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "knowledge-inspector"
+dynamic = ["version"]
+description = "Inspect a SQLite file, read-only, in the browser."
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE", "THIRD_PARTY/README.md", "THIRD_PARTY/inventory.json", "THIRD_PARTY/antv-locked-artifacts.json", "THIRD_PARTY/layout-vendored-source-comparison.json", "THIRD_PARTY/layout-matched-artifacts.json", "THIRD_PARTY/licenses/*"]
+dependencies = []
+classifiers = [
+    "Environment :: Web Environment",
+    "Operating System :: POSIX",
+    "Programming Language :: Python :: 3",
+    "Topic :: Database",
+]
+
+[project.scripts]
+ki = "knowledge_inspector.cli:main"
+
+[tool.setuptools]
+# Only the Source application's modules; setup.py drops tests, benchmarks
+# and fixtures from these packages. World's adapters are not shipped.
+packages = ["knowledge_inspector", "adapters", "adapters.sqlite", "adapters.source"]
+
+[tool.setuptools.dynamic]
+version = { attr = "knowledge_inspector.__version__" }
+
+[tool.setuptools.package-data]
+knowledge_inspector = ["frontend/index.html", "frontend/ki-frontend.json", "frontend/assets/*"]

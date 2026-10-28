@@ -1,0 +1,48 @@
+.problem-notice {
+  min-width: 0;
+  padding: 12px var(--reader-inset, 16px);
+  border-bottom: 1px solid var(--rule);
+  color: var(--ink);
+  background: var(--panel);
+  font-family: var(--font-sans);
+  font-size: var(--type-body);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.problem-notice__title {
+  display: block;
+  font-weight: var(--weight-medium, 500);
+}
+
+.problem-notice p { margin: 4px 0 0; }
+.problem-notice code { font-size: inherit; }
+
+.world__error {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  padding: 64px 24px;
+  overflow: auto;
+}
+
+.world__error .problem-notice {
+  width: min(100%, 380px);
+  padding: 24px;
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+}
+
+/* Startup failure owns the surface: empty docks must not cover it, and the
+   shell's own bars go too — a filter cell and a theme switcher on a page
+   with no world are buttons that promise what is not there. */
+.gm__main:has(.world__error) > :not(.world__plane) {
+  display: none;
+}
+
+.product-shell:has(.world__error) .product-shell__top,
+.product-shell:has(.world__error) .product-shell__instrument {
+  display: none;
+}

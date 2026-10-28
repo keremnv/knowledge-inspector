@@ -1,0 +1,185 @@
+{
+  "citation_count": {
+    "relation": "citation_count",
+    "mode": "DERIVED",
+    "rests_on": {
+      "paper": [],
+      "venue": [],
+      "author": [],
+      "authorship": [],
+      "cites": [],
+      "citation_count": [
+        "cites",
+        "paper"
+      ]
+    },
+    "supports": {
+      "paper": [
+        "citation_count"
+      ],
+      "venue": [],
+      "author": [],
+      "authorship": [],
+      "cites": [
+        "citation_count"
+      ],
+      "citation_count": []
+    },
+    "nodes": {
+      "paper": {
+        "name": "paper",
+        "mode": "BASE",
+        "arity": 4,
+        "count": 8,
+        "stale": false,
+        "state": null
+      },
+      "venue": {
+        "name": "venue",
+        "mode": "BASE",
+        "arity": 2,
+        "count": 3,
+        "stale": false,
+        "state": null
+      },
+      "author": {
+        "name": "author",
+        "mode": "BASE",
+        "arity": 2,
+        "count": 6,
+        "stale": false,
+        "state": null
+      },
+      "authorship": {
+        "name": "authorship",
+        "mode": "BASE",
+        "arity": 3,
+        "count": 13,
+        "stale": false,
+        "state": null
+      },
+      "cites": {
+        "name": "cites",
+        "mode": "BASE",
+        "arity": 2,
+        "count": 12,
+        "stale": false,
+        "state": null
+      },
+      "citation_count": {
+        "name": "citation_count",
+        "mode": "DERIVED",
+        "arity": 2,
+        "count": 8,
+        "stale": false,
+        "state": "SUCCEEDED"
+      }
+    },
+    "run": {
+      "sql": "SELECT p.id AS paper, COUNT(c.cited) AS count FROM papers p LEFT JOIN cites c ON c.cited = p.id GROUP BY p.id ORDER BY p.id",
+      "state": "SUCCEEDED",
+      "definition_revision": 1,
+      "last_run_world_revision": 1,
+      "output_cardinality": 8,
+      "last_error": "",
+      "inputs": [
+        {
+          "relation": "cites",
+          "declared": true,
+          "version_at_run": 1,
+          "count_at_run": 12,
+          "version_now": 1,
+          "count_now": 12,
+          "moved": false
+        },
+        {
+          "relation": "paper",
+          "declared": true,
+          "version_at_run": 1,
+          "count_at_run": 8,
+          "version_now": 1,
+          "count_now": 8,
+          "moved": false
+        }
+      ]
+    }
+  },
+  "paper": {
+    "relation": "paper",
+    "mode": "BASE",
+    "rests_on": {
+      "paper": [],
+      "venue": [],
+      "author": [],
+      "authorship": [],
+      "cites": [],
+      "citation_count": [
+        "cites",
+        "paper"
+      ]
+    },
+    "supports": {
+      "paper": [
+        "citation_count"
+      ],
+      "venue": [],
+      "author": [],
+      "authorship": [],
+      "cites": [
+        "citation_count"
+      ],
+      "citation_count": []
+    },
+    "nodes": {
+      "paper": {
+        "name": "paper",
+        "mode": "BASE",
+        "arity": 4,
+        "count": 8,
+        "stale": false,
+        "state": null
+      },
+      "venue": {
+        "name": "venue",
+        "mode": "BASE",
+        "arity": 2,
+        "count": 3,
+        "stale": false,
+        "state": null
+      },
+      "author": {
+        "name": "author",
+        "mode": "BASE",
+        "arity": 2,
+        "count": 6,
+        "stale": false,
+        "state": null
+      },
+      "authorship": {
+        "name": "authorship",
+        "mode": "BASE",
+        "arity": 3,
+        "count": 13,
+        "stale": false,
+        "state": null
+      },
+      "cites": {
+        "name": "cites",
+        "mode": "BASE",
+        "arity": 2,
+        "count": 12,
+        "stale": false,
+        "state": null
+      },
+      "citation_count": {
+        "name": "citation_count",
+        "mode": "DERIVED",
+        "arity": 2,
+        "count": 8,
+        "stale": false,
+        "state": "SUCCEEDED"
+      }
+    },
+    "run": null
+  }
+}

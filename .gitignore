@@ -1,0 +1,52 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Dependencies
+node_modules/
+
+# Build
+dist/
+dist-ssr/
+*.local
+
+# Built example databases (rebuild with each example's seed.py)
+examples/*/*.sqlite
+
+# Python bytecode (the SQLite and expedition adapters are stdlib-only Python)
+__pycache__/
+*.py[cod]
+
+# TypeScript
+*.tsbuildinfo
+
+# Env
+.env
+.env.test
+.env.*.local
+
+# OS
+.DS_Store
+
+# Editor
+.vscode-test
+.idea/
+
+# Local review captures
+tmp-review/
+
+# Ad-hoc debug screenshots from manual/agent verification scripts
+scripts/*.png
+test-results/
+
+# Python packaging: the staged frontend and wheel output of scripts/build_release.py
+knowledge_inspector/frontend/
+release/
+build/
+*.egg-info/
+
+# Local Python virtual environment
+.venv/

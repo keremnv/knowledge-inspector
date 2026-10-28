@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "world": {
+    "id_prefix": "chinook",
+    "description": "Experimental reader-authored reading of the Chinook sample database (lerocha/chinook-database v1.4.5, Chinook_Sqlite.sqlite). Written for the Knowledge Inspector demonstration, not by the database's author: it names three relations over foreign-key columns the file already declares and asserts nothing beyond what the rows store."
+  },
+  "entities": [
+    {"kind": "artist", "source": "Artist", "key_columns": ["ArtistId"], "label_column": "Name"},
+    {"kind": "album", "source": "Album", "key_columns": ["AlbumId"], "label_column": "Title"},
+    {"kind": "track", "source": "Track", "key_columns": ["TrackId"], "label_column": "Name"},
+    {"kind": "invoice", "source": "Invoice", "key_columns": ["InvoiceId"]}
+  ],
+  "relations": [
+    {
+      "name": "album_listed_under_artist",
+      "source": "Album",
+      "key_columns": ["AlbumId"],
+      "description": "Each Album row stores an ArtistId: the sample catalogue lists the album under that artist. The row records the listing only; it does not say who performed, composed, produced or owns the recording.",
+      "roles": [
+        {"role": "album", "column_name": "AlbumId", "target_kind": "album"},
+        {"role": "artist", "column_name": "ArtistId", "target_kind": "artist"}
+      ]
+    },
+    {
+      "name": "track_on_album",
+      "source": "Track",
+      "key_columns": ["TrackId"],
+      "description": "Each Track row stores an AlbumId: the catalogue lists the track on that album, with the composer text, the duration in milliseconds and the unit price exactly as the row stores them. Composer is free text, null where the row has none, and is not resolved to any artist.",
+      "roles": [
+        {"role": "track", "column_name": "TrackId", "target_kind": "track"},
+        {"role": "album", "column_name": "AlbumId", "target_kind": "album"},
+        {"role": "composer", "column_name": "Composer", "target_kind": null},
+        {"role": "milliseconds", "column_name": "Milliseconds", "target_kind": null},
+        {"role": "unit_price", "column_name": "UnitPrice", "target_kind": null}
+      ]
+    },
+    {
+      "name": "invoice_line_track",
+      "source": "InvoiceLine",
+      "key_columns": ["InvoiceLineId"],
+      "description": "Each InvoiceLine row records one line of a sample sales invoice: the track the line lists, with the unit price and quantity as stored. It records what the invoice lists; it is not evidence of payment, delivery, ownership or any customer's endorsement.",
+      "roles": [
+        {"role": "invoice", "column_name": "InvoiceId", "target_kind": "invoice"},
+        {"role": "track", "column_name": "TrackId", "target_kind": "track"},
+        {"role": "unit_price", "column_name": "UnitPrice", "target_kind": null},
+        {"role": "quantity", "column_name": "Quantity", "target_kind": null}
+      ]
+    }
+  ]
+}

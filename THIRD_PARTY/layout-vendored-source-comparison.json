@@ -1,0 +1,161 @@
+{
+  "layout_version": "2.0.0",
+  "method": "Compare source-map sourcesContent from vendored @antv/layout 2.0.0 lib modules against installed package source files. Byte-identical sources are evidence of matching content, not proof of version or authorship.",
+  "packages": {
+    "@antv/event-emitter": {
+      "mapped_sources": 1,
+      "available": 1,
+      "identical": 1,
+      "mismatches": [],
+      "installed_version": "0.1.3"
+    },
+    "@antv/expr": {
+      "mapped_sources": 1,
+      "available": 1,
+      "identical": 1,
+      "mismatches": [],
+      "installed_version": "1.0.2"
+    },
+    "@antv/util": {
+      "mapped_sources": 20,
+      "available": 20,
+      "identical": 20,
+      "mismatches": [],
+      "installed_version": "3.3.11"
+    },
+    "comlink": {
+      "mapped_sources": 1,
+      "available": 1,
+      "identical": 1,
+      "mismatches": [],
+      "installed_version": "4.4.2"
+    },
+    "d3-binarytree": {
+      "mapped_sources": 13,
+      "available": 13,
+      "identical": 13,
+      "mismatches": [],
+      "installed_version": "1.0.2"
+    },
+    "d3-dispatch": {
+      "mapped_sources": 1,
+      "available": 1,
+      "identical": 1,
+      "mismatches": [],
+      "installed_version": "3.0.1"
+    },
+    "d3-force": {
+      "mapped_sources": 11,
+      "available": 11,
+      "identical": 11,
+      "mismatches": [],
+      "installed_version": "3.0.0"
+    },
+    "d3-force-3d": {
+      "mapped_sources": 12,
+      "available": 12,
+      "identical": 12,
+      "mismatches": [],
+      "installed_version": "3.0.6"
+    },
+    "d3-octree": {
+      "mapped_sources": 16,
+      "available": 16,
+      "identical": 16,
+      "mismatches": [],
+      "installed_version": "1.1.0"
+    },
+    "d3-quadtree": {
+      "mapped_sources": 14,
+      "available": 14,
+      "identical": 14,
+      "mismatches": [],
+      "installed_version": "3.0.1"
+    },
+    "d3-timer": {
+      "mapped_sources": 1,
+      "available": 1,
+      "identical": 1,
+      "mismatches": [],
+      "installed_version": "3.0.1"
+    },
+    "dagre": {
+      "mapped_sources": 30,
+      "available": 30,
+      "identical": 30,
+      "mismatches": [],
+      "installed_version": "0.8.5"
+    },
+    "graphlib": {
+      "mapped_sources": 20,
+      "available": 20,
+      "identical": 20,
+      "mismatches": [],
+      "installed_version": "2.1.8"
+    },
+    "is-any-array": {
+      "mapped_sources": 1,
+      "available": 0,
+      "identical": 0,
+      "mismatches": [
+        "is-any-array/lib-esm/index.js (source absent)"
+      ],
+      "installed_version": "3.0.0"
+    },
+    "lodash": {
+      "mapped_sources": 240,
+      "available": 240,
+      "identical": 238,
+      "mismatches": [
+        "lodash/_baseOrderBy.js",
+        "lodash/_setCacheHas.js"
+      ],
+      "installed_version": "4.18.1"
+    },
+    "ml-array-max": {
+      "mapped_sources": 1,
+      "available": 0,
+      "identical": 0,
+      "mismatches": [
+        "ml-array-max/lib-es6/index.js (source absent)"
+      ],
+      "installed_version": "2.0.0"
+    },
+    "ml-array-min": {
+      "mapped_sources": 1,
+      "available": 0,
+      "identical": 0,
+      "mismatches": [
+        "ml-array-min/lib-es6/index.js (source absent)"
+      ],
+      "installed_version": "2.0.0"
+    },
+    "ml-array-rescale": {
+      "mapped_sources": 1,
+      "available": 0,
+      "identical": 0,
+      "mismatches": [
+        "ml-array-rescale/lib-es6/index.js (source absent)"
+      ],
+      "installed_version": "2.0.0"
+    },
+    "ml-matrix": {
+      "mapped_sources": 2,
+      "available": 2,
+      "identical": 1,
+      "mismatches": [
+        "ml-matrix/matrix.js"
+      ],
+      "installed_version": "6.14.0"
+    },
+    "tslib": {
+      "mapped_sources": 1,
+      "available": 1,
+      "identical": 0,
+      "mismatches": [
+        "tslib/tslib.es6.js"
+      ],
+      "installed_version": "2.8.1"
+    }
+  }
+}

@@ -1,0 +1,52 @@
+/* Marching ants. The border never spins; the dash offset travels, which is
+   what makes round beads read as moving along the path rather than as a
+   rotating ring. Duration is set per selection from the path's screen length,
+   so a long filament and a small disc march at the same speed rather than in
+   the same time.
+
+   On a plate the travel *is* the rotation: the beads go round the rect's own
+   perimeter. Turning the rectangle instead would take its corners off the
+   plate's corners, which is the second rectangle again by another route. */
+
+/* `inset: 0` is not enough on its own: an <svg> is a replaced element, so its
+   auto width and height are the intrinsic 300x150 and the insets never resolve.
+   The overlay has to be told to fill the stage. */
+.ants {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.ants__mark {
+  transform-box: fill-box;
+  transform-origin: center;
+  will-change: opacity, transform;
+  /* The delay is how the two halves of a plate's arrival stay in order: the
+     border finishes becoming dotted, and only then does it travel. It is the
+     emit duration for a plate that morphs, and zero for everything else —
+     including a plate that was dotted already and has nothing to wait for. */
+  animation: ants-march var(--ants-cycle, 3s) linear var(--ants-march-delay, 0s)
+    infinite;
+}
+
+/* In hand, and at rest with the march switched off in the DNA. */
+.ants__mark.is-held,
+.ants__mark.is-still {
+  animation: none;
+}
+
+@keyframes ants-march {
+  to {
+    stroke-dashoffset: -100;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ants__mark {
+    animation: none !important;
+  }
+}

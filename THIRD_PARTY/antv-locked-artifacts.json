@@ -1,0 +1,87 @@
+{
+  "artifacts": [
+    {
+      "package": "@antv/algorithm",
+      "version": "0.1.26",
+      "registry_url": "https://registry.npmjs.org/%40antv%2Falgorithm/0.1.26",
+      "repository": {
+        "url": "git+https://github.com/antvis/algorithm.git",
+        "type": "git"
+      },
+      "license_declaration": "MIT",
+      "gitHead": "58b99ab9c937b8ec3e5e99b57624ad5a007682e5",
+      "tarball": "https://registry.npmjs.org/@antv/algorithm/-/algorithm-0.1.26.tgz",
+      "integrity": "sha512-DVhcFSQ8YQnMNW34Mk8BSsfc61iC1sAnmcfYoXTAshYHuU50p/6b7x3QYaGctDNKWGvi1ub7mPcSY0bK+aN0qg==",
+      "matches_lock_integrity": true,
+      "matches_installed_metadata": true,
+      "packaged_license_files": []
+    },
+    {
+      "package": "@antv/event-emitter",
+      "version": "0.1.3",
+      "registry_url": "https://registry.npmjs.org/%40antv%2Fevent-emitter/0.1.3",
+      "repository": {
+        "url": "git+ssh://git@github.com/antvis/event-emitter.git",
+        "type": "git"
+      },
+      "license_declaration": "MIT",
+      "gitHead": "f46ff7712f332ef1c8b7601eb88b5784ad4edaa1",
+      "tarball": "https://registry.npmjs.org/@antv/event-emitter/-/event-emitter-0.1.3.tgz",
+      "integrity": "sha512-4ddpsiHN9Pd4UIlWuKVK1C4IiZIdbwQvy9i7DUSI3xNJ89FPUFt8lxDYj8GzzfdllV0NkJTRxnG+FvLk0llidg==",
+      "matches_lock_integrity": true,
+      "matches_installed_metadata": true,
+      "packaged_license_files": []
+    },
+    {
+      "package": "@antv/g-lite",
+      "version": "2.7.0",
+      "registry_url": "https://registry.npmjs.org/%40antv%2Fg-lite/2.7.0",
+      "repository": {
+        "url": "git+https://github.com/antvis/g.git",
+        "type": "git",
+        "directory": "packages/g-lite"
+      },
+      "license_declaration": "MIT",
+      "gitHead": null,
+      "tarball": "https://registry.npmjs.org/@antv/g-lite/-/g-lite-2.7.0.tgz",
+      "integrity": "sha512-uSzgHYa5bwR5L2Au7/5tsOhFmXKZKLPBH90+Q9bP9teVs5VT4kOAi0isPSpDI8uhdDC2/VrfTWu5K9HhWI6FWw==",
+      "matches_lock_integrity": true,
+      "matches_installed_metadata": true,
+      "packaged_license_files": []
+    },
+    {
+      "package": "@antv/util",
+      "version": "2.0.17",
+      "registry_url": "https://registry.npmjs.org/%40antv%2Futil/2.0.17",
+      "repository": {
+        "url": "git+https://github.com/antvis/util.git",
+        "type": "git"
+      },
+      "license_declaration": "ISC",
+      "gitHead": null,
+      "tarball": "https://registry.npmjs.org/@antv/util/-/util-2.0.17.tgz",
+      "integrity": "sha512-o6I9hi5CIUvLGDhth0RxNSFDRwXeywmt6ExR4+RmVAzIi48ps6HUy+svxOCayvrPBN37uE6TAc2KDofRo0nK9Q==",
+      "matches_lock_integrity": true,
+      "matches_installed_metadata": true,
+      "packaged_license_files": []
+    },
+    {
+      "package": "@antv/layout",
+      "version": "2.0.0",
+      "registry_url": "https://registry.npmjs.org/%40antv%2Flayout/2.0.0",
+      "repository": {
+        "url": "git+https://github.com/antvis/layout.git",
+        "type": "git"
+      },
+      "license_declaration": "MIT",
+      "gitHead": "62bb4792b3ab948e096f9e17cfcb0f5c51ad9545",
+      "tarball": "https://registry.npmjs.org/@antv/layout/-/layout-2.0.0.tgz",
+      "integrity": "sha512-aCZ3UdNc40SfT7meFV7QTADY2HCnc0DShVw56CJNTI6oExUIVU736grPuL5Dhb8/JrVaU4Y83QPN/P7KafBzlw==",
+      "matches_lock_integrity": true,
+      "matches_installed_metadata": true,
+      "packaged_license_files": [
+        "LICENSE"
+      ]
+    }
+  ]
+}

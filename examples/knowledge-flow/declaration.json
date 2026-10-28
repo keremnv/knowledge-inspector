@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "world": {
+    "id_prefix": "knowledge",
+    "description": "Reader-owned conceptual reading of a frozen producer file: data_flow rows as entities, flow_hop rows as ordered flow_step occurrences. Experimental; not a producer format."
+  },
+  "entities": [
+    {
+      "kind": "data_flow",
+      "source": "data_flow",
+      "key_columns": ["id"],
+      "label_column": "name"
+    }
+  ],
+  "relations": [
+    {
+      "name": "flow_step",
+      "source": "flow_hop",
+      "key_columns": ["flow_id", "seq"],
+      "description": "Ordered hop within a data flow: which flow, step order, participant, action. Steps as recorded; the declaration claims no stance toward their content.",
+      "roles": [
+        {"role": "flow", "column_name": "flow_id", "target_kind": "data_flow"},
+        {"role": "seq", "column_name": "seq", "target_kind": null},
+        {"role": "participant", "column_name": "participant", "target_kind": null},
+        {"role": "action", "column_name": "action", "target_kind": null}
+      ]
+    }
+  ]
+}

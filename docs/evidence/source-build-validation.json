@@ -1,0 +1,18 @@
+{
+  "scope": "Source checkout README build, installed wheel tests and local launch; generated wheel is not included in the source tree and is not cleared for redistribution.",
+  "node": "22.22.1",
+  "vite": "7.3.6",
+  "python": "3.13.12",
+  "sqlite": "3.51.1",
+  "build": "passed",
+  "installed_wheel_tests": {
+    "passed": 12,
+    "failed": 0
+  },
+  "local_ki_version": "0.1.0",
+  "chinook_source_sha256": "bdf635be69850bd3be09c9a2dbeef7ddfb80036bd3ef3381383cd03b61e4a61a",
+  "chinook_source_unchanged": true,
+  "local_wheel_sha256": "c28f73e5e92d92ce3ce3b61c1422ce31ff8585d347bb4426b74a486e830c3696",
+  "third_party_wheel_files_verified": 62,
+  "limitations": "Package-specific AntV copyright notices remain unverified; do not treat this build as a distributable wheel."
+}

@@ -1,0 +1,195 @@
+/* Source owns data layout; panel, table, Reader and instrument presentation is
+   canonical (WorldShell, tableChrome, ReaderChrome and panelChrome). */
+.source-stage { position: relative; flex: 1; min-height: 0; container-type: inline-size; overflow: clip; background: var(--canvas); }
+.source-canvas { position: absolute; inset: 0; }
+/* World's role value naming a disc (WorldPage.css `.world__roles li button`):
+   dotted and muted at rest, a whisper rather than a hyperlink; the row's wash
+   for the press. */
+/* Its box is the value's cell, as World's button fills its grid column: the
+   press and the wash belong to the cell, not to the glyphs of "1". */
+.source-reach { display: block; width: 100%; min-width: 0; overflow-wrap: anywhere; text-align: left; border: 0; background: none; padding: 0; font: inherit; color: inherit; cursor: pointer;
+  text-decoration: underline dotted; text-decoration-color: var(--ink-muted); text-underline-offset: 0.18em; }
+.source-reach:hover, .source-reach:focus-visible { background: color-mix(in srgb, var(--ink) 5%, var(--panel)); }
+.source-reach:focus-visible { outline: 2px solid var(--ink); outline-offset: 1px; }
+/* Find, focused: one frame, the cell's own, rather than the input's border and
+   an outline standing inside the cell beside it. */
+.source-workspace .source-global-find .nodefind__input,
+.source-workspace .source-global-find .nodefind__input:focus { border-color: transparent; }
+.source-workspace .source-global-find .nodefind__input:focus-visible { outline: none; }
+/* A failure or a coverage note is a sentence: it wraps inside the list rather than running past it. */
+.source-workspace .source-global-find .nodefind__row--empty { white-space: normal; overflow-wrap: anywhere; }
+.source-workspace .instrument__group:has(.source-global-find .nodefind__input:focus) { border-color: var(--ink); }
+/* O17: the table header's naming choice, a cell of the header's own row. */
+.source-naming { display: inline-flex; align-items: center; gap: .4rem; color: var(--ink-muted); font-size: var(--type-label); }
+.source-naming select { font: inherit; color: var(--ink); background: var(--panel); border: 1px solid var(--rule); padding: 1px 4px; }
+.source-named { margin-left: .35rem; color: var(--ink-muted); font-size: var(--type-label); }
+/* The closed Reader's tab stands flush to the right edge, as the Tables tab does
+   to the left; World floats a right-hand tab `--ov-float` clear of the frame. */
+.source-workspace .ov--right:not(.is-open) > .ov__handle { transform: none; }
+/* The records list is off (owner decision O9). It stays the keyboard's way
+   to a canvas mark, so it appears only while focus is inside it, as a skip
+   link does; hidden the way `.sr-only` hides. */
+.source-field-list:not(:focus-within) { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+/* The schema is World's vocabulary room: the product bar recedes, as World's
+   does in focus (WorldCanvas.css); the Tables dock stays, the way in (O8.12). */
+.source-workspace .product-shell__top { transition: opacity var(--motion-emit-duration, 280ms) var(--motion-emit-curve, ease-out), visibility 0s; }
+.source-workspace.is-schema .product-shell__top { opacity: 0; visibility: hidden; pointer-events: none;
+  transition: opacity var(--motion-absorb-duration, 240ms) var(--motion-absorb-curve, ease-in), visibility 0s linear var(--motion-absorb-duration, 240ms); }
+/* World's canvas layers: the one not in view is parked, never unmounted. */
+.source-layer { position: absolute; inset: 0; }
+.source-layer.is-parked { visibility: hidden; pointer-events: none; }
+.source-schema-problem { position: absolute; left: 50%; top: calc(var(--top-chrome, 48px) + 40px); transform: translateX(-50%); z-index: 2; padding: 8px 12px; background: var(--panel); border: 1px solid var(--rule); }
+.source-canvas:focus-visible { outline: 1px solid var(--ink); outline-offset: -3px; }
+/* The first invitation uses the shared presence law, only until a table is chosen. */
+.source-quiet { position: absolute; z-index: 1; top: 0; bottom: 0; display: grid; place-items: center; padding: 2rem; text-align: center; color: var(--ink-muted); }
+.source-quiet h1 { margin: 0; font-size: var(--type-subject); font-weight: var(--weight-regular); }
+.source-start, .source-fatal { padding: 2rem; color: var(--ink); background: var(--canvas); }
+.source-fatal { position: absolute; inset: 4rem 2rem auto; z-index: 35; border: 1px solid var(--rule); }
+.source-dock { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+.source-table-slot, .source-table-view { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; min-width: 0; }
+.source-table-slot { flex-basis: 0; }
+.source-catalogue > p, .source-catalogue > .source-details { margin: 12px; }
+.source-browse { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.source-browse__status { padding: 0 12px; max-height: 8rem; overflow: auto; }
+.source-browse__status:empty { display: none; }
+.source-browse__status p { margin: .5rem 0; }
+.source-row-scroll { min-height: 5rem; overflow: auto; overscroll-behavior: contain; }
+.source-row-scroll > p { margin: 12px; }
+.source-row-table td[data-matched] { text-decoration: underline; text-decoration-color: var(--rule); text-underline-offset: .2em; }
+.source-row-table .source-value code { display: block; max-width: 24ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.source-reader-body { overflow-wrap: anywhere; }
+.source-reader-body small, .source-identity small, .source-fk small { display: block; color: var(--ink-muted); }
+.source-workspace code { font-family: var(--font-mono); font-size: var(--type-body); white-space: pre-wrap; overflow-wrap: anywhere; }
+.source-cells > div, .source-columns > div, .source-fk { padding-top: .5rem; border-top: 1px solid var(--rule); }
+.source-details { margin: 1rem 0; }
+.source-details + .source-details { margin-top: .6rem; }
+.source-workspace pre { white-space: pre-wrap; font-size: var(--type-label); }
+.source-problem { white-space: pre-wrap; border-left: 2px solid var(--ink); padding-left: .7rem; }
+.source-retry { margin: .1rem 0 .6rem .7rem; }
+.source-value small { display: block; margin-top: .2rem; }
+@media (prefers-reduced-motion: reduce) {
+  .source-workspace.is-motion-ready { transition-duration: 1ms; }
+}
+/* Exact typed lookup is Source-specific. Its controls use the table recipes. */
+.source-find { max-height: 16rem; overflow: auto; flex-shrink: 0; }
+.source-find__line { display: flex; align-items: end; flex-wrap: wrap; gap: .5rem; }
+.source-find__line label { flex: 1; }
+.source-filter-options { align-items: baseline; color: var(--ink-muted); font-size: var(--type-label); }
+.source-filter-options > small { font-size: var(--type-label); }
+.source-filter-options details { flex: 1; min-width: 0; }
+.source-filter-options summary { cursor: pointer; }
+.source-filter-options details[open] { color: var(--ink); }
+.source-filter-options details label { margin-top: .5rem; }
+.source-filter-options details p { margin-bottom: .3rem; }
+.source-find-prompt { padding: 0 12px; }
+.source-placement { flex: 0 0 auto; }
+.source-placement--unavailable { color: var(--ink-muted); font-size: var(--type-label); }
+.source-reference-pairs { width: 100%; border-collapse: collapse; font-size: var(--type-label); table-layout: fixed; }
+.source-reference-pairs caption { text-align: left; margin-block: 10px; color: var(--ink-muted); }
+.source-reference-pairs th { color: var(--ink-muted); font-weight: var(--weight-regular); }
+.source-reference-pairs th, .source-reference-pairs td { text-align: left; vertical-align: top; padding: 5px; overflow-wrap: anywhere; border-bottom: 1px solid var(--ov-rule); }
+.source-reference-pairs th:first-child { width: 4.5em; }
+.source-reference-pairs .source-value, .source-reference-pairs small { display: block; }
+.source-reference-evidence code { overflow-wrap: anywhere; }
+.source-facts { margin: .7rem 0; }
+.source-facts > div { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); gap: .65rem; padding: .45rem 0; border-top: 1px solid var(--rule); }
+.source-facts dt { font-weight: var(--weight-regular); }
+.source-facts dd { margin: 0; }
+.source-facts dt small, .source-outgoing h3 small, .source-incoming h3 small { display: inline; font-size: var(--type-label); font-weight: var(--weight-regular); }
+.source-facts dt small { margin-left: .3rem; }
+.source-value--text > code { font-family: var(--font-sans); font-size: inherit; }
+.source-note, .source-limitation { font-size: var(--type-label); color: var(--ink-muted); }
+.source-reference-status, .source-reference-target { margin: .4rem 0; }
+.source-reference-status { font-size: var(--type-label); }
+.source-reference-status--blocked { color: var(--ink); }
+.source-table-key > span, .source-column-type { color: var(--ink-muted); }
+.source-columns .source-column-type small { display: inline; margin-left: .5rem; font-size: var(--type-label); }
+.source-schema-reference { color: var(--ink); }
+.source-column-constraints { margin-top: .9rem; }
+.source-column-constraints h4 { margin: 0; font-size: inherit; font-weight: var(--weight-regular); }
+.source-column-constraints .reader-metadata { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); column-gap: .65rem; row-gap: .15rem; }
+.source-column-constraints dd { margin: 0; }
+.source-outgoing .source-fk { padding: .5rem 0; }
+.source-outgoing .source-facts { margin: .1rem 0; }
+.source-outgoing .source-facts > div { border: 0; padding: 0; }
+/* Referenced by: World's relation list (WorldPage.css `--list`), Source counts. */
+.source-incoming .source-limitation { margin-top: .45rem; }
+.source-incoming .source-pager { margin-top: .45rem; }
+.source-incoming-subject { flex-wrap: nowrap; align-items: baseline; color: var(--ink-muted); }
+.source-incoming-subject p { flex: 1; min-width: 0; margin: 0; }
+.source-incoming-subject b { font-weight: var(--weight-regular); color: var(--ink); }
+.source-incoming-subject .table__action { flex: 0 0 auto; }
+
+/* What is on the canvas, as World's tables said it: an ink rule in the margin
+   of a placed record's row, and of a table whose every row is placed. The
+   selected row and the open table are a tint instead, so the rule keeps one
+   meaning. (World's native-table rules draw the rule for selection.) */
+.source-row-table.table__data tbody tr.is-selected,
+.source-table-list .table__row[aria-pressed="true"] { box-shadow: none; background: color-mix(in srgb, var(--ink) 8%, var(--panel)); }
+.source-row-table.table__data tbody tr[data-present],
+.source-table-list .table__row[data-present] { box-shadow: inset 3px 0 0 var(--ink); }
+/* The row control: no number, the key beside it says which row it is. Still
+   a real target and a visible focus. */
+.source-row-table.table__data button[data-row] { display: block; width: 6px; height: 14px; }
+
+/* World's sortable headers: the header text is the control. */
+.source-row-table .source-sort { padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; white-space: nowrap; }
+.source-row-table .source-sort[data-sorted] { color: var(--ink); }
+.source-row-table .source-sort:focus-visible { outline: 1px solid var(--ink); outline-offset: 1px; }
+
+/* What came back from the last visit (O8.8), until the canvas next changes. */
+/* What the file declares, when it decides what can be done (no keys, no references). */
+.source-declared-note { position: absolute; left: 50%; bottom: calc(var(--bottom-chrome, 56px) + 16px); transform: translateX(-50%); z-index: 2; max-width: min(36rem, calc(100% - 2rem)); margin: 0; padding: 6px 12px; font-size: var(--type-label); color: var(--ink); background: var(--panel); border: 1px solid var(--rule); text-align: center; }
+.source-outcome { margin: 4px 0 6px; }
+.source-outcome p { margin: 2px 0; }
+.source-expand li > .source-limitation, .source-expand li > .source-outcome { padding: 0 var(--gm-list-pad-x, 12px); }
+.source-restore { position: absolute; left: 50%; top: calc(var(--top-chrome, 48px) + 8px); transform: translateX(-50%); margin: 0; padding: 4px 10px; font-size: var(--type-label); color: var(--ink-muted); background: var(--panel); border: 1px solid var(--rule); pointer-events: none; z-index: 2; }
+
+/* A line's hidden part across a disc it does not join (SourcePassThrough):
+   in the disc's label colour, faint at rest, plain while that connection is
+   selected. Below the selection ants, above the canvas. */
+.source-pass {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+.source-pass__line {
+  stroke: currentColor;
+  stroke-linecap: round;
+  opacity: 0.5;
+}
+.source-pass__line.is-selected {
+  opacity: 0.95;
+}
+
+/* What the canvas's connections are (CANVAS_CONNECTIONS), under the record
+   canvas's show keys: the restore notice's type and frame, read with the keys. */
+.source-show .world-filter__menu {
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: 4px;
+}
+.world-show__note {
+  max-width: 34ch;
+  margin: 0;
+  padding: 4px 10px;
+  font-size: var(--type-label);
+  line-height: 1.35;
+  color: var(--ink-muted);
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  text-align: center;
+}
+.source-reference-from {
+  margin: 0 0 0.35rem;
+}
+/* A connection's two ends read as one line each: "from posts · Id=876", "→ users · Id=530". */
+.source-reference-from .source-reach, .source-reference-target .source-reach { display: inline; width: auto; }
+.source-problem__code { color: var(--ink-muted); }
+/* A restore that could not read: its choices must be pressable, unlike the restore's notes. */
+.source-restore--problem { pointer-events: auto; max-width: min(36rem, calc(100% - 2rem)); }
+.source-restore--problem p { margin: 0 0 .35rem; }

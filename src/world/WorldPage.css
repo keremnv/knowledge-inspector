@@ -1,0 +1,1868 @@
+/* The field stage is shared with the captured-source field. */
+@import "./fieldStage.css";
+
+/**
+ * World-only remainder. Chrome (identity bar, instrument, finder, overlay,
+ * reader type) is shared with the canvas. This file keeps the canvas
+ * column, the table overlay, and inspector copy that has no graph equivalent.
+ */
+
+.world * {
+  border-radius: 0;
+}
+
+/* Rest hugs find... the way every other cell hugs its word. Focus still
+   opens to 20ch; the emit lives on .nodefind__input in NodeFinder.css. */
+.world .instrument__group .nodefind__input {
+  width: 4.5ch;
+  padding: 0;
+  font-size: var(--type-body);
+}
+
+.world .instrument__group .nodefind__input:focus {
+  width: 20ch;
+  padding: 0 0.65rem;
+}
+
+.world-show__filter {
+  --world-show-key-width: 12px;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.world-filter {
+  position: relative;
+}
+
+.world-filter__menu {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  z-index: 20;
+  display: none;
+  justify-content: center;
+  /* A pad, not a gap: the pointer has to be able to travel from the cell
+     onto the keys without leaving the hover target. 0.55rem is the notice's
+     own step (`.world__notice`), one rung up from the 0.4rem that sat the
+     menu on the cell — a little air, from a value already on this page. */
+  padding-bottom: 0.55rem;
+  transform: translateX(-50%);
+  pointer-events: auto;
+}
+
+.world-filter.is-open .world-filter__menu {
+  display: flex;
+}
+
+/* Keys parked: the options read as names alone until the symbols earn their
+   place back. Nothing is deleted — the spans stay in the markup and every
+   rule below stays written; this one line hides them, and the pressed dim
+   moves to the name (the key's own 0.28) so on and off still read. */
+.world-show__filter .world-show__key {
+  display: none;
+}
+
+.world-show__filter[aria-pressed="false"] .world-show__name {
+  opacity: 0.28;
+}
+
+.world-show__key {
+  position: relative;
+  display: block;
+  width: var(--world-show-key-width);
+  height: 6px;
+  box-sizing: border-box;
+  border: 1px solid currentColor;
+  background: transparent;
+  opacity: 1;
+  transition:
+    opacity var(--motion-hold-duration, 90ms)
+      var(--motion-hold-curve, linear),
+    transform var(--motion-hold-duration, 90ms)
+      var(--motion-hold-curve, linear);
+}
+
+.world-show__filter[data-layer="semantic"] .world-show__key,
+.world-show__filter[data-layer="adjudicated"] .world-show__key {
+  background: currentColor;
+}
+
+/* The same furniture as the map: a human verdict carries a crown; a derived
+   assertion rests on a shelf. */
+.world-show__filter[data-layer="adjudicated"] .world-show__key::before,
+.world-show__filter[data-layer="derived"] .world-show__key::after {
+  position: absolute;
+  right: 1px;
+  left: 1px;
+  height: 1px;
+  background: currentColor;
+  content: "";
+}
+
+.world-show__filter[data-layer="adjudicated"] .world-show__key::before {
+  top: -4px;
+}
+
+.world-show__filter[data-layer="derived"] .world-show__key::after {
+  bottom: -4px;
+}
+
+.world-show__filter[data-layer="unresolved"] .world-show__key {
+  border-style: dotted;
+}
+
+.world-show__filter[data-layer="unstated"] .world-show__key {
+  border: 0;
+}
+
+.world-show__filter[data-layer="names"] .world-show__key {
+  width: auto;
+  height: auto;
+  border: 0;
+  font-size: var(--type-caption);
+  line-height: 1;
+}
+
+.world-show__filter[data-layer="names"] .world-show__key::before {
+  content: "ab";
+}
+
+/* Two strokes leaving one mark on different angles — the fan itself, which is
+   the whole of what the control does. Geometry, like every other key here. */
+.world-show__filter[data-layer="spread"] .world-show__key {
+  height: 8px;
+  border: 0;
+}
+
+.world-show__filter[data-layer="spread"] .world-show__key::before,
+.world-show__filter[data-layer="spread"] .world-show__key::after {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: currentColor;
+  content: "";
+  transform-origin: left center;
+}
+
+.world-show__filter[data-layer="spread"] .world-show__key::before {
+  transform: rotate(-16deg);
+}
+
+.world-show__filter[data-layer="spread"] .world-show__key::after {
+  transform: rotate(16deg);
+}
+
+.world-show__filter[aria-pressed="false"] .world-show__key {
+  opacity: 0.28;
+  transform: scale(0.86);
+}
+
+/* The canvas fills the plane. Tables overlay it from the left — the Graphs
+   drawer, over this world's extensions — so a neighborhood does not give up
+   width while someone reads a relation. Width is capped against the reader
+   (`--ov-reserve`) so the two docks cannot occupy the same strip of map. */
+.world .gm.gm--product,
+.world .gm__main {
+  position: absolute;
+  inset: 0;
+  height: auto;
+}
+
+.world__plane {
+  position: absolute;
+  inset: 0;
+}
+
+.world__layer {
+  position: absolute;
+  inset: 0;
+}
+
+.world__layer.is-parked {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* The World reader follows the Graph reader's title/body/footer anatomy, but
+   its content is factual rather than prose. One selected subject per panel;
+   no permanent dashboard competing with the map. */
+.world-reader__article {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* Everything above the rule: the name, what kind of thing it is, and the
+   facts that answer *which* one it is. The rule belongs to the block, not to
+   the header row, so identity can grow by a line without the separator
+   landing in the middle of it. */
+.world-reader__brow {
+  flex: 0 0 auto;
+  min-width: 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.world-reader__header {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-width: 0;
+  padding: 1rem var(--reader-inset) 0.9rem;
+}
+
+/* Tighter under the name when facts follow it: they are one block, and a full
+   header pad between them opened a gap that read as a missing section. */
+.world-reader__header:not(:last-child) {
+  padding-bottom: 0.5rem;
+}
+
+/* A pathological arity must not eat the panel: identity may be long, but the
+   thing you came to press is below the rule and has to stay reachable. */
+.world-reader__facts {
+  max-height: 34vh;
+  padding: 0 var(--reader-inset) 0.75rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  font-size: var(--type-subject);
+  line-height: 1.52;
+  scrollbar-width: thin;
+}
+
+/* The block's own rule closes it. A row border here would double it. */
+.world-reader__facts .world__roles li:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+/* The name and its type share one visual centre. The chip is a compact box and
+   the name is a larger line of type; centring their boxes keeps the type from
+   floating above or below the title when metadata and close join the row.
+   Contained, because this box shrinks under a long id and what is inside it
+   must shrink with it: with visible overflow the chip kept its width, spilled
+   past the title's edge, and the id painted over both — `mail.ts` unreadable
+   behind `program` at the reader's own minimum width. */
+.world-reader__title {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+  flex: 0 1 auto;
+  overflow: hidden;
+}
+
+/* The name does not shrink: it keeps its width and the chip spends the
+   deficit first, which is the point of the chip being allowed to shrink. A
+   name longer than the title's whole box is capped at it instead, so it cuts
+   with an ellipsis inside its own box rather than mid-glyph at the title's. */
+.world-reader__title h2 {
+  flex: 0 0 auto;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The chip is `flex: 0 0 auto`, so before this nothing stopped a long one from
+   pushing the name into a wrap and the close control out of line. It should
+   never carry anything long — see `namespaceOf` — but the header must not
+   depend on that being true. */
+.world-reader__title .node-reader__kind {
+  min-width: 0;
+  max-width: 12ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.world-reader__heading {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.world-reader__heading h2 {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-size: var(--reader-size);
+  font-weight: var(--weight-strong);
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+
+/* The id yields to the name. A ninety-character id claims most of the row by
+   content size, and proportional shrink then crushes the title to a stub —
+   the subject unreadable in favour of a prefix every id in the world shares.
+   So the id's *basis* is capped, not its box: shrink shares derive from the
+   unclamped basis, which a `max-width` does not touch — measured, `mail.ts`
+   still crushed to `m…` with the cap on. From a 40% basis the id keeps a stub
+   and the name keeps what it needs; with room to spare the id grows into it.
+   The full id is one hover away on `title`. The same priority
+   `.node-reader__link-rel` states with its own 42%. */
+.world-reader__heading p {
+  /* The id spends first, fivefold: in a deficit the chip would otherwise pay
+     it all — the name does not shrink, so every pixel the title gives comes
+     off the chip, and at default width an eighteen-character relation already
+     crushed `base` to a sliver. Across all four panels the chip carries the
+     less redundant fact — mode, origin, status, namespace — while the id
+     repeats the row's subject or a sentence the body says again. */
+  flex: 1 5 40%;
+  /* Never nothing: a zero-width id cannot be hovered, and the hover is the
+     only place the full id is readable. Five characters still say "cut id". */
+  min-width: 5ch;
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: var(--type-body);
+  line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The type chip is the close chip is the table bar's button: `padding: 3px
+   9px`, one label size, one line box. They are the same chip in the same
+   product, and the reader used to size its pair off `--reader-size` — two
+   controls whose geometry depended on how large the subject's name was set. */
+.world-reader__header .node-reader__kind,
+.world-reader__header .panel__close,
+.world-reader__header .panel__back {
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  /* `auto`, against the base chip's `calc(1.25 * var(--reader-size))`. An
+     explicit height is what made these two grow and shrink with the heading;
+     padding and one line box give the same 21px the dock's buttons are. */
+  height: auto;
+  margin: 0;
+  padding: 3px 9px;
+  border: 1px solid var(--rule);
+  background: var(--canvas);
+  color: var(--ink-muted);
+  font-family: var(--font-sans);
+  font-size: var(--type-label);
+  font-weight: var(--weight-regular);
+  letter-spacing: normal;
+  line-height: 1.4;
+  text-transform: lowercase;
+}
+
+/* The title, type, metadata and close control are one sentence-sized row,
+   and this is their give-way order. The id yields first (capped above), then
+   the type chip — it already ellipsizes, so letting it shrink spends a few of
+   its characters before the name loses any of its own. Close never yields: it
+   is the way out of the panel. */
+.world-reader__header .node-reader__kind {
+  flex: 0 1 auto;
+}
+
+.world-reader__header .panel__close,
+.world-reader__header .panel__back {
+  flex: 0 0 auto;
+  align-self: center;
+}
+
+.world-reader__content {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  padding: 0.95rem var(--reader-inset) 1.25rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  font-size: var(--type-subject);
+  line-height: 1.52;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--ink) 30%, transparent) transparent;
+}
+
+.world-reader__description {
+  max-width: 42ch;
+  margin: 0 0 1rem;
+  color: var(--ink);
+  font-size: var(--type-subject);
+  line-height: 1.55;
+}
+
+.world-reader__section {
+  margin-top: 1.3rem;
+}
+
+/* The first thing under the rule starts at the rule. The margin exists to
+   separate one section from the one before it, and the first has none. */
+.world-reader__content > .world-reader__section:first-child {
+  margin-top: 0;
+}
+
+.world-reader__section h3,
+.world-reader__content > h3 {
+  margin: 0 0 0.45rem;
+  color: var(--ink);
+  font-size: var(--type-body);
+  font-weight: var(--weight-emphasis);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.world-reader__section--list {
+  margin-right: calc(-1 * var(--reader-inset));
+  margin-left: calc(-1 * var(--reader-inset));
+}
+
+.world-reader__section--list > h3 {
+  padding: 0 var(--reader-inset);
+}
+
+.world-reader__section--list .gm__list {
+  padding-bottom: 0;
+}
+
+/* One left edge down the whole panel.
+
+   `--reader-inset` is 1.15rem and `.gm__list button` was padded 0.9rem, so the
+   expansion rows started 4px inside every other line in the reader — the roles
+   above them, the section headings, the meta. The rows still bleed to the
+   panel's edges (that is what `--list` negates the inset for, so the hover and
+   the selected bar are full width); only their *text* comes back to the line
+   everything else stands on.
+
+   And a row, not a stack: name left, count right, the way `.world__roles`
+   reads and the way every table in this product reads. Stacked, the count sat
+   under its own name and lined up with nothing. */
+.world-reader__section--list .gm__list button {
+  flex-direction: row;
+  align-items: baseline;
+  gap: 0.8rem;
+  padding: 0.43rem var(--reader-inset);
+}
+
+.world-reader__section--list .gm__list-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.world-reader__section--list .gm__list-meta {
+  flex: 0 0 auto;
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.world-reader__actions {
+  display: flex;
+  flex: 0 0 auto;
+  border-top: 1px solid var(--rule);
+}
+
+.world-reader__actions .node-reader__link {
+  flex: 1 1 0;
+  justify-content: center;
+  width: auto;
+  min-height: 2.65rem;
+  padding: 0 0.8rem;
+  color: var(--ink-muted);
+  text-align: center;
+}
+
+.world-reader__actions .node-reader__link + .node-reader__link {
+  border-left: 1px solid var(--rule);
+}
+
+.world-reader__actions .node-reader__link:hover,
+.world-reader__actions .node-reader__link:focus-visible {
+  background: var(--panel);
+  color: var(--ink);
+}
+
+.world-reader__actions .node-reader__link:focus-visible {
+  outline: 1px solid var(--ink);
+  outline-offset: -3px;
+}
+
+.world__mode,
+.world__note,
+.world__hint {
+  margin: 0 0 8px;
+  color: var(--ink-muted);
+}
+
+.world__facts {
+  margin: 0;
+}
+
+.world__facts > div {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.75rem;
+  padding: 0.28rem 0;
+}
+
+.world__facts dt {
+  color: var(--ink-muted);
+}
+
+.world__facts dd {
+  margin: 0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.world__roles,
+.world__inputs {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.world__roles li {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: 0.8rem;
+  padding: 0.43rem 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.world__roles li b {
+  min-width: 0;
+  font-weight: var(--weight-regular);
+  color: var(--ink-muted);
+  /* Names break like values. Relation and role names are underscored — no
+     break opportunities — so without this a long one holds its track open
+     and prints over the value beside it. */
+  overflow-wrap: anywhere;
+}
+
+.world__roles li span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  text-align: right;
+}
+
+/* A role value naming a disc on the field: the value cell keeps the span's
+   layout, and the name carries the demand rows' "this goes somewhere"
+   signal at rest — dotted and muted, a whisper rather than a hyperlink,
+   because in a grid of identical values a hover-only signal reads as no
+   signal while a full-ink underline outshouts the row rules. The list rows'
+   hover wash stays for the press. */
+.world__roles li button {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  text-align: right;
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-decoration: underline dotted;
+  text-decoration-color: var(--ink-muted);
+  text-underline-offset: 0.18em;
+}
+
+.world__roles li button:hover {
+  background: color-mix(in srgb, var(--ink) 5%, var(--panel));
+}
+
+.world__roles li button:focus-visible {
+  background: color-mix(in srgb, var(--ink) 5%, var(--panel));
+  outline: 2px solid var(--ink);
+  outline-offset: 1px;
+}
+
+.world__inputs li {
+  color: var(--ink-muted);
+}
+
+.world__inputs li {
+  padding: 0.15rem 0;
+}
+
+.world__grounding {
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.world__grounding li {
+  display: flex;
+  flex-direction: column;
+  padding: 0.32rem 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.world__grounding li b {
+  min-width: 0;
+  font-weight: var(--weight-regular);
+  /* Handles carry hashes — `policy.md@sha256:` plus sixty-four hex digits —
+     which would otherwise print past the panel's edge over the canvas. */
+  overflow-wrap: anywhere;
+}
+
+.world__grounding li span {
+  min-width: 0;
+  color: var(--ink-muted);
+  overflow-wrap: anywhere;
+}
+
+.world__notice {
+  margin: 0;
+  padding: 0.55rem var(--reader-inset);
+  border-bottom: 1px solid var(--rule);
+  color: var(--ink-muted);
+  font-size: var(--type-body);
+}
+
+.world__notice:has(.problem-notice) {
+  padding: 0;
+  border-bottom: 0;
+}
+
+.world-reader__demand {
+  display: flex;
+  width: 100%;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin: 1rem 0 0;
+  padding: 0.65rem 0;
+  border: 0;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.world-reader__demand span:last-child {
+  color: var(--ink-muted);
+  font-size: var(--type-body);
+  text-align: right;
+}
+
+.world-reader__demand:hover span:first-child,
+.world-reader__demand:focus-visible span:first-child {
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
+/* A readout, not a control: the count sits in the header and answers nothing.
+   Clearing moved to the relation table that owns what it clears. */
+.product-shell__local.world__occupancy {
+  text-transform: none;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/*
+ * The frame a framed field holds in, as its own cell. Hover says what a
+ * press does in the name's place: the name crossfades to `open` on the
+ * hold plan — the spine's shortest, borrowed from the reader and finder
+ * hovers, which is what a swap tracking the pointer wants. The full label
+ * stays one hover away on `title`, and the swap collapses under reduced
+ * motion like every other borrowed duration.
+ */
+.product-shell__local.world__frame {
+  position: relative;
+  max-width: 12rem;
+  /* The bar cells are grid without a template, so the implicit column sizes
+     to content and overflows the cap above — the track, not the name, held
+     271px. One capped track and the ellipsis below engages. */
+  grid-template-columns: minmax(0, 1fr);
+  text-transform: none;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  /* The hover also lifts the ink: without this the color snaps in one frame
+     while the opacities fade, which reads as the swap glitching. Same
+     borrowed hold as the crossfade below. */
+  transition: color var(--motion-hold-duration, 90ms)
+    var(--motion-hold-curve, linear);
+}
+
+.world__frame-name {
+  display: block;
+  /* A grid item like its cell: the bar centers its cells' contents, which
+     sizes this to content and overflows the track — measured spilling
+     271px from a 192px chip. Stretch into the capped track and the
+     ellipsis below engages. Composited, so the fade below does not repaint
+     thin text every frame — the shimmer that read as the swap flaking. */
+  min-width: 0;
+  justify-self: stretch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  will-change: opacity;
+  transition: opacity var(--motion-hold-duration, 90ms)
+    var(--motion-hold-curve, linear);
+}
+
+.world__frame-open {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  opacity: 0;
+  letter-spacing: 0.01em;
+  will-change: opacity;
+  transition: opacity var(--motion-hold-duration, 90ms)
+    var(--motion-hold-curve, linear);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .world__frame-name,
+  .world__frame-open {
+    transition-duration: 1ms;
+  }
+  .product-shell__local.world__frame {
+    transition-duration: 1ms;
+  }
+}
+
+.world__frame:hover,
+.world__frame:focus-visible {
+  color: var(--ink);
+}
+
+.world__frame:hover .world__frame-name,
+.world__frame:focus-visible .world__frame-name {
+  opacity: 0;
+}
+
+.world__frame:hover .world__frame-open,
+.world__frame:focus-visible .world__frame-open {
+  opacity: 1;
+}
+
+/* Tables overlay: same flush OverlayPanel as Graphs, filled by one table. */
+.world [data-overlay="world-tables"] .ov__body--flush {
+  background: var(--panel);
+}
+
+.world [data-overlay="world-tables"] .table,
+.world [data-overlay="world-tables"] .deriv {
+  height: 100%;
+}
+
+.table {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  font-size: var(--type-body);
+}
+
+/* One row, always.
+
+   Narrow the dock and something has to give: three subjects, the subject's own
+   name, a sentence about it, and up to three actions. What gives is *text*, and
+   it goes by fading out at the edge rather than by wrapping or by stopping at
+   an ellipsis — the reader can see that a word continues past the edge instead
+   of reading a truncation as the whole value. The actions never give: `close`
+   is the way out of a panel, and a panel you cannot leave is worse than one you
+   cannot fully read. */
+.table__bar {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--rule);
+}
+
+/* What the bar says about its subject: the name, then the sentence. One box,
+   given the free space, so the fade at its right edge lands on air when there
+   is room and on text when there is not.
+
+   A mask rather than a gradient painted over the background, because the bar
+   sits on the panel's ground in two themes and a painted fade would have to
+   know which. Masking the text itself is the same instruction in both. */
+.table__said {
+  display: flex;
+  flex: 1 1 0;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  mask-image: linear-gradient(to right, #000 calc(100% - 1.6em), transparent);
+  -webkit-mask-image: linear-gradient(
+    to right,
+    #000 calc(100% - 1.6em),
+    transparent
+  );
+}
+
+.table__said > * {
+  flex: 0 0 auto;
+}
+
+.table__bar h2 { margin: 0; font: inherit; }
+
+.table__bar b, .table__bar h2 {
+  font-weight: var(--weight-emphasis);
+}
+
+/* Last to give way, and it gives way as a group: the buttons keep their own
+   size and the row of them is cut from the right, so `world` and `frontier`
+   stay legible instead of all three collapsing into `w… fr… c…`. Text has
+   already faded away by the time this loses a pixel — `.table__said` takes the
+   free space and gives all of it back first. */
+.table__subjects {
+  display: flex;
+  flex: 0 1 auto;
+  min-width: 0;
+  gap: 6px;
+  overflow: hidden;
+}
+
+.table__subjects button,
+.table__search button {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+/* Second in the box, so it is the half that runs off the edge first — a count
+   and two adjectives about a subject already named beside it. */
+.table__meta {
+  color: var(--ink-muted);
+}
+
+.table__actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.table__bar span {
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.table__bar button,
+.table__search button,
+.table__action {
+  padding: 3px 9px;
+  font: inherit;
+  font-size: var(--type-label);
+  color: var(--ink-muted);
+  background: var(--canvas);
+  border: 1px solid var(--rule);
+  cursor: pointer;
+}
+
+.table__bar button:hover,
+.table__search button:hover,
+.table__action:hover,
+.table__bar button[aria-pressed="true"] {
+  color: var(--ink);
+}
+
+.table__bar button[aria-pressed="true"] {
+  border-color: var(--ink);
+}
+
+.table__head {
+  display: grid;
+  align-items: center;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--rule);
+  font-size: var(--type-label);
+  color: var(--ink-muted);
+}
+
+.table__head button,
+.table__head > span {
+  padding: 6px 8px 6px 0;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.table__head button:hover,
+.table__head button[data-sorted] {
+  color: var(--ink);
+}
+
+.table__scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  /* The scroller owns the scrollbar and nothing inside it moves horizontally,
+     so a windowed row can be positioned against the spacer alone. */
+  overflow-x: hidden;
+}
+
+/* The foot holds the bulk actions — add all and clear on an extension, clear
+   alone on the catalogue — under the same rule the rows sit on. The buttons
+   speak the bar-button language: same padding, same size, same muted ink that
+   darkens on hover, same 0.42 fade when disabled. */
+.table__foot {
+  display: flex;
+  justify-content: flex-start;
+  gap: 6px;
+  padding: 8px 12px;
+  border-top: 1px solid var(--rule);
+}
+
+.table__foot button {
+  padding: 3px 9px;
+  font: inherit;
+  font-size: var(--type-label);
+  color: var(--ink-muted);
+  background: var(--canvas);
+  border: 1px solid var(--rule);
+  cursor: pointer;
+}
+
+.table__foot button:hover:not(:disabled):not([aria-disabled="true"]) {
+  color: var(--ink);
+}
+
+.table__foot button:disabled, .table__foot button[aria-disabled="true"] {
+  opacity: 0.42;
+  cursor: default;
+}
+
+.table__spacer {
+  position: relative;
+}
+
+/* Governed obligations are a plain collection, not a windowed
+   extension: their rows flow in the scroller instead of inheriting
+   the absolute positioning windowed tables supply per-row tops for. */
+.table__scroll--flow .table__row {
+  position: static;
+}
+
+.table__row {
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: grid;
+  align-items: center;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--rule);
+  color: var(--ink);
+}
+
+/* A row whose page has not landed yet is a rule and nothing else — the table's
+   shape is already correct, only its content is outstanding. */
+.table__row:not([data-loaded]) {
+  color: transparent;
+}
+
+.table__row[data-loaded] {
+  cursor: pointer;
+}
+
+.table__row[data-loaded]:hover, .table__data tbody tr:hover {
+  background: var(--canvas);
+}
+
+/* Already on the field. The mark is a rule in the margin rather than a colour,
+   because presence is not a status — the three status colours are the queue's. */
+.table__row[data-present] {
+  box-shadow: inset 3px 0 0 var(--ink);
+}
+
+.table__row span {
+  padding-right: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
+}
+
+.table__origin {
+  color: var(--ink-muted);
+}
+
+.table__stance {
+  color: var(--ink);
+}
+
+.table__problem {
+  margin: 0;
+  padding: 6px 12px;
+  color: var(--ink-muted);
+  border-bottom: 1px solid var(--rule);
+}
+
+/* An obligation this world has since answered. Quieter, not struck through:
+   the frontier is interesting because it moves, so what has moved stays
+   readable — and nothing here is coloured, because unresolved is not a status
+   and absence is not falsehood. */
+.table__row[data-resolved] span {
+  color: var(--ink-muted);
+}
+
+/* What the purpose asked for — relation-level, above the tuple-level rows.
+   Bounded rather than free-growing: the obligations are what the frontier is
+   for, and a long list of requirements must never push them off screen.
+
+   Nothing here is coloured. A met requirement is `--ink-muted` and an unmet one
+   `--ink`, which is the same quiet/full-strength rule the resolved obligations
+   follow — the three status conditions own the provisional palette, and being
+   satisfied is not one of them. */
+/**
+ * The head drops its label treatment before it drops its words.
+ *
+ * `TUPLES` uppercase at 0.1em is half again the width of `tuples`, and in a
+ * 360px dock that difference is the whole reason the headers were reading
+ * `SC…`, `CO…`, `ST…` over columns whose *values* — `world`, `base`, `sem` —
+ * fitted with room to spare. Spacing is the ornament and the word is the
+ * content, so the ornament is what goes: a header that still says `scope` is
+ * worth more than one that says `SC…` in the house style.
+ */
+.table[data-width="narrow"] .table__head {
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.asked {
+  border-bottom: 1px solid var(--rule);
+}
+
+/* The resting line, and the whole of the band until someone opens it. */
+.asked__bar {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 6px 12px 4px;
+  cursor: pointer;
+  list-style: none;
+  font-size: var(--type-label);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.asked__bar::-webkit-details-marker {
+  display: none;
+}
+
+/* The one affordance: the summary answers to the pointer, and the band it
+   opens does not, because it is being read rather than acted on. */
+.asked__bar:hover b,
+.asked[open] .asked__bar b {
+  color: var(--ink);
+}
+
+.asked__bar b {
+  font-weight: inherit;
+  color: var(--ink);
+}
+
+.asked__purpose {
+  margin: 0;
+  padding: 2px 12px 8px;
+  font-size: var(--type-caption);
+  color: var(--ink-muted);
+}
+
+.asked__scroll {
+  max-height: 132px;
+  overflow-y: auto;
+  padding-bottom: 4px;
+}
+
+.asked__row {
+  display: grid;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  min-height: 22px;
+  font-size: var(--type-caption);
+}
+
+.asked__row span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* The constructor's own sentence about why one obligation is unresolved. The
+   only prose on the panel, because it is the only prose that differs between
+   one obligation and the next — the constants that used to sit beside it said
+   the same thing on every question and so said nothing about any of them. */
+.world__reason {
+  margin: 1rem 0 0;
+  color: var(--ink-muted);
+}
+
+/* Satisfied, so quiet — the unmet ones are what a reviewer is here for. */
+.asked__row[data-met] span {
+  color: var(--ink-muted);
+}
+
+/* How many tuples failed it. Tabular so the counts line up as a column of
+   magnitudes rather than as ragged text. */
+.asked__count {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.asked__row[data-met] .asked__count {
+  color: var(--ink-muted);
+}
+
+/* The rule that generated the obligation set, kept at the foot of the list
+   rather than in a tooltip: "why is this being asked of the world at all" is
+   the first question the frontier provokes. */
+.table__rule {
+  margin: 0;
+  padding: 7px 12px;
+  border-top: 1px solid var(--rule);
+  color: var(--ink-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* A relation whose roles moved, so its tuples carry no identity across the two
+   worlds. Not coloured — the provisional palette belongs to the three status
+   conditions, and this is a caveat about how to read a count, not a status. */
+.change__caveat {
+  font-style: normal;
+  color: var(--ink-muted);
+}
+
+.table__bar button[data-active="true"] {
+  color: var(--ink);
+  border-color: var(--ink);
+}
+
+/* -- §8.6 the derivation explorer ----------------------------------------
+   Same overlay as the tables — the left panel answers one question at a
+   time — but it scrolls as a document rather than a window, because a
+   dependency closure is a handful of rows and a run record is four. */
+
+/* A container, not a media query: this panel is a dock a person drags, so what
+   decides the layout is the panel's own width and never the window's. */
+.deriv {
+  container-type: inline-size;
+  container-name: deriv;
+}
+
+.deriv__scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.deriv__columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.deriv__columns > section {
+  min-width: 0;
+  padding: 10px 12px 12px;
+  border-right: 1px solid var(--rule);
+}
+
+.deriv__columns > section:last-child {
+  border-right: none;
+}
+
+/* Two closures side by side stop being readable long before they stop fitting:
+   at half a narrow dock each tree has a few characters for a relation name, and
+   an indent guide that cannot hold its column is worse than no guide. Stacked,
+   they keep full width and the vertical rule becomes a horizontal one. */
+@container deriv (max-width: 30rem) {
+  .deriv__columns {
+    grid-template-columns: 1fr;
+  }
+
+  .deriv__columns > section {
+    border-right: none;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .deriv__columns > section:last-child {
+    border-bottom: none;
+  }
+}
+
+.deriv h3 {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0 0 7px;
+  font-size: var(--type-label);
+  font-weight: var(--weight-regular);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.deriv h3 span {
+  font-size: var(--type-label);
+  letter-spacing: 0;
+  text-transform: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.deriv__tree {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.deriv__tree li {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  line-height: 1.7;
+}
+
+/* The guide is the one thing that must never wrap or shrink — it is what makes
+   the depth readable — so the name is what gives way when the dock narrows. */
+.deriv__tree li > .deriv__rule {
+  flex: none;
+}
+
+.deriv__tree li > button {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.deriv__tree li > .deriv__of {
+  flex: none;
+  white-space: nowrap;
+}
+
+/* The guide characters are the only thing on this surface that has to line up
+   column for column, so they are the only thing set in a monospace. */
+.deriv__rule {
+  font-family: var(--font-mono);
+  font-size: var(--type-label);
+  color: var(--rule-strong, var(--ink-muted));
+  white-space: pre;
+}
+
+.deriv__tree button,
+.deriv__grid button,
+.deriv__input h4 button {
+  padding: 0;
+  font: inherit;
+  text-align: left;
+  justify-self: start;
+  color: var(--ink);
+  background: none;
+  border: none;
+  border-bottom: 1px solid transparent;
+  cursor: pointer;
+}
+
+.deriv__tree button:hover,
+.deriv__grid button:hover,
+.deriv__input h4 button:hover {
+  border-bottom-color: var(--ink);
+}
+
+.deriv__of {
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.deriv__note {
+  margin: 0;
+  padding: 2px 0 0;
+  color: var(--ink-muted);
+  line-height: 1.6;
+  max-width: 62ch;
+}
+
+/* The row is what opens, so the SQL does not claim its height a frame before
+   it is visible. `0fr -> 1fr` needs no measured height and no invented max, and
+   the duration and curve are the spine's — see `check_field_laws.py`. */
+.deriv__disclosure {
+  display: grid;
+  grid-template-rows: 0fr;
+  overflow: hidden;
+  transition: grid-template-rows var(--motion-absorb-duration)
+    var(--motion-absorb-curve);
+}
+
+.deriv__disclosure.is-in {
+  grid-template-rows: 1fr;
+  transition-duration: var(--motion-emit-duration);
+  transition-timing-function: var(--motion-emit-curve);
+}
+
+.deriv__clip {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.deriv__sql {
+  margin: 0;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--rule);
+  background: var(--canvas);
+  font-family: var(--font-mono);
+  font-size: var(--type-label);
+  line-height: 1.6;
+  color: var(--ink);
+  overflow-x: auto;
+}
+
+.deriv__run,
+.deriv__support {
+  padding: 10px 12px 12px;
+  border-top: 1px solid var(--rule);
+}
+
+.deriv__grid {
+  display: grid;
+  /* All four flexible. The two middles were fixed at 120px, which is 240px of
+     the dock plus gaps before a relation name gets any — the run table was the
+     first thing to break when the dock narrowed. `fr` columns are still equal
+     to each other, so the figures stay in their column. */
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  line-height: 2;
+}
+
+.deriv__grid span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The rule belongs to the row, not to the cells. On the cells the 8px grid gap
+   cut it into four floating segments that lined up with nothing — which is the
+   only reason this looked like a broken separator rather than a header. */
+.deriv__grid[data-head="true"] {
+  border-bottom: 1px solid var(--rule);
+}
+
+.deriv__grid[data-head="true"] span {
+  font-size: var(--type-label);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* An input that has moved since the run is the account of the relation's
+   staleness. Weight, not colour: the three colours belong to the queue, and
+   this is a fact about a computation rather than a state to triage. */
+.deriv__grid[data-moved="true"] span:last-child {
+  color: var(--ink);
+  box-shadow: inset 3px 0 0 var(--ink);
+  padding-left: 8px;
+}
+
+.deriv__input {
+  padding: 8px 0 2px;
+}
+
+.deriv__input h4 {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0 0 3px;
+  font-size: var(--type-body);
+  font-weight: var(--weight-emphasis);
+}
+
+.deriv__input h4 span {
+  color: var(--ink-muted);
+  font-weight: var(--weight-regular);
+  font-variant-numeric: tabular-nums;
+}
+
+.deriv__tuple {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  padding: 0 8px;
+  line-height: 1.9;
+  cursor: pointer;
+  border-bottom: 1px solid var(--rule);
+}
+
+.deriv__tuple:hover {
+  background: var(--canvas);
+}
+
+.deriv__tuple[data-present] {
+  box-shadow: inset 3px 0 0 var(--ink);
+}
+
+.deriv__tuple span {
+  font-variant-numeric: tabular-nums;
+}
+
+/* How many of the derived tuple's referents this row mentions — the ranking,
+   and the whole of the claim being made about it. */
+.deriv__mentions {
+  margin-left: auto;
+  color: var(--ink-muted);
+}
+
+.deriv__tuple--head {
+  font-size: var(--type-label);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  cursor: default;
+}
+
+.deriv__tuple--head:hover {
+  background: none;
+}
+
+/*
+ * The change subject — §5's semantic delta, in the TABLES dock.
+ *
+ * Sections rather than a row window: a delta is a handful of short lists, not
+ * an extension, and nothing here pages. Added and removed are carried by the
+ * sign glyph and by order — no colour, because on this surface colour is
+ * status and "removed" is not a fault.
+ */
+.change {
+  overflow-y: auto;
+  padding: 0 var(--world-gutter, 12px) 16px;
+}
+
+.change__section {
+  padding-top: 14px;
+}
+
+/* `--ink` / `--ink-muted`, the same two the rest of this dock reads from.
+   These rules were written against `--gd-ink`, which is not a variable this
+   shell defines — so every one of them fell through to its hard-coded light
+   fallback and the whole subject printed near-black on the dark panel's black
+   ground. A hard-coded fallback is a theme the theme cannot reach. */
+.change__title {
+  margin: 0 0 6px;
+  font-size: var(--type-label);
+  font-weight: var(--weight-strong);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.change__note {
+  margin: 0 0 8px;
+  font-size: var(--type-caption);
+  line-height: var(--lead-caption);
+  color: var(--ink-muted);
+}
+
+.change__line {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 3px 0;
+  font-size: var(--type-caption);
+  color: var(--ink-muted);
+}
+
+.change__line b {
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.change__row {
+  display: grid;
+  grid-template-columns: 14px minmax(0, 1fr) minmax(0, 1.4fr);
+  align-items: baseline;
+  gap: 8px;
+  width: 100%;
+  padding: 3px 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: var(--type-caption);
+  text-align: left;
+  color: var(--ink);
+}
+
+button.change__row {
+  cursor: pointer;
+}
+
+button.change__row:hover .change__name {
+  text-decoration: underline;
+}
+
+/* Removed matter reads quieter, the way the frontier's resolved half does.
+   It is not an error — it is something this world no longer says. */
+.change__row.is-gone {
+  opacity: 0.62;
+}
+
+.change__sign {
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-muted);
+}
+
+.change__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.change__meta {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* §6 — recording a judgment. The one write on this surface, and it is
+   deliberately quiet: no accent, no affirming colour, nothing that reads as
+   the question being closed. Chosen state is a border, because a chosen
+   answer is a structural fact and colour here is for status. */
+.judgment__standing {
+  margin: 0 0 8px;
+  padding: 0;
+  list-style: none;
+}
+
+.judgment__standing li {
+  padding: 4px 0;
+  font-size: var(--type-caption);
+  line-height: var(--lead-caption);
+  color: var(--ink-muted);
+}
+
+.judgment__standing b {
+  margin-right: 8px;
+  color: var(--ink);
+}
+
+.judgment__form {
+  padding-top: 4px;
+}
+
+.judgment__kinds {
+  display: flex;
+  gap: 6px;
+  margin: 0 0 6px;
+  padding: 0;
+  list-style: none;
+}
+
+.judgment__kind {
+  padding: 3px 8px;
+  border: 1px solid color-mix(in srgb, var(--ink) 22%, transparent);
+  border-radius: 3px;
+  background: transparent;
+  color: var(--ink-muted);
+  font: inherit;
+  font-size: var(--type-caption);
+  cursor: pointer;
+}
+
+.judgment__kind.is-chosen {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.judgment__field {
+  display: block;
+  padding-top: 6px;
+}
+
+.judgment__field span {
+  display: block;
+  padding-bottom: 3px;
+  font-size: var(--type-caption);
+  color: var(--ink-muted);
+}
+
+.judgment__field input,
+.judgment__field textarea {
+  width: 100%;
+  padding: 4px 6px;
+  border: 1px solid color-mix(in srgb, var(--ink) 22%, transparent);
+  border-radius: 3px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--type-caption);
+  line-height: var(--lead-caption);
+  resize: vertical;
+}
+
+.judgment__field input:focus,
+.judgment__field textarea:focus {
+  outline: none;
+  border-color: var(--ink);
+}
+
+/* The server's refusal, printed as the server said it. */
+.judgment__problem {
+  margin: 6px 0 0;
+  font-size: var(--type-caption);
+  line-height: var(--lead-caption);
+  color: var(--ink);
+}
+
+.judgment__actions {
+  display: flex;
+  gap: 12px;
+  padding-top: 8px;
+}
+
+/* Table controls stay readable at either dock width. */
+.table__search, .table__filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--rule);
+  flex-shrink: 0;
+}
+.table__search input {
+  flex: 1;
+  min-width: 100px;
+  width: 0;
+  padding: 5px 7px;
+  border: 1px solid var(--rule);
+  background: var(--canvas);
+  color: var(--ink);
+  font: inherit;
+}
+.table__filters select, .table__filters input {
+  font: inherit;
+  color: var(--ink);
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  padding: 4px 6px;
+}
+.table__filters label { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.table__filters > span { color: var(--ink-muted); font-variant-numeric: tabular-nums; }
+.table__empty { margin: 0; padding: 12px; color: var(--ink-muted); }
+.table__search input:focus-visible, .table__search button:focus-visible,
+.table__filters select:focus-visible, .table__row:focus-visible, .table__action:focus-visible, .table__foot button:focus-visible {
+  outline: 1px solid var(--ink);
+  outline-offset: -1px;
+}
+
+.table__scroll:focus-visible {
+  outline: 1px solid var(--ink);
+  outline-offset: -1px;
+}
+
+.table__row[data-placeable="false"] { cursor: default; }
+
+[data-focus-subject]:focus-visible {
+  outline: 1px solid var(--ink);
+  outline-offset: -1px;
+}
+
+/* Optional reading metadata stays behind one disclosure, outside field geometry. */
+.world-reading { padding: 0.4rem 0.7rem; font-size: var(--type-body); flex-shrink: 0; }
+.world-reading summary, .world-attribution summary { cursor: pointer; }
+.world-reading__body {
+  max-height: 50vh;
+  overflow: auto;
+  padding: 0.4rem;
+  background: var(--panel);
+  color: var(--ink);
+  border: 1px solid var(--ink-muted);
+}
+.world-reading__body code, .world-attribution code { overflow-wrap: anywhere; }
+.world-attribution p, .world-reading__body p { margin: 0.65rem 0; }
+.world-attribution ul, .world-reading__body ul { padding-left: 1.2rem; }
+
+/* Reader-declared interpretation: a quiet persistent qualifier in the bar,
+   present only where the World carries the verified external-reader
+   descriptor. It shares the bar's label type and adds no weight of its own. */
+.product-shell__local.world__reading-badge {
+  text-transform: none;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  color: var(--ink-muted);
+}
+
+/* The referent's own source row, above the rule. */
+.world-reader__source .world__grounding {
+  margin: 0;
+}
+
+/* Zero is information about this reading, not a control. */
+.world-reader__absent {
+  margin: 0.55rem 0 0;
+  /* Inside a list section, whose rows run to the panel edge. */
+  padding: 0 var(--reader-inset);
+  font-size: var(--type-body);
+}
+
+/* Occurrences that mention a referent. Each is its own block: a header line
+   that names the occurrence (the way back to it), then the scalar values it
+   states under their role names. */
+.world-occurrences > h3 + .world__note {
+  margin-bottom: 0.6rem;
+}
+
+.world-occurrences__relation {
+  margin-top: 1rem;
+}
+
+.world-occurrences__relation > h4 {
+  margin: 0 0 0.2rem;
+  color: var(--ink);
+  font-size: var(--type-body);
+  font-weight: var(--weight-emphasis);
+  overflow-wrap: anywhere;
+}
+
+.world-occurrences__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.world-occurrence {
+  padding: 0.5rem 0 0.15rem;
+  border-top: 1px solid var(--rule);
+}
+
+.world-occurrence__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.2rem 0.6rem;
+  min-width: 0;
+}
+
+.world-occurrence__id {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  text-decoration: underline dotted;
+  text-decoration-color: var(--ink-muted);
+  text-underline-offset: 0.18em;
+}
+
+.world-occurrence__id:hover {
+  background: color-mix(in srgb, var(--ink) 5%, var(--panel));
+}
+
+.world-occurrence__id:focus-visible {
+  background: color-mix(in srgb, var(--ink) 5%, var(--panel));
+  outline: 2px solid var(--ink);
+  outline-offset: 1px;
+}
+
+.world-occurrence__meta {
+  color: var(--ink-muted);
+  font-size: var(--type-body);
+}
+
+.world-occurrence > .world__roles {
+  margin-top: 0.15rem;
+}
+
+.world-occurrence > .world__roles li:last-child {
+  border-bottom: 0;
+}
+
+/* NULL is a recorded absence, not the word "null". */
+.world-occurrence [data-value-kind="null"] {
+  font-style: italic;
+  color: var(--ink-muted);
+}
+
+/* One short line per panel: where the declared names are printed, they are the
+   reader's. Quiet type, the reader's own inset, no box. */
+.world-reader__qualifier {
+  margin: 0;
+  padding: 0 var(--reader-inset) 0.7rem;
+  color: var(--ink-muted);
+  font-size: var(--type-body);
+}
+
+/* Inside the facts block the inset is already applied. */
+.world-reader__facts .world-reader__qualifier {
+  padding: 0.35rem 0 0;
+}
+
+.world-reading__qualifier {
+  color: var(--ink-muted);
+}
+
+/* A stored scalar that is not ordinary text: NULL, the empty string,
+   whitespace-only text, an unsent value. The marker is set apart by more than
+   colour (italic, and the name above); `role="img"` carries the words. */
+.scalar {
+  font-style: italic;
+  color: var(--ink-muted);
+}
+.scalar[data-scalar-marker="whitespace text"] {
+  white-space: pre;
+}
+.scalar[data-scalar-marker="not supplied"] {
+  font-style: normal;
+  text-decoration: underline dotted;
+}
+.table__row .scalar {
+  padding-right: 0;
+}
+
+/* Native data tables keep table/header/cell semantics and horizontal scrolling.
+   Grid and native rows share ink, rules, hover and selection; only layout differs. */
+.table__row, .table__data tbody tr { color: var(--ink); border-bottom: 1px solid var(--rule); }
+.table__data tbody tr { cursor: pointer; }
+.table__data tbody tr.is-selected { box-shadow: inset 3px 0 0 var(--ink); }
+.table__catalogue .table__row { position: static; width: 100%; height: 26px; grid-template-columns: minmax(0, 1fr) auto; border: 0; border-bottom: 1px solid var(--rule); background: none; font: inherit; text-align: left; }
+.table__catalogue .table__row:hover { background: var(--canvas); }
+.table__catalogue .table__row[aria-pressed="true"] { box-shadow: inset 3px 0 0 var(--ink); }
+.table__catalogue .table__row .table__origin { font-size: var(--type-label); }
+.table__data { border-collapse: collapse; width: max-content; min-width: 100%; font: inherit; }
+.table__data th { position: sticky; top: 0; z-index: 1; background: var(--panel); color: var(--ink-muted); font-size: var(--type-label); font-weight: var(--weight-regular); }
+.table__data th, .table__data td { height: 26px; box-sizing: border-box; padding: 0 8px 0 0; border-bottom: 1px solid var(--rule); text-align: left; vertical-align: middle; }
+.table__data th { height: auto; padding-block: 6px; }
+.table__data th:first-child, .table__data td:first-child { padding-left: 12px; }
+.table__data th:last-child, .table__data td:last-child { padding-right: 12px; }
+.table__data td { max-width: 28ch; min-width: 8ch; overflow-wrap: anywhere; }
+.table__data td:first-child, .table__data th:first-child { min-width: 0; width: 1%; }
+.table__data button[data-row] { padding: 0; border: 0; background: none; color: var(--ink-muted); font: inherit; font-size: var(--type-label); font-variant-numeric: tabular-nums; white-space: nowrap; cursor: pointer; }
+.table__data button[data-row][aria-pressed="true"] { color: var(--ink); }
+.table__data button[data-row]:focus-visible { outline: 1px solid var(--ink); outline-offset: -1px; }
+.table__pager { align-items: center; justify-content: space-between; font-size: var(--type-label); flex-shrink: 0; }
+.table__pager[hidden] { display: none; }
+.table__pager > span { text-align: center; }
+.world-reader__actions:empty { display: none; }
+.world-reader__actions .node-reader__link:disabled { opacity: .42; cursor: default; }
+/* A navigation row inside an inset section returns to the panel's text edge. */
+.node-reader__link--bleed { margin-inline: calc(-1 * var(--reader-inset)); width: calc(100% + 2 * var(--reader-inset)); }

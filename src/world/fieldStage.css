@@ -1,0 +1,18 @@
+/* The stage every field of placed marks is drawn on — World's field, its
+   vocabulary and the captured-source field. */
+.world__stage {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: var(--matter-canvas, var(--canvas));
+  touch-action: none;
+  isolation: isolate;
+}
+
+/* The renderer's own container, so the selection ants can be a sibling over it
+   rather than a child of the element G6 owns. */
+.world__surface {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}

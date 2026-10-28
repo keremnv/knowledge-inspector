@@ -1,0 +1,35 @@
+/* The one close. See `world/panelChrome.tsx` for why it is a chip and not a
+   word: it is the same act on every panel, so it is the same control.
+
+   Sized by its own padding, not by `--reader-size`. Off the reader size it was
+   a different control in each dock — 21px beside the tables and 15px beside
+   the reader, because those two contexts set that variable differently and the
+   chip inherited the difference. The same act is the same size. */
+/* Shared panel controls, used by World and source docks. */
+.panel__close,
+.panel__back {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  padding: 3px 9px;
+  border: 1px solid var(--rule);
+  background: var(--canvas);
+  color: var(--ink-muted);
+  font-family: var(--font-sans);
+  font-size: var(--type-label);
+  font-weight: var(--weight-regular);
+  line-height: 1.4;
+  cursor: pointer;
+  transition:
+    color var(--motion-hold-duration, 90ms) linear,
+    border-color var(--motion-hold-duration, 90ms) linear;
+}
+
+.panel__close:hover,
+.panel__close:focus-visible,
+.panel__back:hover,
+.panel__back:focus-visible {
+  color: var(--ink);
+  border-color: var(--ink);
+}

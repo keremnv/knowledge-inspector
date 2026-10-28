@@ -1,0 +1,404 @@
+
+Running 283 tests using 4 workers
+
+[1/283] tests/source-canvas-live.spec.ts:30:2 › canonical Source lifecycle, picking and fan at 1440, no-preference
+[2/283] tests/source-canvas-live.spec.ts:30:2 › canonical Source lifecycle, picking and fan at 900, reduce
+[3/283] tests/source-canvas-fonts.spec.ts:25:1 › plates drawn in a fallback face are measured again when the web font arrives
+[4/283] tests/source-canvas-live.spec.ts:30:2 › canonical Source lifecycle, picking and fan at 1440, reduce
+[5/283] tests/source-canvas-live.spec.ts:30:2 › canonical Source lifecycle, picking and fan at 900, no-preference
+[6/283] tests/source-canvas-live.spec.ts:71:1 › canonical is the default; readable labels need an explicit display policy
+[7/283] tests/source-canvas-live.spec.ts:81:1 › disposable self/composite/parallel observations retain distinct selectable ownership
+tests/source-canvas-live.spec.ts:81:1 › disposable self/composite/parallel observations retain distinct selectable ownership
+
+
+[8/283] tests/source-canvas-motion.spec.ts:19:3 › wheel interruption, queued hiding and lost drag release: reduce
+tests/source-canvas-motion.spec.ts:19:3 › wheel interruption, queued hiding and lost drag release: reduce
+
+
+[9/283] tests/source-canvas-motion.spec.ts:69:3 › coarse pointer selects a distinct self plate and preserves long exact identity: reduce
+tests/source-canvas-motion.spec.ts:69:3 › coarse pointer selects a distinct self plate and preserves long exact identity: reduce
+
+
+[10/283] tests/source-canvas-motion.spec.ts:101:3 › long crowded labels use hover naming, selection fan and visibility strengths: reduce
+tests/source-canvas-motion.spec.ts:101:3 › long crowded labels use hover naming, selection fan and visibility strengths: reduce
+
+
+[11/283] tests/source-canvas-motion.spec.ts:19:3 › wheel interruption, queued hiding and lost drag release: no-preference
+tests/source-canvas-motion.spec.ts:19:3 › wheel interruption, queued hiding and lost drag release: no-preference
+
+
+[12/283] tests/source-canvas-motion.spec.ts:69:3 › coarse pointer selects a distinct self plate and preserves long exact identity: no-preference
+tests/source-canvas-motion.spec.ts:69:3 › coarse pointer selects a distinct self plate and preserves long exact identity: no-preference
+
+
+[13/283] tests/source-canvas-motion.spec.ts:101:3 › long crowded labels use hover naming, selection fan and visibility strengths: no-preference
+tests/source-canvas-motion.spec.ts:101:3 › long crowded labels use hover naming, selection fan and visibility strengths: no-preference
+
+
+[14/283] tests/source-canvas-parallel.spec.ts:17:5 › canonical count/open/cap and individual ownership: Child, reduce
+tests/source-canvas-parallel.spec.ts:17:5 › canonical count/open/cap and individual ownership: Child, reduce
+
+
+[15/283] tests/source-canvas-parallel.spec.ts:17:5 › canonical count/open/cap and individual ownership: SelfLinks, reduce
+tests/source-canvas-parallel.spec.ts:17:5 › canonical count/open/cap and individual ownership: SelfLinks, reduce
+
+
+[16/283] tests/source-canvas-parallel.spec.ts:17:5 › canonical count/open/cap and individual ownership: Child, no-preference
+tests/source-canvas-parallel.spec.ts:17:5 › canonical count/open/cap and individual ownership: Child, no-preference
+
+
+[17/283] tests/source-canvas-parallel.spec.ts:17:5 › canonical count/open/cap and individual ownership: SelfLinks, no-preference
+tests/source-canvas-parallel.spec.ts:17:5 › canonical count/open/cap and individual ownership: SelfLinks, no-preference
+
+
+[18/283] tests/source-canvas-parity.spec.ts:13:5 › shared canvas UI/geometry contract: 900, light, reduce
+[19/283] tests/source-canvas-parity.spec.ts:13:5 › shared canvas UI/geometry contract: 900, dark, reduce
+[20/283] tests/source-canvas-parity.spec.ts:13:5 › shared canvas UI/geometry contract: 1440, light, reduce
+[21/283] tests/source-canvas-parity.spec.ts:13:5 › shared canvas UI/geometry contract: 1440, dark, reduce
+[22/283] tests/source-canvas-parity.spec.ts:13:5 › shared canvas UI/geometry contract: 900, light, no-preference
+[23/283] tests/source-canvas-parity.spec.ts:13:5 › shared canvas UI/geometry contract: 900, dark, no-preference
+[24/283] tests/source-canvas-parity.spec.ts:13:5 › shared canvas UI/geometry contract: 1440, light, no-preference
+[25/283] tests/source-canvas-parity.spec.ts:13:5 › shared canvas UI/geometry contract: 1440, dark, no-preference
+[26/283] tests/source-canvas-parity.spec.ts:138:3 › a selected plate's box follows its name when hover moves it, and names sit centred: reduce
+[27/283] tests/source-canvas-parity.spec.ts:138:3 › a selected plate's box follows its name when hover moves it, and names sit centred: no-preference
+[28/283] tests/source-errors-mocked.spec.ts:14:1 › a service that stops answering mid-session says so, changes nothing, and can be tried again from the keyboard
+[29/283] tests/source-errors-mocked.spec.ts:39:1 › a server error offers try again; nothing is claimed about the capture
+[30/283] tests/source-errors-mocked.spec.ts:50:1 › a filter over its query budget says how to narrow it, offers no blind retry, and claims no absence
+[31/283] tests/source-errors-mocked.spec.ts:63:1 › a lost context stops every read, clears the canvas, and says what to do by hand
+[32/283] tests/source-errors-mocked.spec.ts:84:1 › an unreachable service at start offers try again, which starts the workspace
+[33/283] tests/source-errors-mocked.spec.ts:95:3 › global find › a search that could not inspect some tables never says nothing matches anywhere
+[34/283] tests/source-errors-mocked.spec.ts:107:3 › global find › a failed find is announced, stays with the find field after its list closes, and can be tried again
+[35/283] tests/source-errors-mocked.spec.ts:132:3 › global find › a continuation that fails keeps what was already found and can be tried again
+[36/283] tests/source-errors-mocked.spec.ts:153:3 › global find › a find answered from another context stops the workspace, as every other read does
+[37/283] tests/source-errors-mocked.spec.ts:162:1 › a reference followed from its value that cannot be placed says so where it was followed, and can be tried again
+[38/283] tests/source-errors-mocked.spec.ts:182:1 › a canvas restore that could not read every record changes nothing, keeps what was remembered, and can be tried again
+[39/283] tests/source-errors-mocked.spec.ts:213:1 › a read that fails while its panel is closed is there, with its recovery, when the panel opens
+[40/283] tests/source-errors-mocked.spec.ts:234:1 › a session description this page cannot read is said, with no retry that could not help
+[41/283] tests/source-field-expansion-model.spec.ts:13:1 › placing many keeps standing marks where they are and places each new record once
+[42/283] tests/source-field-expansion-model.spec.ts:27:1 › an expansion places its parent and members, draws each connection, and notes only what it introduced
+[43/283] tests/source-field-expansion-model.spec.ts:47:1 › taking an expansion back removes only what it introduced and nobody opened or still joins
+[44/283] tests/source-incoming-live.spec.ts:24:3 › referenced by: Album → its Tracks in the Tables dock, same observations, reduce
+[45/283] tests/source-incoming-live.spec.ts:24:3 › referenced by: Album → its Tracks in the Tables dock, same observations, no-preference
+[46/283] tests/source-incoming-live.spec.ts:85:1 › referenced by: exact zero, self-reference and parallel declarations stay distinct
+[47/283] tests/source-incoming-live.spec.ts:124:1 › referenced by: an unavailable count is not zero, and unaddressable rows stay table-only
+tests/source-incoming-live.spec.ts:124:1 › referenced by: an unavailable count is not zero, and unaddressable rows stay table-only
+
+
+[48/283] tests/source-incoming-live.spec.ts:157:1 › referenced by: a failed incoming read leaves the record and its outgoing references
+[49/283] tests/source-live.spec.ts:23:3 › J0: declaration-free Chinook through real HTTP, reduce motion
+[50/283] tests/source-live.spec.ts:23:3 › J0: declaration-free Chinook through real HTTP, no-preference motion
+[51/283] tests/source-live.spec.ts:140:1 › real fixture: empty, keyless, mixed values, generated columns, invalid and unsupported identities, pagination
+tests/source-live.spec.ts:140:1 › real fixture: empty, keyless, mixed values, generated columns, invalid and unsupported identities, pagination
+
+
+[52/283] tests/source-live.spec.ts:187:1 › real fixture: verification budget preserves readable table-window rows
+tests/source-live.spec.ts:187:1 › real fixture: verification budget preserves readable table-window rows
+
+
+[53/283] tests/source-live.spec.ts:198:3 › real HTTP: retire stops reads without a new session or producer fallback
+tests/source-live.spec.ts:198:3 › real HTTP: retire stops reads without a new session or producer fallback
+
+
+[54/283] tests/source-live.spec.ts:198:3 › real HTTP: delete stops reads without a new session or producer fallback
+tests/source-live.spec.ts:198:3 › real HTTP: delete stops reads without a new session or producer fallback
+
+
+[55/283] tests/source-live.spec.ts:198:3 › real HTTP: damage stops reads without a new session or producer fallback
+[56/283] tests/source-live.spec.ts:214:1 › real Chinook view copy stays computed and table-only
+tests/source-live.spec.ts:198:3 › real HTTP: damage stops reads without a new session or producer fallback
+
+
+[57/283] tests/source-live.spec.ts:225:1 › source docks remain usable on a narrow dark desktop
+tests/source-live.spec.ts:225:1 › source docks remain usable on a narrow dark desktop
+
+
+[58/283] tests/source-live.spec.ts:249:3 › real HTTP source transitions never restart outgoing row/record reads (reduce)
+tests/source-live.spec.ts:249:3 › real HTTP source transitions never restart outgoing row/record reads (reduce)
+
+
+[59/283] tests/source-live.spec.ts:249:3 › real HTTP source transitions never restart outgoing row/record reads (no-preference)
+tests/source-live.spec.ts:249:3 › real HTTP source transitions never restart outgoing row/record reads (no-preference)
+
+
+[60/283] tests/source-membership-live.spec.ts:35:3 › visited, shared and reached records stand through hiding and removal (reduce)
+[61/283] tests/source-membership-live.spec.ts:35:3 › visited, shared and reached records stand through hiding and removal (no-preference)
+[62/283] tests/source-membership-live.spec.ts:106:1 › direct placement trial: a reselected row and a reopened endpoint are never duplicated
+[63/283] tests/source-mocked.spec.ts:51:1 › client encodes the fixed context and registered handles exactly once on every read
+[64/283] tests/source-mocked.spec.ts:64:3 › late rows response cannot replace a newer table or row selection
+[65/283] tests/source-mocked.spec.ts:64:3 › late record response cannot replace a newer table or row selection
+[66/283] tests/source-mocked.spec.ts:95:1 › switching table while an exact record is pending clears the previous reader
+[67/283] tests/source-mocked.spec.ts:112:3 › a mismatched response generation stops the workspace
+[68/283] tests/source-mocked.spec.ts:112:3 › a mismatched response session stops the workspace
+[69/283] tests/source-mocked.spec.ts:112:3 › a mismatched response capture_digest stops the workspace
+[70/283] tests/source-mocked.spec.ts:112:3 › a mismatched response source_namespace stops the workspace
+[71/283] tests/source-mocked.spec.ts:112:3 › a mismatched response projection_version stops the workspace
+[72/283] tests/source-mocked.spec.ts:134:3 › bootstrap 410 is explicit and never falls back to World
+[73/283] tests/source-mocked.spec.ts:134:3 › bootstrap 503 is explicit and never falls back to World
+[74/283] tests/source-mocked.spec.ts:134:3 › bootstrap 422 is explicit and never falls back to World
+[75/283] tests/source-mocked.spec.ts:134:3 › bootstrap 500 is explicit and never falls back to World
+[76/283] tests/source-mocked.spec.ts:145:1 › disconnected source and invalid JSON are explicit errors
+[77/283] tests/source-mocked.spec.ts:155:1 › a failed exact-record read shows its error and never the prior record
+[78/283] tests/source-mocked.spec.ts:168:1 › catalogue paging uses schema pages and leaves unknown row counts unknown
+[79/283] tests/source-mocked.spec.ts:185:1 › explicit source startup opens the main URL without any World requests
+[80/283] tests/source-mocked.spec.ts:195:1 › entry choices preserve World-only and original routes
+[81/283] tests/source-mocked.spec.ts:204:1 › an oversized window can be reduced without changing source context
+[82/283] tests/source-mocked.spec.ts:227:1 › the explicit World route does not probe source capability
+[83/283] tests/source-mocked.spec.ts:238:1 › unsupported catalogue metadata remains unavailable rather than an invented negative
+[84/283] tests/source-mocked.spec.ts:254:1 › closing the Reader returns to a visible Tables target even before selection or with Tables closed
+[85/283] tests/source-mocked.spec.ts:269:1 › an exact record payload from another table is refused even with a matching envelope
+[86/283] tests/source-mocked.spec.ts:350:5 › source transitions: reduce › record snapshots retain their own key, exact values, disclosures and viewport without restarting reads
+[87/283] tests/source-mocked.spec.ts:388:5 › source transitions: reduce › table replacement keeps outgoing controls inert and keyboard focus in the live subject
+[88/283] tests/source-mocked.spec.ts:408:5 › source transitions: reduce › rapid record navigation rejects an old response even when fetch ignores cancellation
+[89/283] tests/source-mocked.spec.ts:432:5 › source transitions: reduce › expiry discards live and outgoing source content and never reboots the context
+[90/283] tests/source-mocked.spec.ts:452:5 › source transitions: reduce › duplicate keyless rows remain separate window selections, including after a new window
+[91/283] tests/source-mocked.spec.ts:473:5 › source transitions: reduce › rows retain deliberate stillness while theme and subject transitions use the shared spine
+[92/283] tests/source-mocked.spec.ts:350:5 › source transitions: no-preference › record snapshots retain their own key, exact values, disclosures and viewport without restarting reads
+[93/283] tests/source-mocked.spec.ts:388:5 › source transitions: no-preference › table replacement keeps outgoing controls inert and keyboard focus in the live subject
+[94/283] tests/source-mocked.spec.ts:408:5 › source transitions: no-preference › rapid record navigation rejects an old response even when fetch ignores cancellation
+[95/283] tests/source-mocked.spec.ts:432:5 › source transitions: no-preference › expiry discards live and outgoing source content and never reboots the context
+[96/283] tests/source-mocked.spec.ts:452:5 › source transitions: no-preference › duplicate keyless rows remain separate window selections, including after a new window
+[97/283] tests/source-mocked.spec.ts:473:5 › source transitions: no-preference › rows retain deliberate stillness while theme and subject transitions use the shared spine
+[98/283] tests/source-mocked.spec.ts:499:3 › source transitions: reduce rapid Alpha → Beta → Alpha keeps the latest window
+[99/283] tests/source-mocked.spec.ts:499:3 › source transitions: no-preference rapid Alpha → Beta → Alpha keeps the latest window
+[100/283] tests/source-mocked.spec.ts:528:1 › a row is selected by clicking anywhere on it, but not by finishing a text selection
+[101/283] tests/source-mocked.spec.ts:549:5 › pagination retains keyboard focus through loading and end (reduce)
+[102/283] tests/source-mocked.spec.ts:549:5 › pagination retains keyboard focus through loading and error (reduce)
+[103/283] tests/source-mocked.spec.ts:595:3 › row positions retain native table/button semantics and keyboard operation (reduce)
+[104/283] tests/source-mocked.spec.ts:549:5 › pagination retains keyboard focus through loading and end (no-preference)
+[105/283] tests/source-mocked.spec.ts:549:5 › pagination retains keyboard focus through loading and error (no-preference)
+[106/283] tests/source-mocked.spec.ts:595:3 › row positions retain native table/button semantics and keyboard operation (no-preference)
+[107/283] tests/source-mocked.spec.ts:631:5 › late search cannot replace query with cancellation-resistant transport (reduce)
+[108/283] tests/source-mocked.spec.ts:631:5 › late search cannot replace column with cancellation-resistant transport (reduce)
+[109/283] tests/source-mocked.spec.ts:631:5 › late search cannot replace table with cancellation-resistant transport (reduce)
+[110/283] tests/source-mocked.spec.ts:631:5 › late search cannot replace clear with cancellation-resistant transport (reduce)
+[111/283] tests/source-mocked.spec.ts:631:5 › late search cannot replace query with cancellation-resistant transport (no-preference)
+[112/283] tests/source-mocked.spec.ts:631:5 › late search cannot replace column with cancellation-resistant transport (no-preference)
+[113/283] tests/source-mocked.spec.ts:631:5 › late search cannot replace table with cancellation-resistant transport (no-preference)
+[114/283] tests/source-mocked.spec.ts:631:5 › late search cannot replace clear with cancellation-resistant transport (no-preference)
+[115/283] tests/source-mocked.spec.ts:671:3 › search session is qualified and context failures stop reads
+[116/283] tests/source-mocked.spec.ts:671:3 › search generation is qualified and context failures stop reads
+[117/283] tests/source-mocked.spec.ts:671:3 › search capture_digest is qualified and context failures stop reads
+[118/283] tests/source-mocked.spec.ts:671:3 › search source_namespace is qualified and context failures stop reads
+[119/283] tests/source-mocked.spec.ts:671:3 › search projection_version is qualified and context failures stop reads
+[120/283] tests/source-mocked.spec.ts:671:3 › search expired is qualified and context failures stop reads
+[121/283] tests/source-mocked.spec.ts:671:3 › search budget is qualified and context failures stop reads
+[122/283] tests/source-mocked.spec.ts:695:1 › a pending exact Reader reply cannot survive editing Find
+[123/283] tests/source-mocked.spec.ts:721:3 › editing or clearing Find retains keyboard focus after selecting a result (reduce)
+[124/283] tests/source-mocked.spec.ts:721:3 › editing or clearing Find retains keyboard focus after selecting a result (no-preference)
+[125/283] tests/source-mocked.spec.ts:749:1 › resuming a table preserves its draft and outgoing table stays inert
+[126/283] tests/source-outcomes-live.spec.ts:41:1 › an expansion whose rows cannot be handed out says so in the Reader, with the dock closed
+tests/source-outcomes-live.spec.ts:41:1 › an expansion whose rows cannot be handed out says so in the Reader, with the dock closed
+
+
+[127/283] tests/source-outcomes-live.spec.ts:63:1 › once the session can hand out no more records, a group says so before the click and its rows stay readable
+tests/source-outcomes-live.spec.ts:63:1 › once the session can hand out no more records, a group says so before the click and its rows stay readable
+
+
+[128/283] tests/source-outcomes-live.spec.ts:82:1 › a failure after the first page reports what was placed and why it stopped (partial success)
+tests/source-outcomes-live.spec.ts:82:1 › a failure after the first page reports what was placed and why it stopped (partial success)
+
+
+[129/283] tests/source-outcomes-live.spec.ts:106:1 › stopping a run says it stopped and how much it placed
+tests/source-outcomes-live.spec.ts:106:1 › stopping a run says it stopped and how much it placed
+
+
+[130/283] tests/source-outcomes-live.spec.ts:128:1 › an expansion of records already on the canvas says so
+tests/source-outcomes-live.spec.ts:128:1 › an expansion of records already on the canvas says so
+
+
+[131/283] tests/source-outcomes-live.spec.ts:141:1 › a file with no primary or foreign keys says what that means on its first screen
+tests/source-outcomes-live.spec.ts:141:1 › a file with no primary or foreign keys says what that means on its first screen
+
+
+[132/283] tests/source-outcomes-live.spec.ts:154:1 › a file with keys and references shows no declaration note
+tests/source-outcomes-live.spec.ts:154:1 › a file with keys and references shows no declaration note
+
+
+[133/283] tests/source-outcomes-live.spec.ts:162:1 › an invalid declaration is explained in plain words where it is listed
+tests/source-outcomes-live.spec.ts:162:1 › an invalid declaration is explained in plain words where it is listed
+
+
+[134/283] tests/source-overload-live.spec.ts:34:1 › a spent page budget is named per group, never zero, and every group stays browsable
+[135/283] tests/source-overload-live.spec.ts:57:1 › admission overload is a recoverable busy refusal: the field stays and try again reads once
+[136/283] tests/source-overload-mocked.spec.ts:59:1 › busy codes never stop the context; capture failures still do
+[137/283] tests/source-overload-mocked.spec.ts:71:3 › a 429 source_server_busy keeps the canvas, retries only when asked, then recovers
+tests/source-overload-live.spec.ts:34:1 › a spent page budget is named per group, never zero, and every group stays browsable
+
+
+tests/source-overload-live.spec.ts:57:1 › admission overload is a recoverable busy refusal: the field stays and try again reads once
+
+
+[138/283] tests/source-overload-mocked.spec.ts:71:3 › a 429 source_reader_busy keeps the canvas, retries only when asked, then recovers
+[139/283] tests/source-overload-mocked.spec.ts:71:3 › a 503 source_server_busy keeps the canvas, retries only when asked, then recovers
+[140/283] tests/source-overload-mocked.spec.ts:92:1 › a busy incoming read leaves the record and its other sections, and tries again on request
+[141/283] tests/source-overload-mocked.spec.ts:105:1 › count states are named, never zero, and every verified group stays browsable
+[142/283] tests/source-placement-live.spec.ts:96:3 › J1-A: Evil Walks is placed, inspected and removed back to the quiet field (reduce)
+[143/283] tests/source-placement-live.spec.ts:96:3 › J1-A: Evil Walks is placed, inspected and removed back to the quiet field (no-preference)
+[144/283] tests/source-placement-live.spec.ts:145:3 › J1-B: two records keep separate identities, dragged and standing positions (reduce)
+[145/283] tests/source-placement-live.spec.ts:145:3 › J1-B: two records keep separate identities, dragged and standing positions (no-preference)
+[146/283] tests/source-placement-live.spec.ts:226:1 › J1-C: keyless, invalid-key, budget-exceeded and view rows stay inspectable but are never placeable
+tests/source-placement-live.spec.ts:226:1 › J1-C: keyless, invalid-key, budget-exceeded and view rows stay inspectable but are never placeable
+
+
+[147/283] tests/source-placement-live.spec.ts:257:5 › J1-D: 1440px keeps 320px of agreed canvas
+[148/283] tests/source-placement-live.spec.ts:257:5 › J1-D: 1440px with saved 720px docks keeps 320px of agreed canvas
+[149/283] tests/source-placement-live.spec.ts:257:5 › J1-D: 1000px keeps 320px of agreed canvas
+[150/283] tests/source-placement-live.spec.ts:257:5 › J1-D: 1000px with saved 720px docks keeps 320px of agreed canvas
+[151/283] tests/source-placement-live.spec.ts:257:5 › J1-D: 900px keeps 320px of agreed canvas
+[152/283] tests/source-placement-live.spec.ts:257:5 › J1-D: 900px with saved 720px docks keeps 320px of agreed canvas
+[153/283] tests/source-placement-live.spec.ts:288:1 › J1-D: viewport transitions, keyboard space and the compact single-dock arrangement
+[154/283] tests/source-placement-live.spec.ts:355:1 › J1-F: an expired capture clears the field and the producer is untouched
+[155/283] tests/source-placement-live.spec.ts:374:1 › J1: ordinary and reduced motion come to rest in the same field and camera
+[156/283] tests/source-placement-mocked.spec.ts:72:5 › placement: reduce › show on canvas waits for the verified read and a late earlier reply cannot be placed
+[157/283] tests/source-placement-mocked.spec.ts:101:5 › placement: reduce › distinct handles with identical key text stay distinct, and Show again adds nothing
+[158/283] tests/source-placement-mocked.spec.ts:119:5 › placement: reduce › keyboard places, inspects and removes, and focus stays on live controls
+[159/283] tests/source-placement-mocked.spec.ts:162:7 › placement: reduce › loading reference pager recovers focus without stealing later navigation: pager
+[160/283] tests/source-placement-mocked.spec.ts:162:7 › placement: reduce › loading reference pager recovers focus without stealing later navigation: close
+[161/283] tests/source-placement-mocked.spec.ts:162:7 › placement: reduce › loading reference pager recovers focus without stealing later navigation: tables
+[162/283] tests/source-placement-mocked.spec.ts:216:5 › placement: reduce › rapid placement, removal and selection leave no ghost marks
+[163/283] tests/source-placement-mocked.spec.ts:235:5 › placement: reduce › keyless window rows and computed view output offer no placement
+[164/283] tests/source-placement-mocked.spec.ts:72:5 › placement: no-preference › show on canvas waits for the verified read and a late earlier reply cannot be placed
+[165/283] tests/source-placement-mocked.spec.ts:101:5 › placement: no-preference › distinct handles with identical key text stay distinct, and Show again adds nothing
+[166/283] tests/source-placement-mocked.spec.ts:119:5 › placement: no-preference › keyboard places, inspects and removes, and focus stays on live controls
+[167/283] tests/source-placement-mocked.spec.ts:162:7 › placement: no-preference › loading reference pager recovers focus without stealing later navigation: pager
+[168/283] tests/source-placement-mocked.spec.ts:162:7 › placement: no-preference › loading reference pager recovers focus without stealing later navigation: close
+[169/283] tests/source-placement-mocked.spec.ts:162:7 › placement: no-preference › loading reference pager recovers focus without stealing later navigation: tables
+[170/283] tests/source-placement-mocked.spec.ts:216:5 › placement: no-preference › rapid placement, removal and selection leave no ghost marks
+[171/283] tests/source-placement-mocked.spec.ts:235:5 › placement: no-preference › keyless window rows and computed view output offer no placement
+[172/283] tests/source-placement-mocked.spec.ts:249:1 › a record grounded in another generation stops reads and is never placeable
+[173/283] tests/source-placement-mocked.spec.ts:264:3 › a 410 after placement clears the field at once, with no outgoing marks
+[174/283] tests/source-placement-mocked.spec.ts:264:3 › a 409 after placement clears the field at once, with no outgoing marks
+[175/283] tests/source-placement-mocked.spec.ts:264:3 › a 503 after placement clears the field at once, with no outgoing marks
+[176/283] tests/source-placement-mocked.spec.ts:286:1 › narrowing into the compact arrangement keeps the dock and control that hold focus
+[177/283] tests/source-presence-live.spec.ts:15:1 › a placed record's row carries the margin rule; numbers are gone; selection is a tint
+[178/283] tests/source-presence-live.spec.ts:39:1 › a catalogue table carries the rule only while every one of its rows is placed
+[179/283] tests/source-record-name.spec.ts:8:1 › O17 a record called by its key: Track 8; a TEXT key quoted; composite keys keep their column names
+[180/283] tests/source-record-name.spec.ts:15:1 › O17 a record named by its table's chosen column, exactly as recorded, or by its key
+[181/283] tests/source-reference-model.spec.ts:12:1 › hiding a connection hides only it: shared and parallel endpoints stay where they stand
+[182/283] tests/source-reference-model.spec.ts:33:1 › removing a record takes it and its incident connections, and no other record
+[183/283] tests/source-reference-model.spec.ts:49:1 › previously visited endpoints keep their mark, position and depth through show, hide and removal
+[184/283] tests/source-reference-model.spec.ts:65:1 › showing or reopening a standing record never duplicates or moves it, and removed ids are never reused
+[185/283] tests/source-reference-model.spec.ts:80:1 › new endpoints anchor at the actual dragged record and all standing positions/depth remain fixed
+[186/283] tests/source-reference-model.spec.ts:91:1 › self references and cycles never recurse or duplicate records
+[187/283] tests/source-reference-model.spec.ts:103:3 › resolved_unaddressable can never contribute endpoints or a filament
+[188/283] tests/source-reference-model.spec.ts:103:3 › null_reference can never contribute endpoints or a filament
+[189/283] tests/source-reference-model.spec.ts:103:3 › dangling can never contribute endpoints or a filament
+[190/283] tests/source-reference-model.spec.ts:103:3 › ambiguous can never contribute endpoints or a filament
+[191/283] tests/source-reference-model.spec.ts:103:3 › invalid_declaration can never contribute endpoints or a filament
+[192/283] tests/source-reference-model.spec.ts:103:3 › unsupported can never contribute endpoints or a filament
+[193/283] tests/source-reference-model.spec.ts:103:3 › budget_exceeded can never contribute endpoints or a filament
+[194/283] tests/source-reference-model.spec.ts:110:3 › placement refuses mismatched context
+[195/283] tests/source-reference-model.spec.ts:110:3 › placement refuses mismatched child
+[196/283] tests/source-reference-model.spec.ts:110:3 › placement refuses mismatched parent
+[197/283] tests/source-reference-model.spec.ts:110:3 › placement refuses mismatched grounding
+[198/283] tests/source-reference-model.spec.ts:110:3 › placement refuses mismatched declaration
+[199/283] tests/source-reference-model.spec.ts:110:3 › placement refuses mismatched identity
+[200/283] tests/source-reference-model.spec.ts:121:1 › a missing child anchors at an existing parent and a reused observation ID cannot change its target
+[201/283] tests/source-references-live.spec.ts:38:3 › J2-A/B/F/G real Chinook Track references, reduce
+[202/283] tests/source-references-live.spec.ts:133:3 › J2-C real Chinook junction remains a record, reduce
+[203/283] tests/source-references-live.spec.ts:38:3 › J2-A/B/F/G real Chinook Track references, no-preference
+[204/283] tests/source-references-live.spec.ts:133:3 › J2-C real Chinook junction remains a record, no-preference
+[205/283] tests/source-references-live.spec.ts:172:1 › J2-D real HTTP shared parent and parallel observations hide independently, and their records stand (reduce)
+tests/source-references-live.spec.ts:172:1 › J2-D real HTTP shared parent and parallel observations hide independently, and their records stand (reduce)
+
+
+[206/283] tests/source-references-live.spec.ts:172:1 › J2-D real HTTP shared parent and parallel observations hide independently, and their records stand (no-preference)
+tests/source-references-live.spec.ts:172:1 › J2-D real HTTP shared parent and parallel observations hide independently, and their records stand (no-preference)
+
+
+[207/283] tests/source-references-live.spec.ts:214:1 › J2-E real HTTP nullable composite, dangling, invalid, unsupported and unaddressable evidence
+tests/source-references-live.spec.ts:214:1 › J2-E real HTTP nullable composite, dangling, invalid, unsupported and unaddressable evidence
+
+
+[208/283] tests/source-references-mocked.spec.ts:42:5 › FK request ownership reduce › paging preserves constraint totals, fetches only requested pages, and zero is quiet
+[209/283] tests/source-references-mocked.spec.ts:60:5 › FK request ownership reduce › all eight statuses retain child values and only resolved addressable evidence offers placement
+[210/283] tests/source-references-mocked.spec.ts:77:7 › FK request ownership reduce › late cancellation-resistant references cannot replace the current Reader or grow the field
+[211/283] tests/source-references-mocked.spec.ts:77:7 › FK request ownership reduce › late cancellation-resistant reference cannot replace the current Reader or grow the field
+[212/283] tests/source-references-mocked.spec.ts:77:7 › FK request ownership reduce › late cancellation-resistant parent cannot replace the current Reader or grow the field
+[213/283] tests/source-references-mocked.spec.ts:101:5 › FK request ownership reduce › hiding during a pending repeat cannot be undone by a late parent read
+[214/283] tests/source-references-mocked.spec.ts:122:7 › FK request ownership reduce › cancel while a new connection's parent read ignores cancellation cannot place anything later
+[215/283] tests/source-references-mocked.spec.ts:122:7 › FK request ownership reduce › remove while a new connection's parent read ignores cancellation cannot place anything later
+[216/283] tests/source-references-mocked.spec.ts:147:5 › FK request ownership reduce › canvas observation placement waits for its exact child record read
+[217/283] tests/source-references-mocked.spec.ts:169:5 › FK request ownership reduce › failed parent read is visible and retains the existing investigation
+[218/283] tests/source-references-mocked.spec.ts:42:5 › FK request ownership no-preference › paging preserves constraint totals, fetches only requested pages, and zero is quiet
+[219/283] tests/source-references-mocked.spec.ts:60:5 › FK request ownership no-preference › all eight statuses retain child values and only resolved addressable evidence offers placement
+[220/283] tests/source-references-mocked.spec.ts:77:7 › FK request ownership no-preference › late cancellation-resistant references cannot replace the current Reader or grow the field
+[221/283] tests/source-references-mocked.spec.ts:77:7 › FK request ownership no-preference › late cancellation-resistant reference cannot replace the current Reader or grow the field
+[222/283] tests/source-references-mocked.spec.ts:77:7 › FK request ownership no-preference › late cancellation-resistant parent cannot replace the current Reader or grow the field
+[223/283] tests/source-references-mocked.spec.ts:101:5 › FK request ownership no-preference › hiding during a pending repeat cannot be undone by a late parent read
+[224/283] tests/source-references-mocked.spec.ts:122:7 › FK request ownership no-preference › cancel while a new connection's parent read ignores cancellation cannot place anything later
+[225/283] tests/source-references-mocked.spec.ts:122:7 › FK request ownership no-preference › remove while a new connection's parent read ignores cancellation cannot place anything later
+[226/283] tests/source-references-mocked.spec.ts:147:5 › FK request ownership no-preference › canvas observation placement waits for its exact child record read
+[227/283] tests/source-references-mocked.spec.ts:169:5 › FK request ownership no-preference › failed parent read is visible and retains the existing investigation
+[228/283] tests/source-references-mocked.spec.ts:184:3 › exact observation refuses session mismatch and clears standing material
+[229/283] tests/source-references-mocked.spec.ts:184:3 › exact observation refuses generation mismatch and clears standing material
+[230/283] tests/source-references-mocked.spec.ts:184:3 › exact observation refuses source_namespace mismatch and clears standing material
+[231/283] tests/source-references-mocked.spec.ts:184:3 › exact observation refuses capture_digest mismatch and clears standing material
+[232/283] tests/source-references-mocked.spec.ts:184:3 › exact observation refuses capture_version mismatch and clears standing material
+[233/283] tests/source-references-mocked.spec.ts:184:3 › exact observation refuses projection_version mismatch and clears standing material
+[234/283] tests/source-references-mocked.spec.ts:184:3 › exact observation refuses captured_at mismatch and clears standing material
+[235/283] tests/source-references-mocked.spec.ts:184:3 › exact observation refuses time_basis mismatch and clears standing material
+[236/283] tests/source-references-mocked.spec.ts:184:3 › exact observation refuses sqlite_version mismatch and clears standing material
+[237/283] tests/source-references-mocked.spec.ts:184:3 › exact observation refuses child mismatch and clears standing material
+[238/283] tests/source-references-mocked.spec.ts:184:3 › exact observation refuses declaration mismatch and clears standing material
+[239/283] tests/source-references-mocked.spec.ts:184:3 › exact observation refuses observation mismatch and clears standing material
+[240/283] tests/source-references-mocked.spec.ts:184:3 › exact observation refuses grounding mismatch and clears standing material
+[241/283] tests/source-references-mocked.spec.ts:202:1 › placed records carry no status line under their Reader actions
+[242/283] tests/source-references-mocked.spec.ts:215:3 › direct placement, the default (O1) › selecting a row places it and inspecting a resolved reference shows it
+[243/283] tests/source-references-mocked.spec.ts:233:3 › direct placement, the default (O1) › ?placement=explicit turns it off
+[244/283] tests/source-references-mocked.spec.ts:243:3 › individual canvas membership › hiding a connection keeps both records, reads nothing and can be shown again unchanged
+[245/283] tests/source-references-mocked.spec.ts:268:3 › individual canvas membership › removing a shared parent or one child removes only that record and its connections
+[246/283] tests/source-references-mocked.spec.ts:289:3 › individual canvas membership › a previously visited endpoint keeps its mark, and closing the Reader removes nothing
+[247/283] tests/source-schema-field.spec.ts:12:1 › the schema field is every table and each declaration whose parent table is in the capture
+[248/283] tests/source-search-live.spec.ts:26:3 › Find Chinook name, exact keys, Reader and browse restoration (reduce)
+[249/283] tests/source-search-live.spec.ts:26:3 › Find Chinook name, exact keys, Reader and browse restoration (no-preference)
+[250/283] tests/source-search-live.spec.ts:91:1 › real search retains duplicate and mixed rows, local view identities and truthful budget failure
+tests/source-search-live.spec.ts:91:1 › real search retains duplicate and mixed rows, local view identities and truthful budget failure
+
+
+[251/283] tests/source-session-memory.spec.ts:12:1 › Source removes only its obsolete exploration entries at this origin, and keeps new state in this tab
+[252/283] tests/source-session-memory.spec.ts:41:1 › the schema camera restores its zoom and centre on refresh from sessionStorage
+[253/283] tests/source-truthfulness-live.spec.ts:158:1 › I1: records placed separately stay unconnected, and nothing says their references are absent
+[254/283] tests/source-truthfulness-live.spec.ts:68:1 › I2: a line passing beneath an unrelated answer is drawn through it, and its selected ends are named
+[255/283] tests/source-truthfulness-live.spec.ts:191:1 › Chinook: placing, following and hiding are unchanged; a connection is named by its ends; nothing crosses, nothing is marked
+[256/283] tests/source-ux-live.spec.ts:23:5 › simple investigation, Back and independent retention at 1440px (reduce)
+[257/283] tests/source-ux-live.spec.ts:23:5 › simple investigation, Back and independent retention at 1000px (reduce)
+[258/283] tests/source-ux-live.spec.ts:23:5 › simple investigation, Back and independent retention at 900px (reduce)
+[259/283] tests/source-ux-live.spec.ts:23:5 › simple investigation, Back and independent retention at 1440px (no-preference)
+[260/283] tests/source-ux-live.spec.ts:23:5 › simple investigation, Back and independent retention at 1000px (no-preference)
+[261/283] tests/source-ux-live.spec.ts:23:5 › simple investigation, Back and independent retention at 900px (no-preference)
+[262/283] tests/source-ux-live.spec.ts:106:3 › exceptional rows and dangling references stay explicit at 1440px
+tests/source-ux-live.spec.ts:106:3 › exceptional rows and dangling references stay explicit at 1440px
+
+
+[263/283] tests/source-ux-live.spec.ts:106:3 › exceptional rows and dangling references stay explicit at 1000px
+tests/source-ux-live.spec.ts:106:3 › exceptional rows and dangling references stay explicit at 1000px
+
+
+[264/283] tests/source-ux-live.spec.ts:106:3 › exceptional rows and dangling references stay explicit at 900px
+tests/source-ux-live.spec.ts:106:3 › exceptional rows and dangling references stay explicit at 900px
+
+
+[265/283] tests/source-ux-live.spec.ts:157:3 › compact catalogue travel and resume keep live focus (reduce)
+[266/283] tests/source-ux-live.spec.ts:157:3 › compact catalogue travel and resume keep live focus (no-preference)
+[267/283] tests/source-world-features-live.spec.ts:25:1 › O8.1 Delete removes the selected record, Backspace hides a selected connection, never while typing
+[268/283] tests/source-world-features-live.spec.ts:43:1 › O8.3 clear takes everything off and ids keep counting
+[269/283] tests/source-world-features-live.spec.ts:65:1 › O8.4 right-click takes a marked row, or every row of a table, off the canvas
+[270/283] tests/source-world-features-live.spec.ts:84:1 › O8.7 on this disc is paused by the owner: not shown, though the record has connections
+[271/283] tests/source-world-features-live.spec.ts:94:1 › O14 a foreign-key value reaches its record, World's dotted value; the references wait behind a disclosure; find has one frame
+[272/283] tests/source-world-features-live.spec.ts:134:1 › O8.2 separate pushes apart only what overlaps, and undo puts it back until something else moves
+[273/283] tests/source-world-features-live.spec.ts:171:1 › O8.6 headers sort by the database, cycle ascending, descending, off, and unsort resets
+[274/283] tests/source-world-features-live.spec.ts:191:1 › O8.5 add all places the rows on the page shown and no more, clear takes the table off
+[275/283] tests/source-world-features-live.spec.ts:227:1 › O8.9 expand through places a group with its connections, take off takes back only what it introduced
+[276/283] tests/source-world-features-live.spec.ts:260:1 › O8.6 the catalogue searches by name and filters by placement; add all is offered only where rows can be placed
+tests/source-world-features-live.spec.ts:260:1 › O8.6 the catalogue searches by name and filters by placement; add all is offered only where rows can be placed
+
+
+[277/283] tests/source-world-features-live.spec.ts:293:1 › O8.8 the canvas and camera come back for the same capture, re-verified, and losses are said
+[278/283] tests/source-world-features-live.spec.ts:339:1 › O8.11/O10/O11 find asks as you type, lists tables then records ignoring case, opens either, and continues
+[279/283] tests/source-world-features-live.spec.ts:373:1 › O8.10 the filter hides connections or a table's records from the drawing only, and is kept
+[280/283] tests/source-world-features-live.spec.ts:404:1 › O8.12 the schema is the empty canvas's screen, as World's vocabulary: every table and declared FK, a chosen table opens
+[281/283] tests/source-world-features-live.spec.ts:452:1 › O12 the schema looks like World's: a fixed alphabetical ring, fitted, inverted, names on until World's toggle turns them off
+[282/283] tests/source-world-features-live.spec.ts:507:1 › O11 the table filter ignores case by default, and precise lookup can match it
+[283/283] tests/source-world-features-live.spec.ts:527:1 › O17 a record is named by the column its table's header names it by, or by its key as Track 1; the Reader keeps the exact key
+  283 passed (5.1m)

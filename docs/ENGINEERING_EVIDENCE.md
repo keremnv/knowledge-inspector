@@ -1,0 +1,9 @@
+# Engineering evidence
+
+The application opens a read-only SQLite capture, validates row identity before issuing handles, and bounds SQLite work. Canvas membership and references are application state; G6 provides rendering and interaction primitives. The tests in `adapters/source/` and `tests/source-*.spec.ts` exercise these boundaries.
+
+A recorded Source browser test run reported 283 passed; most browser tests ran against the development frontend. The [sanitized test log](evidence/source-browser.txt) preserves the result. An installed-wheel end-to-end test and the Python artifact checks cover packaging separately; see [build and develop](BUILD_AND_DEVELOPMENT.md).
+
+An earlier identity-handling comparison on a 91,966-row Stack Exchange table recorded 52.4 MB before and 0.8 MB after verification with Python `tracemalloc`. These are retained traced allocations, not process RSS. The [raw results](evidence/memory.jsonl) and [measurement script](evidence/measure_memory.py) are retained. The [baseline implementation](evidence/baseline_model.py) is included for comparison. Run the measurement script once with `--reader docs.evidence.baseline_model:SourceReader` and once without `--reader` against the same supplied database. The original Stack Exchange dataset is not included; reproducing the exact numbers requires that dataset and the recorded environment.
+
+The incoming-reference suite passes on the tested SQLite 3.51.1 and 3.53.1 builds. A version-aware FK oracle replaced a fixed REAL-to-TEXT assumption, and the sparse-page test uses a bounded budget that accommodates both query plans. Lower budgets still return an explicit budget error. See the [reproducer and diagnosis](SQLITE_COMPATIBILITY.md). Linux was tested; macOS and Windows have not been validated. Dense canvas arrangements can obscure labels and incur long tasks.

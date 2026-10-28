@@ -1,0 +1,124 @@
+/* Isolated structural route; no selectors from the snapshot explorer are modified. */
+.ki-sqlite-page {
+  min-height: 100vh;
+  background: var(--canvas, #f6f6f3);
+  color: var(--ink, #171918);
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: 14px;
+}
+.ki-sqlite-page *, .ki-sqlite-page *::before { box-sizing: border-box; }
+.ki-sqlite-header {
+  display: flex; align-items: end; justify-content: space-between;
+  gap: 24px; padding: 30px 34px 25px;
+  border-bottom: 1px solid var(--rule, #dadbd5);
+}
+.ki-sqlite-kicker {
+  font-size: 10px; font-weight: 700; letter-spacing: .12em;
+  color: var(--ink-muted, #6d716d);
+}
+.ki-sqlite-header h1 {
+  margin: 7px 0; font-size: 29px; font-weight: 500; letter-spacing: -.035em;
+}
+.ki-sqlite-header p { margin: 0; color: var(--ink-muted, #555b56); }
+.ki-sqlite-back {
+  padding: 8px 12px; border: 1px solid var(--ink-muted, #a8aba5);
+  color: inherit; text-decoration: none; white-space: nowrap;
+}
+.ki-sqlite-origin {
+  display: flex; flex-wrap: wrap; gap: 16px;
+  padding: 11px 34px; border-bottom: 1px solid var(--rule, #dadbd5);
+  color: var(--ink-muted, #555b56); font-size: 12px;
+}
+.ki-sqlite-origin code { font: inherit; font-family: var(--font-mono, monospace); }
+.ki-sqlite-body {
+  display: grid; grid-template-columns: 290px minmax(0, 1fr); min-height: 75vh;
+}
+.ki-sqlite-sidebar {
+  border-right: 1px solid var(--rule, #dadbd5); padding: 25px 18px;
+}
+.ki-sqlite-sidebar label { display: block; font-size: 12px; margin-bottom: 8px; }
+.ki-sqlite-sidebar input {
+  background: var(--canvas, #fff); border: 1px solid var(--rule, #c6cac3);
+  padding: 9px 11px; width: 100%; margin-bottom: 18px; color: inherit;
+}
+.ki-sqlite-sidebar nav {
+  display: flex; flex-direction: column; max-height: 75vh; overflow: auto;
+}
+.ki-sqlite-sidebar nav button {
+  text-align: left; border: 0; border-bottom: 1px solid var(--rule, #e3e5df);
+  color: inherit; background: transparent; padding: 11px 9px; cursor: pointer;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 4px;
+  overflow-wrap: anywhere;
+}
+.ki-sqlite-sidebar nav button small {
+  color: var(--ink-muted, #6d716d); font-size: 11px;
+}
+.ki-sqlite-sidebar nav button.is-selected {
+  background: var(--panel, #e5e8e1); font-weight: 600;
+}
+.ki-sqlite-sidebar nav button:hover { background: var(--panel, #edeee9); }
+.ki-sqlite-main { padding: 28px 32px; min-width: 0; }
+.ki-sqlite-panel-heading {
+  display: flex; justify-content: space-between; align-items: end; gap: 10px;
+}
+.ki-sqlite-panel-heading h2 {
+  font-size: 26px; font-weight: 500; letter-spacing: -.03em;
+  margin: 6px 0; overflow-wrap: anywhere;
+}
+.ki-sqlite-structure {
+  display: flex; flex-wrap: wrap; gap: 20px; margin: 16px 0;
+  color: var(--ink-muted, #555b56);
+}
+.ki-sqlite-structure > div { display: flex; flex-direction: column; gap: 5px; }
+.ki-sqlite-structure strong {
+  text-transform: uppercase; letter-spacing: .08em; font-size: 10px;
+  color: var(--ink-muted, #6d716d);
+}
+.ki-sqlite-fk { display: block; font-family: var(--font-mono, monospace); font-size: 11px; }
+button.ki-sqlite-fk {
+  background: none; border: 0; padding: 0;
+  color: inherit; text-align: left; cursor: pointer;
+}
+.ki-sqlite-fk.is-link { text-decoration: underline; text-underline-offset: 2px; }
+.ki-sqlite-identity {
+  background: var(--panel, #edeee9); padding: 12px; margin: 20px 0 12px; font-size: 12px;
+}
+.ki-sqlite-scroll {
+  width: 100%; overflow: auto; border: 1px solid var(--rule, #dadbd5);
+  background: var(--canvas, #fff); max-height: 65vh;
+}
+.ki-sqlite-scroll table { border-collapse: collapse; width: 100%; font-size: 12px; }
+.ki-sqlite-scroll th, .ki-sqlite-scroll td {
+  text-align: left; padding: 10px 12px;
+  border-right: 1px solid var(--rule, #ebeee9);
+  border-bottom: 1px solid var(--rule, #ebeee9);
+  min-width: 95px; max-width: 350px; overflow-wrap: anywhere;
+}
+.ki-sqlite-scroll th {
+  white-space: nowrap; position: sticky; top: 0;
+  background: var(--panel, #ebeee9); font-weight: 600;
+}
+.ki-sqlite-scroll td.is-null {
+  color: var(--ink-muted, #979d98); font-style: italic;
+}
+.ki-sqlite-pager {
+  display: flex; align-items: center; justify-content: space-between; margin-top: 13px;
+}
+.ki-sqlite-pager button {
+  background: var(--canvas, #fff); border: 1px solid var(--rule, #c5c9c2);
+  padding: 7px 11px; margin-left: 8px; color: inherit; cursor: pointer;
+}
+.ki-sqlite-pager button:disabled { opacity: .4; cursor: default; }
+.ki-sqlite-error { color: #a61d24; padding: 15px 32px; }
+.ki-sqlite-panel-heading h2:focus-visible {
+  outline: 1px solid var(--ink, #202020);
+  outline-offset: 2px;
+}
+@media (max-width: 760px) {
+  .ki-sqlite-body { grid-template-columns: minmax(0, 1fr); }
+  .ki-sqlite-sidebar { border-right: 0; border-bottom: 1px solid var(--rule, #dadbd5); }
+  .ki-sqlite-sidebar nav { flex-direction: row; gap: 8px; }
+  .ki-sqlite-header { padding: 20px; }
+  .ki-sqlite-main { padding: 20px; }
+  .ki-sqlite-origin { padding: 10px 20px; }
+}

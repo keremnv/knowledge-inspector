@@ -1,0 +1,709 @@
+{
+  "method": "Rollup production module IDs and asset source names; includes Vite modulepreload helper. Embedded vendored code versions cannot be assumed equal to installed package versions.",
+  "packages": [
+    {
+      "package": "@antv/algorithm",
+      "installed_version": "0.1.26",
+      "declared_license": "MIT",
+      "usage": {
+        "root": true,
+        "vendor": false,
+        "assets": false
+      },
+      "notice_files": [],
+      "status": "package omits licence text"
+    },
+    {
+      "package": "@antv/component",
+      "installed_version": "2.1.11",
+      "declared_license": "MIT",
+      "usage": {
+        "root": true,
+        "vendor": false,
+        "assets": false
+      },
+      "notice_files": [
+        "_antv_component-2.1.11-LICENSE.txt"
+      ],
+      "status": "license text copied"
+    },
+    {
+      "package": "@antv/event-emitter",
+      "installed_version": "0.1.3",
+      "declared_license": "MIT",
+      "usage": {
+        "root": true,
+        "vendor": true,
+        "assets": false
+      },
+      "notice_files": [],
+      "status": "vendor embedded version unverified"
+    },
+    {
+      "package": "@antv/expr",
+      "installed_version": "1.0.2",
+      "declared_license": "MIT",
+      "usage": {
+        "root": false,
+        "vendor": true,
+        "assets": false
+      },
+      "notice_files": [
+        "_antv_expr-1.0.2-LICENSE.txt"
+      ],
+      "status": "vendor embedded version unverified"
+    },
+    {
+      "package": "@antv/g",
+      "installed_version": "6.3.1",
+      "declared_license": "MIT",
+      "usage": {
+        "root": true,
+        "vendor": false,
+        "assets": false
+      },
+      "notice_files": [
+        "_antv_g-6.3.1-LICENSE.txt"
+      ],
+      "status": "license text copied"
+    },
+    {
+      "package": "@antv/g-canvas",
+      "installed_version": "2.2.0",
+      "declared_license": "MIT",
+      "usage": {
+        "root": true,
+        "vendor": false,
+        "assets": false
+      },
+      "notice_files": [
+        "_antv_g-canvas-2.2.0-LICENSE.txt"
+      ],
+      "status": "license text copied"
+    },
+    {
+      "package": "@antv/g-lite",
+      "installed_version": "2.7.0",
+      "declared_license": "MIT",
+      "usage": {
+        "root": true,
+        "vendor": false,
+        "assets": false
+      },
+      "notice_files": [],
+      "status": "package omits licence text"
+    },
+    {
+      "package": "@antv/g-math",
+      "installed_version": "3.1.0",
+      "declared_license": "MIT",
+      "usage": {
+        "root": true,
+        "vendor": false,
+        "assets": false
+      },
+      "notice_files": [
+        "_antv_g-math-3.1.0-LICENSE.txt"
+      ],
+      "status": "license text copied"
+    },
+    {
+      "package": "@antv/g-plugin-dragndrop",
+      "installed_version": "2.1.1",
+      "declared_license": "MIT",
+      "usage": {
+        "root": true,
+        "vendor": false,
+        "assets": false
+      },
+      "notice_files": [
+        "_antv_g-plugin-dragndrop-2.1.1-LICENSE.txt"
+      ],
+      "status": "license text copied"
+    },
+    {
+      "package": "@antv/g6",
+      "installed_version": "5.1.1",
+      "declared_license": "MIT",
+      "usage": {
+        "root": true,
+        "vendor": false,
+        "assets": false
+      },
+      "notice_files": [
+        "_antv_g6-5.1.1-LICENSE.txt"
+      ],
+      "status": "license text copied"
+    },
+    {
+      "package": "@antv/graphlib",
+      "installed_version": "2.0.4",
+      "declared_license": "MIT",
+      "usage": {
+        "root": true,
+        "vendor": false,
+        "assets": false
+      },
+      "notice_files": [
+        "_antv_graphlib-2.0.4-LICENSE.txt"
+      ],
+      "status": "license text copied"
+    },
+    {
+      "package": "@antv/hierarchy",
+      "installed_version": "0.7.1",
+      "declared_license": "MIT",
+      "usage": {
+        "root": true,
+        "vendor": false,
+        "assets": false
+      },
+      "notice_files": [
+        "_antv_hierarchy-0.7.1-LICENSE.txt"
+      ],
+      "status": "license text copied"
+    },
+    {
+      "package": "@antv/layout",
+      "installed_version": "2.0.0",
+      "declared_license": "MIT",
+      "usage": {
+        "root": true,
+        "vendor": false,
+        "assets": false
+      },
+      "notice_files": [
+        "_antv_layout-2.0.0-LICENSE.txt"
+      ],
+      "status": "license text copied"
+    },
+    {
+      "package": "@antv/scale",
+      "installed_version": "0.4.16",
+      "declared_license": "MIT",
+      "usage": {
+        "root": true,
+        "vendor": false,
+        "assets": false
+      },
+      "notice_files": [
+        "_antv_scale-0.4.16-LICENSE.txt"
+      ],
+      "status": "license text copied"
+    },
+    {
+      "package": "@antv/util",
+      "installed_version": "3.3.11",
+      "declared_license": "MIT",
+      "usage": {
+        "root": true,
+        "vendor": true,
+        "assets": false
+      },
+      "notice_files": [
+        "_antv_util-3.3.11-LICENSE.txt"
+      ],
+      "status": "vendor embedded version unverified"
+    },
+    {
+      "package": "@babel/runtime",
+      "installed_version": "7.29.7",
+      "declared_license": "MIT",
+      "usage": {
+        "root": true,
+        "vendor": false,
+        "assets": false
+      },
+      "notice_files": [
+        "_babel_runtime-7.29.7-LICENSE.txt"
+      ],
+      "status": "license text copied"
+    },
+    {
+      "package": "@fontsource/dm-mono",
+      "installed_version": "5.3.0",
+      "declared_license": "OFL-1.1",
+      "usage": {
+        "root": true,
+        "vendor": false,
+        "assets": true
+      },
+      "notice_files": [
+        "_fontsource_dm-mono-5.3.0-LICENSE.txt"
+      ],
+      "status": "license text copied"
+    },
+    {
+      "package": "@fontsource/ibm-plex-mono",
+      "installed_version": "5.2.7",
+      "declared_license": "OFL-1.1",
+      "usage": {
+        "root": true,
+        "vendor": false,
+        "assets": true
+      },
+      "notice_files": [
+        "_fontsource_ibm-plex-mono-5.2.7-LICENSE.txt"
+      ],
+      "status": "license text copied"
+    },
+    {
+      "package": "@fontsource/jost",
+      "installed_version": "5.3.0",
+      "declared_license": "OFL-1.1",
+      "usage": {
+        "root": true,
+        "vendor": false,
+        "assets": true
+      },
+      "notice_files": [
+        "_fontsource_jost-5.3.0-LICENSE.txt"
+      ],
+      "status": "license text copied"
+    },
+    {
+      "package": "@fontsource/space-mono",
+      "installed_version": "5.3.0",
+      "declared_license": "OFL-1.1",
+      "usage": {
+        "root": true,
+        "vendor": false,
+        "assets": true
+      },
+      "notice_files": [
+        "_fontsource_space-mono-5.3.0-LICENSE.txt"
+      ],
+      "status": "license text copied"
+    },
+    {
+      "package": "@radix-ui/colors",
+      "installed_version": "3.0.0",
+      "declared_license": "MIT",
+      "usage": {
+        "root": true,
+        "vendor": false,
+        "assets": false
+      },
+      "notice_files": [
+        "_radix-ui_colors-3.0.0-LICENSE.txt"
+      ],
+      "status": "license text copied"
+    },
+    {
+      "package": "bubblesets-js",
+      "installed_version": "2.3.4",
+      "declared_license": "MIT",
+      "usage": {
+        "root": true,
+        "vendor": false,
+        "assets": false
+      },
+      "notice_files": [
+        "bubblesets-js-2.3.4-LICENSE.txt"
+      ],
+      "status": "license text copied"
+    },
+    {
+      "package": "color-name",
+      "installed_version": "1.1.4",
+      "declared_license": "MIT",
+      "usage": {
+        "root": true,
+        "vendor": false,
+        "assets": false
+      },
+      "notice_files": [
+        "color-name-1.1.4-LICENSE.txt"
+      ],
+      "status": "license text copied"
+    },
+    {
+      "package": "color-string",
+      "installed_version": "1.9.1",
+      "declared_license": "MIT",
+      "usage": {
+        "root": true,
+        "vendor": false,
+        "assets": false
+      },
+      "notice_files": [
+        "color-string-1.9.1-LICENSE.txt"
+      ],
+      "status": "license text copied"
+    },
+    {
+      "package": "comlink",
+      "installed_version": "4.4.2",
+      "declared_license": "Apache-2.0",
+      "usage": {
+        "root": false,
+        "vendor": true,
+        "assets": false
+      },
+      "notice_files": [
+        "comlink-4.4.2-LICENSE.txt"
+      ],
+      "status": "vendor embedded version unverified"
+    },
+    {
+      "package": "d3-binarytree",
+      "installed_version": "1.0.2",
+      "declared_license": "MIT",
+      "usage": {
+        "root": false,
+        "vendor": true,
+        "assets": false
+      },
+      "notice_files": [
+        "d3-binarytree-1.0.2-LICENSE.txt"
+      ],
+      "status": "vendor embedded version unverified"
+    },
+    {
+      "package": "d3-dispatch",
+      "installed_version": "3.0.1",
+      "declared_license": "ISC",
+      "usage": {
+        "root": true,
+        "vendor": true,
+        "assets": false
+      },
+      "notice_files": [
+        "d3-dispatch-3.0.1-LICENSE.txt"
+      ],
+      "status": "vendor embedded version unverified"
+    },
+    {
+      "package": "d3-force",
+      "installed_version": "3.0.0",
+      "declared_license": "ISC",
+      "usage": {
+        "root": true,
+        "vendor": true,
+        "assets": false
+      },
+      "notice_files": [
+        "d3-force-3.0.0-LICENSE.txt"
+      ],
+      "status": "vendor embedded version unverified"
+    },
+    {
+      "package": "d3-force-3d",
+      "installed_version": "3.0.6",
+      "declared_license": "MIT",
+      "usage": {
+        "root": false,
+        "vendor": true,
+        "assets": false
+      },
+      "notice_files": [
+        "d3-force-3d-3.0.6-LICENSE.txt"
+      ],
+      "status": "vendor embedded version unverified"
+    },
+    {
+      "package": "d3-octree",
+      "installed_version": "1.1.0",
+      "declared_license": "MIT",
+      "usage": {
+        "root": false,
+        "vendor": true,
+        "assets": false
+      },
+      "notice_files": [
+        "d3-octree-1.1.0-LICENSE.txt"
+      ],
+      "status": "vendor embedded version unverified"
+    },
+    {
+      "package": "d3-quadtree",
+      "installed_version": "3.0.1",
+      "declared_license": "ISC",
+      "usage": {
+        "root": true,
+        "vendor": true,
+        "assets": false
+      },
+      "notice_files": [
+        "d3-quadtree-3.0.1-LICENSE.txt"
+      ],
+      "status": "vendor embedded version unverified"
+    },
+    {
+      "package": "d3-timer",
+      "installed_version": "3.0.1",
+      "declared_license": "ISC",
+      "usage": {
+        "root": true,
+        "vendor": true,
+        "assets": false
+      },
+      "notice_files": [
+        "d3-timer-3.0.1-LICENSE.txt"
+      ],
+      "status": "vendor embedded version unverified"
+    },
+    {
+      "package": "dagre",
+      "installed_version": "0.8.5",
+      "declared_license": "MIT",
+      "usage": {
+        "root": false,
+        "vendor": true,
+        "assets": false
+      },
+      "notice_files": [
+        "dagre-0.8.5-LICENSE.txt"
+      ],
+      "status": "vendor embedded version unverified"
+    },
+    {
+      "package": "eventemitter3",
+      "installed_version": "5.0.4",
+      "declared_license": "MIT",
+      "usage": {
+        "root": true,
+        "vendor": false,
+        "assets": false
+      },
+      "notice_files": [
+        "eventemitter3-5.0.4-LICENSE.txt"
+      ],
+      "status": "license text copied"
+    },
+    {
+      "package": "gl-matrix",
+      "installed_version": "3.4.4",
+      "declared_license": "MIT",
+      "usage": {
+        "root": true,
+        "vendor": false,
+        "assets": false
+      },
+      "notice_files": [
+        "gl-matrix-3.4.4-LICENSE.md.txt"
+      ],
+      "status": "license text copied"
+    },
+    {
+      "package": "graphlib",
+      "installed_version": "2.1.8",
+      "declared_license": "MIT",
+      "usage": {
+        "root": false,
+        "vendor": true,
+        "assets": false
+      },
+      "notice_files": [
+        "graphlib-2.1.8-LICENSE.txt"
+      ],
+      "status": "vendor embedded version unverified"
+    },
+    {
+      "package": "html2canvas",
+      "installed_version": "1.4.1",
+      "declared_license": "MIT",
+      "usage": {
+        "root": true,
+        "vendor": false,
+        "assets": false
+      },
+      "notice_files": [
+        "html2canvas-1.4.1-LICENSE.txt"
+      ],
+      "status": "license text copied"
+    },
+    {
+      "package": "is-any-array",
+      "installed_version": "3.0.0",
+      "declared_license": "MIT",
+      "usage": {
+        "root": false,
+        "vendor": true,
+        "assets": false
+      },
+      "notice_files": [
+        "is-any-array-3.0.0-LICENSE.txt"
+      ],
+      "status": "vendor embedded version unverified"
+    },
+    {
+      "package": "is-arrayish",
+      "installed_version": "0.3.4",
+      "declared_license": "MIT",
+      "usage": {
+        "root": true,
+        "vendor": false,
+        "assets": false
+      },
+      "notice_files": [
+        "is-arrayish-0.3.4-LICENSE.txt"
+      ],
+      "status": "license text copied"
+    },
+    {
+      "package": "lodash",
+      "installed_version": "4.18.1",
+      "declared_license": "MIT",
+      "usage": {
+        "root": false,
+        "vendor": true,
+        "assets": false
+      },
+      "notice_files": [
+        "lodash-4.18.1-LICENSE.txt"
+      ],
+      "status": "vendor embedded version unverified"
+    },
+    {
+      "package": "ml-array-max",
+      "installed_version": "2.0.0",
+      "declared_license": "MIT",
+      "usage": {
+        "root": false,
+        "vendor": true,
+        "assets": false
+      },
+      "notice_files": [
+        "ml-array-max-2.0.0-LICENSE.txt"
+      ],
+      "status": "vendor embedded version unverified"
+    },
+    {
+      "package": "ml-array-min",
+      "installed_version": "2.0.0",
+      "declared_license": "MIT",
+      "usage": {
+        "root": false,
+        "vendor": true,
+        "assets": false
+      },
+      "notice_files": [
+        "ml-array-min-2.0.0-LICENSE.txt"
+      ],
+      "status": "vendor embedded version unverified"
+    },
+    {
+      "package": "ml-array-rescale",
+      "installed_version": "2.0.0",
+      "declared_license": "MIT",
+      "usage": {
+        "root": false,
+        "vendor": true,
+        "assets": false
+      },
+      "notice_files": [
+        "ml-array-rescale-2.0.0-LICENSE.txt"
+      ],
+      "status": "vendor embedded version unverified"
+    },
+    {
+      "package": "ml-matrix",
+      "installed_version": "6.14.0",
+      "declared_license": "MIT",
+      "usage": {
+        "root": false,
+        "vendor": true,
+        "assets": false
+      },
+      "notice_files": [
+        "ml-matrix-6.14.0-LICENSE.txt"
+      ],
+      "status": "vendor embedded version unverified"
+    },
+    {
+      "package": "react",
+      "installed_version": "19.2.7",
+      "declared_license": "MIT",
+      "usage": {
+        "root": true,
+        "vendor": false,
+        "assets": false
+      },
+      "notice_files": [
+        "react-19.2.7-LICENSE.txt"
+      ],
+      "status": "license text copied"
+    },
+    {
+      "package": "react-dom",
+      "installed_version": "19.2.7",
+      "declared_license": "MIT",
+      "usage": {
+        "root": true,
+        "vendor": false,
+        "assets": false
+      },
+      "notice_files": [
+        "react-dom-19.2.7-LICENSE.txt"
+      ],
+      "status": "license text copied"
+    },
+    {
+      "package": "scheduler",
+      "installed_version": "0.27.0",
+      "declared_license": "MIT",
+      "usage": {
+        "root": true,
+        "vendor": false,
+        "assets": false
+      },
+      "notice_files": [
+        "scheduler-0.27.0-LICENSE.txt"
+      ],
+      "status": "license text copied"
+    },
+    {
+      "package": "simple-swizzle",
+      "installed_version": "0.2.4",
+      "declared_license": "MIT",
+      "usage": {
+        "root": true,
+        "vendor": false,
+        "assets": false
+      },
+      "notice_files": [
+        "simple-swizzle-0.2.4-LICENSE.txt"
+      ],
+      "status": "license text copied"
+    },
+    {
+      "package": "tslib",
+      "installed_version": "2.8.1",
+      "declared_license": "0BSD",
+      "usage": {
+        "root": true,
+        "vendor": true,
+        "assets": false
+      },
+      "notice_files": [
+        "tslib-2.8.1-LICENSE.txt.txt"
+      ],
+      "status": "vendor embedded version unverified"
+    },
+    {
+      "package": "vite",
+      "installed_version": "7.3.6",
+      "declared_license": "MIT",
+      "usage": {
+        "root": true,
+        "vendor": false,
+        "assets": false
+      },
+      "notice_files": [
+        "vite-7.3.6-LICENSE.md.txt"
+      ],
+      "status": "license text copied"
+    },
+    {
+      "package": "@antv/util",
+      "installed_version": "2.0.17",
+      "declared_license": "ISC",
+      "usage": {
+        "nested": true
+      },
+      "notice_files": [],
+      "status": "package omits licence text"
+    }
+  ]
+}

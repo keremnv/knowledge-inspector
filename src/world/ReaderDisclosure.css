@@ -1,0 +1,16 @@
+/* Extracted from World's source metadata. Keep the native marker, hit target
+   and keyboard focus: no extra icon, box, open-state animation or type scale. */
+.reader-disclosure { margin-top: .25rem; min-width: 0; }
+.reader-disclosure > summary { cursor: pointer; color: var(--ink-muted); }
+
+/* Explicit evidence roles, not blanket rules for Reader dt/code/summary. */
+.reader-metadata { margin: .4rem 0 0; }
+.reader-metadata dt { color: var(--ink-muted); overflow-wrap: anywhere; }
+.reader-metadata dd { margin: .15rem 0 .5rem; }
+.reader-metadata pre {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: inherit;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

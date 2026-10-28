@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "world": {
+    "id_prefix": "chinook-view",
+    "description": "Experimental reader-authored reading of a demo working copy of Chinook v1.4.5. The copy adds one view, InvoiceLineCustomer, written for this demonstration (examples/chinook/views/invoice_line_customer.sql); it is not part of upstream Chinook. The view joins each invoice line to its invoice; this reading interprets that join and asserts nothing beyond the stored rows."
+  },
+  "entities": [
+    {"kind": "invoice", "source": "Invoice", "key_columns": ["InvoiceId"]},
+    {"kind": "customer", "source": "Customer", "key_columns": ["CustomerId"]},
+    {"kind": "track", "source": "Track", "key_columns": ["TrackId"], "label_column": "Name"}
+  ],
+  "relations": [
+    {
+      "name": "invoice_line_with_recorded_customer",
+      "source": "InvoiceLineCustomer",
+      "key_columns": ["InvoiceLineId"],
+      "description": "One output row of the demo's InvoiceLineCustomer view per stored InvoiceLine row: the line's invoice and track, the CustomerId recorded on that invoice, and the line's unit price and quantity as stored. The customer reference comes from the invoice row through the view's join; it is not evidence of payment, delivery, ownership or the customer's endorsement.",
+      "roles": [
+        {"role": "invoice", "column_name": "InvoiceId", "target_kind": "invoice"},
+        {"role": "customer", "column_name": "CustomerId", "target_kind": "customer"},
+        {"role": "track", "column_name": "TrackId", "target_kind": "track"},
+        {"role": "unit_price", "column_name": "UnitPrice", "target_kind": null},
+        {"role": "quantity", "column_name": "Quantity", "target_kind": null}
+      ]
+    }
+  ]
+}
