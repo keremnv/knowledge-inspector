@@ -154,6 +154,8 @@ The underlying focus remains direct exploration of connected information.
 - [Build and develop Source](docs/BUILD_AND_DEVELOPMENT.md), including packaging, session details and development servers.
 - [API contract](API_CONTRACT.md), including the Source read interface.
 - [Engineering evidence](docs/ENGINEERING_EVIDENCE.md), including validation and recorded measurements.
+- [Performance measurements](docs/PERFORMANCE.md), with methodology, raw results in [`benchmarks/results`](benchmarks/results/), reproduction steps and limits.
+- [Source and wheel publication status](docs/RELEASE_STATUS.md): the source is public; no prebuilt wheel has been released.
 
 Technical reports record their implementation revisions, measurement conditions and remaining limitations.
 
