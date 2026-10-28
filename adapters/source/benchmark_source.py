@@ -45,7 +45,7 @@ def measure(path,table,record_index,repeats):
             _,page_s=clock(lambda:read('rows',table=table,limit=100))
             record,record_s=clock(lambda:read('record',id=handle))
             refs,refs_s=clock(lambda:read('references',record=handle))
-            started=time.perf_counter()
+            started=time.perf_counter();incoming=None  # None: the incoming read was served, not refused
             try:read('references',record=handle,direction='incoming')
             except SourceError as failure:incoming=failure.code
             incoming_s=time.perf_counter()-started
