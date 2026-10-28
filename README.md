@@ -111,6 +111,22 @@ Separate end-to-end browser tests launch the **installed Python wheel without Vi
 
 A measured identity-handling refactor reduced **retained Python allocations after verification from 52.4 MB to 0.8 MB** in a documented 91,966-row Stack Exchange workload, measured with `tracemalloc` rather than process RSS. It preserved whole-table verification while retaining handles only for records returned to the user. [Methodology and measurements](docs/ENGINEERING_EVIDENCE.md)
 
+### Performance
+
+Measured on one Linux laptop (Intel Core Ultra 5, 14 GB, Python 3.13, SQLite 3.51.1, headless Chromium 153) with the installed wheel, through the application's own controls. Absolute times varied by up to about 1.9× between sessions on this machine, so read them as indicative; the scaling is the finding. [Methodology, all results and limits](docs/PERFORMANCE.md)
+
+| Measure | Result |
+|---|---|
+| Runtime dependencies / wheel | None beyond Python ≥ 3.11 · 0.91 MB wheel · frontend 2.3 MB raw, 0.79 MB gzip |
+| Service memory | ≈ 28 MB RSS idle, ≈ 31 MB with the interface loaded, whether the database is 16 KB or 91 MB |
+| Launch to usable interface | ≈ 0.55 s median; the read-only capture of a 91 MB database adds ≈ 0.18 s |
+| Table, row and foreign-key interactions | open table ≈ 30–40 ms · inspect row ≈ 70–110 ms · follow a foreign key ≈ 220 ms |
+| 500 records on the canvas, no relationships displayed | 21 MB browser JS heap, no long tasks during pan, zoom and drag |
+| 500 relationships expanded at once | ≈ 11 s to place, then ≈ 15 s of further main-thread work; **dense canvases are slow** (see limitations) |
+| Table identity verification | 100,000 rows: 1.1 s first open, 35 ms after. 1,000,000 rows: refused by the existing limits (browsable, not placeable) |
+
+Frame timings come from headless Chromium with software rendering and are not representative of a GPU-accelerated desktop. [Reproduce with `benchmarks/run_all.sh`](docs/PERFORMANCE.md#reproducing).
+
 ## Current limitations
 
 - **SQLite and declared relationships only.** Navigation uses declared foreign keys; relationships are not inferred from names, matching values or application conventions.
@@ -118,7 +134,7 @@ A measured identity-handling refactor reduced **retained Python allocations afte
 - **Whole-table verification is bounded.** Identity verification has a default ceiling of **200,000 rows per table**, alongside time and SQLite instruction budgets. Smaller tables can also exceed those budgets.
 - **Issued handles have separate session limits.** The session permits at most **200,000 issued record handles** and **64 MiB of accounted registry payload**, including records returned by reads but never placed on the canvas. This accounting bound is not a process-memory cap. Reads that would exceed either limit issue no new handles; previously issued handles remain valid.
 - **Connections are selective.** A missing line does not establish that two visible records are unrelated.
-- **Expansion and dense canvases.** `add all` places the current table page; `expand through` can traverse an entire relationship group. Dense arrangements can become difficult to interpret and less responsive, and remain an area for refinement.
+- **Expansion and dense canvases.** `add all` places the current table page; `expand through` can traverse an entire relationship group. Dense arrangements can become difficult to interpret and less responsive, and remain an area for refinement: expanding 500 relationships at once measured about 11 s to place ([measurements](docs/PERFORMANCE.md#working-set-growth)).
 - **Exploration is session-scoped.** The same tab can restore its canvas on refresh during a launch. A new launch starts empty; there are no saved projects.
 - **Compatibility is still being evaluated.** Testing has focused on Linux; macOS and Windows are untested. SQLite behavior follows the library supplied with Python. Tests cover SQLite 3.51.1 and 3.53.1; tight query budgets can refuse expensive incoming-reference reads. See the [validation notes](docs/SQLITE_COMPATIBILITY.md).
 
