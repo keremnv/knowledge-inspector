@@ -1,6 +1,6 @@
 # Source and wheel publication status
 
-**Public source: GO for owner approval.** This tree contains the project source, MIT project licence, dependency manifests, tests, build scripts, Chinook screenshots and technical documentation. It does not need to contain npm dependencies, the generated frontend, or a built wheel. The README gives a build-from-source path; no public repository or release has been created.
+**Public source: available.** This tree contains the project source, MIT project licence, dependency manifests, tests, build scripts, Chinook screenshots and technical documentation. It does not include npm dependencies, the generated frontend, or a built wheel. The README gives a build-from-source path; no binary release has been created.
 
 **Binary wheel: on hold.** The locked `@antv/algorithm` 0.1.26, `@antv/event-emitter` 0.1.3 and `@antv/g-lite` 2.7.0 artifacts declare MIT; the nested `@antv/util` 2.0.17 artifact declares ISC. Their published packages do not contain licence files and their exact package-specific copyright notices were not found in the verified material. A licence declaration is a grant; the absence of a packaged notice is not evidence of an absence of licence. It leaves uncertainty about the notice to preserve in redistributed binaries. The [third-party record](../THIRD_PARTY/README.md) includes available notices, official reference texts and provenance, and distinguishes the two versions of `@antv/util`. Obtain or otherwise verify the missing notices before distributing the wheel.
 
