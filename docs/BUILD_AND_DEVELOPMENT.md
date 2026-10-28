@@ -17,3 +17,17 @@ KI_EXECUTABLE=/tmp/ki-test-venv/bin/ki npx playwright test -c playwright.app.con
 ```
 
 Use `-c playwright.app.config.ts` if using the Playwright command directly. The Source browser suite uses `npx playwright test -c playwright.source.config.ts`; it runs a development frontend and includes real SQLite and mocked HTTP tests. See [engineering evidence](ENGINEERING_EVIDENCE.md) for known failures and scope.
+
+## Continuous integration
+
+GitHub Actions runs a single Linux job with Python 3.13 and Node.js 22. It prints
+its SQLite version, builds the Source frontend and wheel, runs the Source Python
+suite and installed-wheel checks, and exercises selected SQLite, HTTP-recovery,
+canvas and installed-application flows with Playwright Chromium. The Chinook
+fixture is downloaded and checked against its pinned digest. The wheel is used
+only inside the runner: the workflow does not upload it or any compiled assets.
+
+This job covers one environment, not the full Python/SQLite or operating-system
+support range. macOS and Windows remain untested, and bounded reads can report
+that their query budget was exceeded. One timing-sensitive test (the incoming-reference page time limit) skips itself on hosts too slow to finish a million-row count in 0.1 s, so a hosted runner may report it as skipped. A passing workflow does not clear the
+separate third-party notice work required before distributing a binary wheel.
