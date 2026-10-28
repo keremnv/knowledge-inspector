@@ -13,10 +13,10 @@ Measurements of the existing application, taken to describe it, not to tune it. 
 | Runtime dependencies | **none** beyond Python ≥ 3.11 (standard-library `sqlite3` and `http.server`) | wheel metadata |
 | Wheel | **0.91 MB** (911,744 B) | 8 Python modules plus the compiled frontend |
 | Frontend shipped | **2.32 MB raw, 0.79 MB gzip** across 16 files; main JS 2.08 MB (616 KB gzip), CSS 81 KB (14 KB gzip) | production build |
-| Service memory | **≈28 MB RSS idle, ≈31 MB after the UI loads**, unchanged from a 16 KB to a 91 MB database | whole-process RSS, `/proc` |
-| Launch to first usable interface | **≈0.55 s** median (service listening in 0.10 s for ≤ 9 MB databases, 0.28 s for a 91 MB one) | headless Chromium, this machine |
-| Common interactions | open table ≈ 30–40 ms, inspect row ≈ 70–110 ms, follow a foreign key ≈ 220 ms, place a 50-row page ≈ 190 ms (to DOM) | median of 10, fan-out fixtures |
-| Records on the canvas, no relationships | 500 records: **21 MB JS heap, 0 long tasks during pan/zoom/drag**, 60 Hz frames | headless, software rendering |
+| Service memory | **≈28 MB RSS idle, ≈31 MB after the UI loads**, within 2 MB from a 16 KB to a 91 MB database; **peak 45 MB** while verifying a 100,000-row table. This is the Python service only: the browser's memory is not included | whole-process RSS, `/proc` |
+| Service start to usable interface | **≈0.65 s** median: service listening in 0.10 s (0.28 s for a 91 MB database), then ≈0.54 s from creating a fresh browser context to the schema view being present (this includes creating the context and fetching 2.1 MB of uncompressed assets); a reload with a warm cache takes ≈0.24 s | headless Chromium, this machine |
+| Common interactions | open table ≈ 30–40 ms, inspect row ≈ 70–110 ms, follow a foreign key ≈ 220–240 ms, place a 50-row page ≈ 190 ms (to DOM) | median of 10, two fixtures; the two fixtures differ by up to ±35 %, so differences of that size are noise |
+| Records on the canvas, no relationships | 500 records: **21 MB JS heap** (JS heap only, not the renderer process), **0 long tasks during the scripted pan/zoom/drag** in all 3 repetitions, frames at the 60 Hz cap | headless, software rendering |
 | Records with relationships | 200 relationships: ≈ 1.5 s to place. **500 relationships: ≈ 10.8 s to place plus ≈ 15 s of further main-thread work**, then 27–29 long tasks (max 0.57 s) during interaction | same |
 | Large-table identity verification | 100,000 rows verified in **1.1 s** the first time, **35 ms** thereafter. At 1,000,000 rows the application **refuses** whole-table verification (`too large to verify within its limits`); rows stay browsable, canvas placement is unavailable | existing limits, unchanged |
 | Retained Python allocations after identity verification | **0.27 MB vs 55.2 MB** for the current reader against the pre-refactor baseline, 100,000-row generated table (`tracemalloc`) | reproduction of the recorded comparison |
@@ -49,7 +49,7 @@ Everything above comes from one run of [`benchmarks/run_all.sh`](../benchmarks/r
 
 In this star topology the number of relationships tracks the number of records minus one. A topology with many more relationships than records (for example a dense mesh) was not measured.
 
-**Repetition and statistics.** Interactions: 2 warm-up repetitions discarded, then 10 measured, on a single running service. Startup: a new service process and new browser context each time, 6 repetitions, first one kept separately and excluded from the median. Working-set growth: the whole scenario repeated 3 times with fresh processes. Medians are reported. A p95 is reported only for 20 or more samples; no scenario reaches that, so the tail is shown as the maximum.
+**Repetition and statistics.** Interactions: 2 warm-up repetitions discarded, then 10 measured, on a single running service. Startup: a new service process and new browser context each time, 6 repetitions, first one kept separately and excluded from the median. Working-set growth: the whole scenario repeated 3 times with fresh processes. Medians are reported. A p95 is reported only for 20 or more samples; no scenario reaches that, so the tail is shown as the maximum. Working-set growth medians are of **3** repetitions, which is thin: the highest and lowest of the three differed by at most 25 % for every quoted figure (under 15 % for most; the heap by under 1 %), but that is three runs, not a distribution.
 
 **Read-only inputs.** Fixtures are generated into a temporary directory and deleted afterwards. The startup scenario hashes each input file before and after every launch and fails if it changed.
 
@@ -65,10 +65,10 @@ In this star topology the number of relationships tracks the number of records m
 | CPU governor | `powersave`; clock readings from 0.4 to 2.0 GHz during runs |
 | Python / SQLite | 3.13.12 / 3.51.1 |
 | Node.js | 22.22.1 |
-| Chromium | 153.0.8010.12 (Playwright 1.63.0), **headless**, software rasterisation |
+| Chromium | 153.0.8010.12 (Playwright 1.63.0), **headless** (Playwright's headless shell, not a full desktop Chrome), software rasterisation |
 | Viewport | 1440 × 900, device scale factor 1, normal motion (reduced motion measured separately) |
 
-**Run-to-run drift.** Two sessions on the same machine and commit, with the same code, differed in absolute time: an earlier exploratory session measured the first usable interface at ≈ 315 ms and the final run at ≈ 540 ms, and a 500-record add that took ≈ 440 ms took ≈ 570 ms. Within one session repeats agree closely (the spread of six startups is a few percent). The governor and other desktop activity are the likely cause, not something the benchmark can control. **Treat absolute times as indicative for this machine; the scaling shape (what grows with what) was identical in both sessions.** Frame times are capped at the 60 Hz refresh and, in headless mode with software rasterisation, say nothing about GPU-accelerated desktops.
+**Run-to-run drift.** Two sessions on the same machine and commit differed in absolute time. An earlier exploratory session (its raw files were not archived) measured the first usable interface at ≈ 315 ms against ≈ 540 ms in the final run, and its single-interaction medians were 1.1× to 2.3× faster (open table 16 vs 37 ms, expand 200 relationships 0.99 vs 1.28 s); a 500-record add took ≈ 440 ms against ≈ 570 ms. Within one session repeats agree closely (the spread of six startups is a few percent). The governor and other desktop activity are the likely cause, not something the benchmark can control. **Treat absolute times as indicative for this machine; the scaling shape (what grows with what) was identical in both sessions.** Frame times are capped at the 60 Hz refresh and, in headless mode with software rasterisation, say nothing about GPU-accelerated desktops.
 
 ## Results
 
@@ -136,7 +136,7 @@ Median of 10 after 2 warm-ups. `to_dom` is input to the condition being true in 
 | Place a page of 50 records (*add all*) | 196 ms | 224 ms | 209 ms | 187 ms |
 | Expand all references to a parent: 200 children / 50 children | 1,278 ms | 1,436 ms | 1,506 ms | 172 ms (50 children) |
 
-The same interactions on the 91 MB database cost the same as on a 16 KB one: database size does not affect them, once the table is verified. (The 1 M-row database's `event` table is never opened in this scenario.)
+The two fixtures use the same small tables, so database size is isolated: the 91 MB database's results are within about ±35 % of the 16 KB one's, in both directions (inspect row 107 vs 69 ms, follow a foreign key 219 vs 238 ms). That spread is the size of the run-to-run noise, so these results show no *detectable* effect of database size, not proof of none. The 1 M-row `event` table is never opened in this scenario.
 
 ### Working-set growth
 
@@ -159,7 +159,7 @@ Median of 3 full repetitions with fresh service and browser each time. *Place* i
 | 201 / 200 | 1.47 s | 3.5 s | 4–5 | 233 / 33 ms | 24.5 MB | 2.97 s | 405 |
 | 501 / 500 | **10.8 s** | **15.3 s** | 27–29 | 567 / 83 ms | 45.6 MB | 6.77 s | 1,005 |
 
-Placing records costs roughly linearly (500 records: 21 MB heap, smooth). Placing relationships does not: going from 50 to 200 to 500 relationships raised place time ≈ 7× then ≈ 7× again, and the post-placement busy period more than 4×. JS heap grows roughly 2.5 MB per 100 records and 7 MB per 100 records-with-relationships. Restoring issues about two service requests per record, so it grows linearly with the working set: ≈ 6 ms per record without relationships and ≈ 13 ms per record with them.
+Placing records costs roughly linearly (500 records: 21 MB heap, smooth). Placing relationships does not: going from 50 to 200 to 500 relationships raised place time ≈ 7× then ≈ 7× again, and the post-placement busy period more than 4×. JS heap grows roughly 2.5 MB per 100 records and 7 MB per 100 records-with-relationships. Restoring issues about two service requests per record, so it grows linearly with the working set: a marginal ≈ 5 ms per record without relationships and ≈ 12 ms per record with them (measured from 50 to 500 records). Each restore also includes a fixed page-load cost of roughly 0.5 s, because it is timed from the reload call.
 
 With `prefers-reduced-motion: reduce` (the application's existing alternative, measured as a diagnostic, not a proposal):
 
@@ -244,14 +244,14 @@ where `YOUR_LAUNCHER` is an executable that calls `adapters.source.app.main(fron
 
 | Result | README | LinkedIn | CV |
 |---|:-:|:-:|:-:|
-| No third-party Python runtime dependencies; 0.9 MB wheel; ≈ 31 MB service RSS independent of database size | yes | yes | yes |
-| Precompiled frontend served by a single local Python process; launch to usable UI ≈ 0.5 s on a laptop-class CPU | yes | yes | no (hardware-dependent) |
+| No third-party Python runtime dependencies; 0.9 MB wheel; ≈ 31 MB service RSS (peak 45 MB), little affected by database size | yes | yes | yes |
+| Precompiled frontend served by a single local Python process; service start to usable UI ≈ 0.65 s on a laptop-class CPU | yes | yes | no (hardware-dependent) |
 | Retained Python allocations after whole-table identity verification cut from 52.4 MB to 0.8 MB (`tracemalloc`, 91,966 rows) | yes | yes | yes, with "tracemalloc" |
 | 283 recorded passing Playwright scenarios across SQLite, canvas interaction, keyboard focus and mocked HTTP failure | yes | yes | yes |
 | 500 records on the canvas with no long tasks during pan/zoom/drag and ≈ 21 MB JS heap | yes | no | no |
 | Bounded, honest limits: a 1 M-row table is refused for canvas placement rather than slowing the UI | yes | optional | no |
 | Relationship placement scales superlinearly (10.8 s at 500); profiled to the renderer's animation timeline | engineering report only | no | no |
-| Session restore ≈ 6–13 ms per record; two requests per record | engineering report only | no | no |
+| Session restore ≈ 5–12 ms per record (marginal); two requests per record | engineering report only | no | no |
 | Bundle composition | engineering report only | no | no |
 
 Avoid: "lightning fast", "production scale", "handles millions of rows" (it refuses table placement at 1 M), any percentage improvement other than the recorded 52.4 → 0.8 MB retained-allocation figure, and any statement that restore or large relationship expansion is fast.

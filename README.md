@@ -118,10 +118,10 @@ Measured on one Linux laptop (Intel Core Ultra 5, 14 GB, Python 3.13, SQLite 3.5
 | Measure | Result |
 |---|---|
 | Runtime dependencies / wheel | None beyond Python ≥ 3.11 · 0.91 MB wheel · frontend 2.3 MB raw, 0.79 MB gzip |
-| Service memory | ≈ 28 MB RSS idle, ≈ 31 MB with the interface loaded, whether the database is 16 KB or 91 MB |
-| Launch to usable interface | ≈ 0.55 s median; the read-only capture of a 91 MB database adds ≈ 0.18 s |
+| Service memory | ≈ 28 MB RSS idle, ≈ 31 MB with the interface loaded, within 2 MB from a 16 KB to a 91 MB database; peak 45 MB while verifying a 100,000-row table (Python service only) |
+| Service start to usable interface | ≈ 0.65 s median in a fresh browser context (0.24 s on a warm reload); the read-only capture of a 91 MB database adds ≈ 0.18 s |
 | Table, row and foreign-key interactions | open table ≈ 30–40 ms · inspect row ≈ 70–110 ms · follow a foreign key ≈ 220 ms |
-| 500 records on the canvas, no relationships displayed | 21 MB browser JS heap, no long tasks during pan, zoom and drag |
+| 500 records on the canvas, no relationships displayed | 21 MB browser JS heap (heap only); no long tasks during a scripted pan, zoom and drag |
 | 500 relationships expanded at once | ≈ 11 s to place, then ≈ 15 s of further main-thread work; **dense canvases are slow** (see limitations) |
 | Table identity verification | 100,000 rows: 1.1 s first open, 35 ms after. 1,000,000 rows: refused by the existing limits (browsable, not placeable) |
 
