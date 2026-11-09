@@ -20,7 +20,7 @@ import { SourceRowsView } from "./SourceRowsView";
 import { BulkOutcomeNote, type BulkOutcome } from "./SourceOutcome";
 import { identityBlocksPlacement, identityExplanation, readFailure, stoppedRecovery } from "./sourceExplain";
 import { ExpandThrough, IncomingReferences, OutgoingReferences, ReferenceActions, ReferenceDetails, addressableReference, incomingColumns, incomingCountText, referenceName } from "./SourceReferences";
-import { sourcePresentation } from "./sourcePresentation";
+import { sourcePresentation, sourceRecordLink } from "./sourcePresentation";
 import { SourceCanvas } from "./SourceCanvas";
 import { schemaNamed, SOURCE_SHOW_DEFAULT, SourceFieldList, SourcePlacement, SourceShowBand, SourceUnplaceable, type SourceShow } from "./SourceFieldControls";
 import { SourceGlobalFind } from "./SourceGlobalFind";
@@ -595,6 +595,43 @@ function Workspace({ context }: { context: SourceContext }) {
     return () => { active = false; controller.abort(); };
   }, [restoreAttempt]);
   const retryRestore = () => { setRestore({ reading: true }); setRestoreAttempt((count) => count + 1); };
+  // A record asked for by the address (`?record_table=&record_key=`), followed
+  // once per page load after any restore: looked up only by the exact
+  // primary-key search, then opened in the Reader as a found record is. A key
+  // that matches no verified row opens nothing and says so.
+  const [recordLink] = useState(() => sourceRecordLink(window.location.search));
+  const [linkNote, setLinkNote] = useState<string | null>(() =>
+    recordLink && "problem" in recordLink ? `the linked record was not opened: ${recordLink.problem}` : null);
+  const linkFollowed = useRef(false);
+  useEffect(() => {
+    if (!recordLink || !("link" in recordLink) || linkFollowed.current || restore.reading || fatal) return;
+    linkFollowed.current = true;
+    const { table, key } = recordLink.link;
+    const controller = new AbortController();
+    (async () => {
+      try {
+        const page = await api.search(table, { mode: "primary_key", key }, 2, 0, controller.signal);
+        const exact = page.rows.filter((item) => item.key.length === key.length && item.key.every((cell, index) =>
+          cell.column === key[index].column && cell.storage_class === key[index].storage_class &&
+          "exact" in cell && cell.exact === key[index].exact));
+        if (page.name !== table || exact.length !== 1) {
+          setLinkNote(exact.length ? `the linked record was not opened: more than one ${table} row has that key`
+            : `the linked record was not found: no ${table} row has that key in this capture`);
+          return;
+        }
+        const found = exact[0];
+        if (!found.record_id) { setLinkNote(`the linked ${table} row has no verified record identity in this session`); return; }
+        clearTrail(); cancelPlacement();
+        setPlacedSubject({ recordId: found.record_id, table, key: found.key }); setRow(null); openReader();
+        if (presentation.placement === "direct") setDirectRow(found.record_id);
+        setLinkNote(null);
+      } catch (error) {
+        if (controller.signal.aborted) return;
+        setLinkNote(`the linked record was not opened: ${error instanceof SourceReadError ? error.code : "the read failed"}`);
+      }
+    })();
+    return () => controller.abort();
+  }, [restore.reading, fatal]);
   // Writing back waits for the restore to end, and for a person's choice when it could not read.
   useEffect(() => {
     if (restore.reading || restore.unread || fatal) return;
@@ -1032,6 +1069,7 @@ function Workspace({ context }: { context: SourceContext }) {
     <div className="source-stage" ref={stageRef}>
       <section className="source-canvas" tabIndex={-1} aria-label="Source canvas" data-unobscured={layout.canvas} data-camera-insets={JSON.stringify(layout.camera)}>
         {!schemaView && restore.reading && <p className="source-restore" role="status">restoring the canvas…</p>}
+        {linkNote && <p className="source-restore source-restore--problem" role="alert" data-record-link-problem>{linkNote}</p>}
         {!schemaView && restore.field && restore.field === field && (restore.restored || restore.lost || restore.unplaceable) ? <p className="source-restore" role="status">
           restored {restore.restored} {restore.restored === 1 ? "record" : "records"} from the last visit
           {restore.lost ? ` · ${restore.lost} not found in this capture` : ""}{restore.unplaceable ? ` · ${restore.unplaceable} cannot be placed in this session` : ""}
