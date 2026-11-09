@@ -522,6 +522,23 @@ extensions and virtual/shadow sources are refused. This is a conservative
 supported domain, not a complete SQL determinism theorem. Existing World
 view/declaration behavior is unchanged.
 
+### Source UI record links
+
+The workspace address may name one record to open:
+`/source?record_table=<table>&record_key=<JSON>`, where the JSON is the
+record's declared primary key in recorded order, in exactly the shape
+`mode=primary_key` accepts: `[{"column": "...", "storage_class": "text" | "integer", "exact": "..."}]`.
+Once per page load, after any canvas restore, the workspace runs that exact
+`GET /source/v1/search?mode=primary_key` lookup and, when exactly one row with
+a verified handle and the same typed key is returned, opens it in the Reader as
+a found record is opened (direct placement places it). Nothing else is
+consulted: no label, substring, case-folded or partial key opens a record. A
+malformed link, an unknown table, a key that matches no row, or a row without a
+verified identity opens nothing and is reported in the canvas as an alert
+(`data-record-link-problem`). Without these parameters the workspace behaves
+exactly as before. The link adds no endpoint and no write; it is a client-side
+use of the existing read API. Tests: `tests/source-record-link.app.ts`.
+
 ### Source UI outgoing exploration
 
 The Source Reader uses the existing two FK endpoints, with ten declared
