@@ -103,7 +103,7 @@ for (const width of [1440, 900]) for (const colorScheme of ["light", "dark"] as 
 
           await choose(page, "Track");
           await tables(page).getByRole("button", { name: "Inspect row 10", exact: true }).press("Enter");
-          await expect(reader(page).locator(".source-cells")).toContainText('"Evil Walks"');
+          await expect(reader(page).locator(".source-cells")).toContainText('Evil Walks');
           await reader(page).locator('[data-placement="show"]').click();
           const identity = disclosure(page, "identity details");
           await identity.locator("summary").click();

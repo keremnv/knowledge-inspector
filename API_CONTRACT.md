@@ -539,6 +539,18 @@ verified identity opens nothing and is reported in the canvas as an alert
 exactly as before. The link adds no endpoint and no write; it is a client-side
 use of the existing read API. Tests: `tests/source-record-link.app.ts`.
 
+### Source UI TEXT values
+
+A TEXT value is shown as its characters, not as a quoted, escaped string. The
+empty TEXT is marked `empty`; spaces at either end are shown as `␣` and marked;
+control, separator, zero-width and bidirectional characters are shown as their
+escape and marked. In the Reader, lines break as written and a TEXT over 12
+lines or 2,000 characters is shortened until "show all"; in table cells and
+reference values a line break is a marked `\n` on one line. NULL is styled
+apart from TEXT. "value details" keeps the exact TEXT, quoted; record names and
+keys keep their quoted form (O17). The API is unchanged. Decision:
+`docs/DECISIONS.md`. Tests: `tests/source-text-view.app.ts`.
+
 ### Source UI JSON values
 
 In the Reader, a TEXT value that is exactly one strict JSON object or array is

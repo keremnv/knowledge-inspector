@@ -1,17 +1,11 @@
 import { useState } from "react";
 import { sourceJsonSize, type SourceJsonNode } from "./sourceJsonReading";
-import { visibleRuns } from "./sourceVisibleText";
+import { VisibleText } from "./SourceValue";
 
 /** Members or items shown at once in one container; the rest come on request. */
 export const SOURCE_JSON_PAGE = 100;
 /** Containers this deep and shallower start open. */
 const OPEN_DEPTH = 2;
-
-/** A string's characters as themselves, invisible ones as marked escapes. */
-export function VisibleText({ text }: { text: string }) {
-  return <>{visibleRuns(text).map((run, index) => run.escape
-    ? <span key={index} className="source-text__escape" data-escape>{run.text}</span> : run.text)}</>;
-}
 
 /** Quote marks are faint decoration around a string's content, not escaping. */
 const Quote = () => <span className="source-json__quote" aria-hidden="true">"</span>;
