@@ -550,7 +550,10 @@ details" keeps the exact TEXT, the table cell keeps its one-line form, and the
 API is unchanged. Exactness follows Source's rules for values: a number is shown
 as its lexeme (sliced from the TEXT, never through `Number()`), object members
 keep their recorded order, and a repeated key is kept and marked "repeated key".
-Strings are shown by their decoded value, quoted as TEXT is. A scalar TEXT ("5",
+A string (and an object key) is shown as its characters, between faint quote
+marks, not as its JSON escape; a character a reader cannot see (a control,
+separator, zero-width or bidirectional character) is shown as its escape and
+marked. No explanatory sentence is added under the value. A scalar TEXT ("5",
 "true"), anything with a comment, a trailing comma or trailing content, invalid
 syntax, or nesting deeper than 256 levels is not read as JSON and stays TEXT. A
 value that names a referenced record (a dotted value) stays the reference
