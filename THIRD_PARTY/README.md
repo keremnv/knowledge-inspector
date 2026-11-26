@@ -47,6 +47,7 @@ The locked `@antv/layout` 2.0.0 artifact declares MIT, includes its licence and 
 | html2canvas | 1.4.1 | MIT | license text copied |
 | is-any-array | 3.0.0 | MIT | vendor embedded version unverified |
 | is-arrayish | 0.3.4 | MIT | license text copied |
+| jsonc-parser | 3.3.1 | MIT | license text copied |
 | lodash | 4.18.1 | MIT | vendor embedded version unverified |
 | ml-array-max | 2.0.0 | MIT | vendor embedded version unverified |
 | ml-array-min | 2.0.0 | MIT | vendor embedded version unverified |

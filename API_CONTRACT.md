@@ -539,6 +539,29 @@ verified identity opens nothing and is reported in the canvas as an alert
 exactly as before. The link adds no endpoint and no write; it is a client-side
 use of the existing read API. Tests: `tests/source-record-link.app.ts`.
 
+### Source UI JSON values
+
+In the Reader, a TEXT value that is exactly one strict JSON object or array is
+shown as its JSON reading: an indented tree whose first two levels are open,
+deeper containers opening on request, and 100 members or items shown at a time
+with the rest on request. A row holding such a value gives it the full Reader
+width. The reading is a display of the recorded TEXT, not a replacement: "value
+details" keeps the exact TEXT, the table cell keeps its one-line form, and the
+API is unchanged. Exactness follows Source's rules for values: a number is shown
+as its lexeme (sliced from the TEXT, never through `Number()`), object members
+keep their recorded order, and a repeated key is kept and marked "repeated key".
+A string (and an object key) is shown as its characters, between faint quote
+marks, not as its JSON escape; a character a reader cannot see (a control,
+separator, zero-width or bidirectional character) is shown as its escape and
+marked. No explanatory sentence is added under the value. A scalar TEXT ("5",
+"true"), anything with a comment, a trailing comma or trailing content, invalid
+syntax, or nesting deeper than 256 levels is not read as JSON and stays TEXT. A
+value that names a referenced record (a dotted value) stays the reference
+button. Parsing uses `jsonc-parser` in strict mode (comments and trailing commas
+refused, any parse error meaning "not JSON"). Tests:
+`tests/source-json-reading.spec.ts` (the reading) and
+`tests/source-json-view.app.ts` (installed application, generic fixture).
+
 ### Source UI outgoing exploration
 
 The Source Reader uses the existing two FK endpoints, with ten declared

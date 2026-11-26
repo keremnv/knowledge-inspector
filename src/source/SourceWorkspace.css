@@ -193,3 +193,19 @@
 /* A restore that could not read: its choices must be pressable, unlike the restore's notes. */
 .source-restore--problem { pointer-events: auto; max-width: min(36rem, calc(100% - 2rem)); }
 .source-restore--problem p { margin: 0 0 .35rem; }
+
+/* A TEXT value shown as its JSON reading (the exact TEXT stays under "value details"). */
+.source-json { display: block; min-width: 0; font-family: var(--font-mono); font-size: var(--type-label); line-height: 1.5; overflow-wrap: anywhere; }
+.source-json__members { list-style: none; margin: 0; padding: 0 0 0 1.1rem; border-left: 1px solid var(--rule); }
+.source-json__members > li { margin: 0; padding: 0; }
+.source-json__toggle { border: 0; background: none; padding: 0 .15rem; font: inherit; color: inherit; cursor: pointer; }
+.source-json__toggle small { display: inline; margin-left: .45rem; color: var(--ink-muted); font-family: var(--font-sans); }
+.source-json__toggle:hover, .source-json__toggle:focus-visible { background: color-mix(in srgb, var(--ink) 5%, var(--panel)); }
+.source-json__toggle:focus-visible, .source-json__more:focus-visible { outline: 2px solid var(--ink); outline-offset: 1px; }
+.source-json__key, .source-json__index, .source-json__literal { color: var(--ink-muted); }
+.source-json__more { display: block; margin: .15rem 0 .15rem 1.1rem; border: 0; background: none; padding: 0; font: inherit; color: var(--ink-muted); text-decoration: underline; cursor: pointer; }
+.source-value .source-json__repeated { display: inline; margin: 0 0 0 .45rem; color: var(--ink-muted); font-family: var(--font-sans); }
+.source-json__quote { color: var(--ink-muted); opacity: .55; }
+.source-text__escape { color: var(--ink-muted); border-bottom: 1px dotted var(--ink-muted); }
+/* A JSON value takes the row's full width, its column name above it, so the tree is not squeezed into the value column. */
+.source-facts > div:has(> dd > [data-json-view]) { grid-template-columns: minmax(0, 1fr); gap: .35rem; }
