@@ -2,6 +2,8 @@ import type { ReactNode } from "react";
 import type { SourceCatalogue, SourceCell, SourceColumn, SourceContext, SourceFKDeclaration, SourceFKObservation, SourceIdentity, SourceRecord, SourceRow } from "../api/source";
 import { sourceKeyLabel } from "./sourceField";
 import { SourceValue } from "./SourceValue";
+import { SourceJson } from "./SourceJson";
+import { sourceJson } from "./sourceJsonReading";
 import { ReaderDisclosure } from "../world/ReaderDisclosure";
 import { TableAction } from "../world/tableChrome";
 import { declarationExplanation, identityExplanation, readFailure } from "./sourceExplain";
@@ -119,8 +121,12 @@ export function RecordDetails({ row, relation, context, record, identity, column
         // World's reader: a value naming a disc is a button, dotted and muted,
         // that goes to it; any other value stays text.
         const reached = reach?.get(cell.column);
-        return reached && onReach ? <button type="button" className="source-reach" title={nameOf ? nameOf(reached.parent!.name, reached.parent!.key, reached.parent!.record_id) : sourceKeyLabel(reached.parent!.name, reached.parent!.key)}
-          aria-label={`go to ${reached.parent!.name} referenced by ${cell.column}`} onClick={() => onReach(reached)}><SourceValue value={cell} /></button> : <SourceValue value={cell} />;
+        if (reached && onReach) return <button type="button" className="source-reach" title={nameOf ? nameOf(reached.parent!.name, reached.parent!.key, reached.parent!.record_id) : sourceKeyLabel(reached.parent!.name, reached.parent!.key)}
+          aria-label={`go to ${reached.parent!.name} referenced by ${cell.column}`} onClick={() => onReach(reached)}><SourceValue value={cell} /></button>;
+        // A TEXT holding one JSON object or array is shown as its JSON reading;
+        // "value details" below keeps the exact TEXT.
+        const json = cell.storage_class === "text" ? sourceJson(cell.exact) : null;
+        return json ? <SourceJson node={json} /> : <SourceValue value={cell} />;
       })()}</dd>
     </div>)}</dl>
     {children}
