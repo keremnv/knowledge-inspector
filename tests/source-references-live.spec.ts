@@ -45,12 +45,13 @@ for (const motion of ["reduce", "no-preference"] as const) {
       await tables(page).getByRole("searchbox").press("Enter");
       await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).press("Enter");
       await expect(reader(page).locator("h2")).toHaveAccessibleName(/TrackId=10$/);
-      await expect(reader(page).locator("details.source-references > summary")).toHaveText("references · 3 declared");
+      await expect(reader(page).locator("details.source-references > summary")).toHaveText("references");
+      await expect(reader(page).locator(".source-outgoing article")).toHaveCount(3);
       await expect(page.locator(".source-canvas > .source-layer:not(.source-schema) canvas")).toHaveCount(0);
       await inspect(page, "Album");
       await expect(reader(page)).toContainText("SQLite INTEGER");
       await expect(reader(page)).toContainText("Historical enforcement is not established");
-      await reader(page).getByRole("button", { name: "open referenced record" }).press("Enter");
+      await reader(page).getByRole("button", { name: /, the record this references$/ }).press("Enter");
       await expect(reader(page).locator("h2")).toHaveAccessibleName(/AlbumId=1$/);
       await expect(reader(page).locator(".source-cells")).toContainText("For Those About To Rock");
       await expect(tables(page).getByRole("searchbox")).toHaveValue("Evil Walks");
@@ -119,7 +120,7 @@ for (const motion of ["reduce", "no-preference"] as const) {
       expect(captureAfter.sha256).toBe(descriptor.capture_digest);
       if (process.env.KI_FK_SHOTS) await writeFile(join(process.env.KI_FK_SHOTS, `capture-integrity-${motion}.json`), JSON.stringify({ context_digest: descriptor.capture_digest, before: captureBefore, after: captureAfter }, null, 2));
       await commands("retire");
-      await reader(page).getByRole("button", { name: "open referenced record" }).click();
+      await reader(page).getByRole("button", { name: /, the record this references$/ }).click();
       await expect(page.getByRole("heading", { name: "source reads stopped" })).toBeVisible();
       await expect(page.locator(".source-canvas > .source-layer:not(.source-schema) canvas")).toHaveCount(0);
       for (const request of requests.filter((r) => !r.pathname.endsWith("/session"))) {
@@ -222,7 +223,7 @@ test("J2-E real HTTP nullable composite, dangling, invalid, unsupported and unad
       await openSourceReferences(page); await reader(page).getByRole("button", { name: "inspect FK 0 reference" }).click();
       await expect(reader(page).locator("[data-reference-status]")).toHaveAttribute("data-reference-status", status);
       await expect(reader(page).getByRole("button", { name: /^(show|reveal) connection$/ })).toHaveCount(0);
-      await expect(reader(page).getByRole("button", { name: "open referenced record" })).toHaveCount(0);
+      await expect(reader(page).getByRole("button", { name: /, the record this references$/ })).toHaveCount(0);
       if (table === "Nullable") { await expect(reader(page).locator("tbody tr")).toHaveCount(2); await expect(reader(page)).toContainText("SQLite NULL"); }
     }
     await expect(page.locator(".source-canvas > .source-layer:not(.source-schema) canvas")).toHaveCount(0);

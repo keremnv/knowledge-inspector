@@ -94,10 +94,10 @@ test("a busy incoming read leaves the record and its other sections, and tries a
   state.refuse = { route: "/references", status: 429, error: "source_reader_busy" };
   await placeParent(page);
   await expect(incoming(page).getByRole("alert")).toContainText("source_reader_busy");
-  await expect(reader(page).locator(".source-outgoing")).toContainText("none declared");
+  await expect(reader(page).locator(".source-outgoing")).toBeAttached();
   await expect(reader(page).getByRole("button", { name: "reveal", exact: true })).toBeVisible();
   await incoming(page).getByRole("button", { name: "try again", exact: true }).press("Enter");
-  await expect(incoming(page).locator("h3")).toHaveText("referenced by · 3 declared");
+  await expect(incoming(page).locator(".gm__list li button")).toHaveCount(3);
   await expect(reader(page).locator("h2")).toBeFocused(); // the vanished button hands focus to the subject
   expect(state.requests.filter((u) => u.searchParams.get("direction") === "incoming")).toHaveLength(2);
 });
@@ -106,8 +106,8 @@ test("count states are named, never zero, and every verified group stays browsab
   await mock(page); await placeParent(page);
   const lines = incoming(page).locator(".gm__list li button");
   await expect(lines).toHaveCount(3);
-  await expect(lines.locator(".gm__list-meta")).toHaveText(["2 · table", "count unavailable · page limit reached · table", "count not checked · page limit reached · table"]);
-  await expect(lines.nth(2)).toHaveAccessibleName("Child · parent_id, count not checked · page limit reached, open in tables");
+  await expect(lines.locator(".gm__list-meta")).toHaveText(["2", "count unavailable · page limit reached", "count not checked · page limit reached"]);
+  await expect(lines.nth(2)).toHaveAccessibleName("Child · parent_id, count not checked · page limit reached");
   await lines.nth(2).click();
   await expect(tables(page).locator("[data-incoming-subject]")).toHaveText(/^rows referencing Parent 10 through parent_id · count not checked · page limit reached$/);
   await expect(tables(page).getByRole("button", { name: "Inspect row 1", exact: true })).toBeVisible();

@@ -107,8 +107,9 @@ export function TableDetails({ relation, identity }: { relation: Relation; ident
 
 export function RecordDetails({ row, relation, context, record, identity, columns, children, reach, onReach, nameOf }: {
   row: SourceRow; relation: Relation; context: SourceContext; record?: SourceRecord; identity?: SourceIdentity; columns?: SourceColumn[]; children?: ReactNode;
-  /** A value that names a record this one reaches, by column: World's role value naming a disc. */
-  reach?: ReadonlyMap<string, SourceFKObservation>;
+  /** The resolved references each column takes part in: one makes the value a way to its record (World's role
+   * value naming a disc); a value in more than one lets the person choose the declaration (decision 4). */
+  reach?: ReadonlyMap<string, readonly SourceFKObservation[]>;
   onReach?: (observation: SourceFKObservation) => void;
   /** A record's name (O17), for the record a dotted value reaches. */
   nameOf?: (table: string, key: SourceCell[], recordId: string | null) => string;
@@ -120,9 +121,16 @@ export function RecordDetails({ row, relation, context, record, identity, column
       <dt>{cell.column}{record?.key.some((key) => key.column === cell.column) && <small>key</small>}</dt><dd>{(() => {
         // World's reader: a value naming a disc is a button, dotted and muted,
         // that goes to it; any other value stays text.
-        const reached = reach?.get(cell.column);
-        if (reached && onReach) return <button type="button" className="source-reach" title={nameOf ? nameOf(reached.parent!.name, reached.parent!.key, reached.parent!.record_id) : sourceKeyLabel(reached.parent!.name, reached.parent!.key)}
-          aria-label={`go to ${reached.parent!.name} referenced by ${cell.column}`} onClick={() => onReach(reached)}><SourceValue value={cell} /></button>;
+        const reaches = reach?.get(cell.column) ?? [];
+        const target = (observation: SourceFKObservation) => nameOf ? nameOf(observation.parent!.name, observation.parent!.key, observation.parent!.record_id)
+          : sourceKeyLabel(observation.parent!.name, observation.parent!.key);
+        if (reaches.length === 1 && onReach) return <button type="button" className="source-reach" title={target(reaches[0])}
+          aria-label={`go to ${reaches[0].parent!.name} referenced by ${cell.column}`} onClick={() => onReach(reaches[0])}><SourceValue value={cell} /></button>;
+        // One value, several declared references: each is offered by the table it reaches and its columns.
+        if (reaches.length > 1 && onReach) return <><SourceValue value={cell} />
+          <span className="source-reach-choice" data-reach-choice>{reaches.map((observation) => <button type="button" className="source-reach" key={observation.observation_id}
+            title={target(observation)} aria-label={`go to ${observation.parent!.name} referenced by ${observation.declaration.pairs.map((pair) => pair.child_column).join(", ")}`}
+            onClick={() => onReach(observation)}>→ {observation.parent!.name}</button>)}</span></>;
         // A TEXT holding one JSON object or array is shown as its JSON reading;
         // "value details" below keeps the exact TEXT.
         const json = cell.storage_class === "text" ? sourceJson(cell.exact) : null;

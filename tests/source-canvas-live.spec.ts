@@ -52,7 +52,7 @@ for(const motion of ['reduce','no-preference'] as const)for(const width of [1440
     let at=await point(p,observation.id,true);await p.mouse.click(at.x,at.y);await expect(reader(p).locator('h2')).toContainText('reference');await expect(reader(p).locator('[data-reference-status]')).toHaveText('resolved');
     await expect(list(p).locator(`[data-field-reference="${observation.id}"]`)).toHaveAttribute('aria-pressed','true');
     // An endpoint stands independently of its observation's display.
-    await reader(p).getByRole('button',{name:'open referenced record',exact:true}).click();await expect(reader(p).locator('[data-placement="show"]')).toHaveText('reveal');await reader(p).getByRole('button',{name:'Back',exact:true}).click();await reader(p).getByRole('button',{name:'hide connection',exact:true}).click();await rest(p,4);
+    await reader(p).getByRole('button',{ name: /, the record this references$/ }).click();await expect(reader(p).locator('[data-placement="show"]')).toHaveText('reveal');await reader(p).getByRole('button',{name:'Back',exact:true}).click();await reader(p).getByRole('button',{name:'hide connection',exact:true}).click();await rest(p,4);
     await expect(list(p).locator('[data-field-reference]')).toHaveCount(2);
     await list(p).getByRole('button',{name:'Evil Walks',exact:true}).press("Enter");await rest(p,4);
     for(const dock of ['reader','tables'])await p.locator(`#source-${dock} .motion-swap__is`).getByRole('button',{name:'close',exact:true}).first().click();await rest(p,4);

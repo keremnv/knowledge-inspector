@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { SourceOrder, SourceSearch, SourceRow, SourceRows } from "../api/source";
 import { identityLimitation, Loading, Problem } from "./SourceDetails";
 import { SourceValue } from "./SourceValue";
@@ -6,10 +7,12 @@ import { TableFooter } from "../world/tableChrome";
 import { still } from "../styles/motion";
 
 /** This view owns no requests: an outgoing table cannot restart a row read. */
-export function SourceRowsView({ name, named, rows, error, selected, placed, order, offset, limit, onPage, onSelect, onTakeOff, onOrder, onRetry, scroll, searching = false }: {
+export function SourceRowsView({ name, named, actions, rows, error, selected, placed, order, offset, limit, onPage, onSelect, onTakeOff, onOrder, onRetry, scroll, searching = false }: {
   name: string;
   /** The column that names this table's records, if a person chose one (O17). */
   named?: string;
+  /** What can be done with the whole set (keep all, remove set): on the same bar as the page size, never a bar of its own. */
+  actions?: ReactNode;
   /** Record handles on the canvas: their rows carry World's margin rule. */
   placed: ReadonlySet<string>;
   searching?: boolean;
@@ -74,9 +77,12 @@ export function SourceRowsView({ name, named, rows, error, selected, placed, ord
       <span role="status">{error ? "page unavailable" : rows ? rows.returned ? `${search ? "matches" : "rows"} ${offset + 1}–${offset + rows.returned}${rows.has_more ? " · more available" : search?.completion === "complete" ? " · no more matches" : search ? " · bounded results" : " · end"}` : "0 rows" : "loading…"}</span>
       <button type="button" aria-disabled={!nextAvailable} onClick={() => { if (nextAvailable) onPage(rows!.next_offset!, limit); }}>next rows</button>
     </TableFooter>
-    <label className="table__filters source-window-size"><span className="sr-only">rows per page</span><select aria-label="rows per page" value={limit} onChange={(event) => onPage(0, Number(event.target.value))}>
-      {[1, 10, 25, 50].map((size) => <option key={size} value={size}>{size} rows</option>)}
-    </select></label>
+    <div className="table__foot source-window-bar">
+      <label className="table__filters source-window-size"><span className="sr-only">rows per page</span><select aria-label="rows per page" value={limit} onChange={(event) => onPage(0, Number(event.target.value))}>
+        {[1, 10, 25, 50].map((size) => <option key={size} value={size}>{size} rows</option>)}
+      </select></label>
+      {actions}
+    </div>
     {rows?.has_more && rows.next_offset !== null && rows.next_offset > 1_000_000 && <p>further rows exceed the offset limit</p>}
   </div>;
 }

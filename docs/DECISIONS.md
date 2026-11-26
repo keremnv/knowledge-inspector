@@ -39,3 +39,63 @@ A value gets a rendering of its own only when its form can be checked exactly, n
 a pattern. For now, text only: plain text, multi-line or long text, and a JSON object or array (strict parse). URLs,
 dates, Markdown and "looks like code" stay text. Links between records come from declared foreign keys, not from
 recognising an identifier. Images and other media are not supported.
+
+## 2026-11-26 · Following records
+
+Following a declared reference leaves the same trail whichever way it runs. Before this, an outgoing reference (a
+dotted value) opened its target in the Reader and drew the connection, while an incoming one opened the child table
+in Tables, and choosing the row cleared Reader Back and drew nothing. The review behind this decision, with its
+walks and screenshots, is `docs/TRAVERSAL_REVIEW.md`.
+
+**The model.** Left shows sets of rows; right shows one thing. A set is a whole table, a filtered table, or the rows
+related to one record through one declaration. A person can predict where they land: one verified record opens in
+the Reader, a choice among rows opens in Tables, and Back restores the workspace they just left.
+
+1. **The canvas draws the path, in both directions.** Following a reference places both records and draws the exact
+   observation used. Opening a set of several rows has not picked an edge yet; choosing a row in it draws the
+   observation from that child to the record that defined the set, even when the Reader has since moved on (back
+   at the evidence set after reading a clause, the next row is drawn to the original finding). Inspecting an
+   observation leaves the canvas alone; "show connection" draws it on request. `?placement=explicit` still only
+   navigates.
+2. **An incoming singleton opens directly, when the row read establishes it.** An exact count of one is enough to
+   ask for the row. The child opens in the Reader once the scoped result is complete, holds exactly that row, and the
+   row has a verified handle; Tables keeps the set it had. A sole child without a verified key opens in Tables,
+   where its values can be read. A group whose count is unavailable stays browsable in Tables. A value that takes
+   part in more than one declared reference (`span.source`, in both the reference to `source` and the one to
+   `source_field`) lets the person choose the declaration, so both stay reachable.
+3. **One Back across both panels.** Every move that changes what is open (a row, a follow, a set, a Find hit, a
+   canvas mark, table info, whole table) records the workspace it leaves: the Reader subject, the table scope, its
+   Find, sort and window, the selection, and which panels were open. Back restores all of it. A record opened from
+   an address is the first restorable state. **whole table** stays its own action, a request to widen the current
+   set; Back after it recovers the narrowed set. Filtering, sorting and paging refine the set in place and are not
+   steps.
+4. **Nonempty relationships first; exceptions in place.** The Reader lists the incoming declarations that have rows,
+   and those whose count is unknown, labelled as such ("count unavailable"). Declarations with an exact zero, and
+   the complete list in both directions, are under details. Declaration pages are read one after another; usable
+   groups show as they arrive, with a "checking declarations" label until every page has been read, and "coverage
+   incomplete" if a page fails. The current record's reads come first, and the rest stops when the person leaves.
+   An empty list implies absence only after every page succeeded.
+5. **A whole set is the unit of bulk placement, with precise removal.** "keep all" places every row of the set in
+   Tables (all pages), not the page shown, and says the scope before it runs ("keep all 2", "keep all 10,106"; no
+   total is claimed where none is known). It can be stopped, and reports how far it got ("kept 120 of 10,106 ·
+   stopped"). "remove set" takes off exactly what that run contributed: a record already on the canvas before it,
+   or reached afterwards by another path, stays. Both sit on the bar under the rows, beside the page size, never on a
+   bar of their own, and only where rows can be placed: a view or a table without a key shows no button and no
+   sentence about one. When the line above the rows does not already name the cause (the session's record limit),
+   the cause stands where the button would be, as a label.
+
+**What this removes.** The Reader's "expand through" list (bulk placement of a group is "keep all" on the set in
+Tables); "references · N declared" as a way to navigate (it stays, under details, as the complete list);
+"open referenced record" in the reference view (the → target does the same); the separate table Back; the
+page-limited "add all" and the table-wide "clear" in the table footer. This supersedes O8.5 (add all limited to the
+page shown) and O8.9 (expand through in the Reader).
+
+**What stays for a declaration layer.** Source mode follows physical references. That "evidence · holder" means
+"what this finding cites", that eight nullable target columns are one "cites" relationship, and what a span's
+offsets select in its note, need declared roles and conventions from whoever produced the data.
+
+**Acceptance.** The review's walk B (finding → evidence through holder → span) leaves three records, two exact
+connections, and a Back trail to the starting finding. Walk A takes 14 clicks (18 before). Walk C takes five clicks
+to identify the three referring rows (three before): the counts say there is one of each but do not identify them.
+
+**Status.** Decided. Applied in the traversal change.

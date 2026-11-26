@@ -262,14 +262,31 @@ export function retractSourceExpansion(field: SourceField, key: string): SourceF
 }
 
 /**
- * A record opened individually stands on its own: no expansion may take it
- * back any more. Returns the same field when none had introduced it.
+ * A record opened individually stands on its own, and a connection followed
+ * individually is the person's own: no set placement may take either back any
+ * more. Returns the same field when none had contributed them.
  */
 export function adoptSourceRecords(field: SourceField, elementIds: string[]): SourceField {
   const adopted = new Set(elementIds);
-  if (![...field.expansions.values()].some((expansion) => expansion.introduced.some((id) => adopted.has(id)))) return field;
+  if (![...field.expansions.values()].some((expansion) => expansion.introduced.some((id) => adopted.has(id)) ||
+      expansion.references.some((id) => adopted.has(id)))) return field;
   return { ...field, expansions: new Map([...field.expansions].map(([key, expansion]) =>
-    [key, { ...expansion, introduced: expansion.introduced.filter((id) => !adopted.has(id)) }])) };
+    [key, { references: expansion.references.filter((id) => !adopted.has(id)), introduced: expansion.introduced.filter((id) => !adopted.has(id)) }])) };
+}
+
+/**
+ * Place a set's records (a whole table or a filtered table: no connections to
+ * draw), noting under `key` the records this placement introduced, so
+ * `retractSourceExpansion` takes off exactly those. A record already standing
+ * is not the set's to take back.
+ */
+export function contributeSourceRecords(field: SourceField, context: string, key: string, records: SourceRecord[],
+  groundedIn: (record: SourceRecord) => boolean): SourceField {
+  const placed = placeSourceRecords(field, context, records, groundedIn);
+  const before = field.expansions.get(key) ?? { references: [], introduced: [] };
+  const expansions = new Map(placed.field.expansions);
+  expansions.set(key, { references: before.references, introduced: [...before.introduced, ...placed.placed] });
+  return { ...placed.field, expansions };
 }
 
 /** What a field remembered between visits looks like: everything but the evidence. */
@@ -321,10 +338,13 @@ export function restoreSourceField(context: string, remembered: RememberedField,
     }] as [string, SourceExpansion]).filter(([, expansion]) => expansion.references.length || expansion.introduced.length)) };
 }
 
-/** Whether an expansion still has anything drawn on the field. */
+/** Whether a set placement still has anything of its own on the field: a connection it drew or a record it introduced. */
 export function expansionShown(field: SourceField, key: string): boolean {
   const expansion = field.expansions.get(key);
-  return !!expansion && field.references.some((reference) => expansion.references.includes(reference.elementId));
+  if (!expansion) return false;
+  const standing = new Set(field.records.map((placed) => placed.elementId));
+  return field.references.some((reference) => expansion.references.includes(reference.elementId)) ||
+    expansion.introduced.some((id) => standing.has(id));
 }
 
 /**

@@ -19,7 +19,8 @@ import { SourceFind, emptySourceFind, type SourceFindDraft } from "./SourceFind"
 import { SourceRowsView } from "./SourceRowsView";
 import { BulkOutcomeNote, type BulkOutcome } from "./SourceOutcome";
 import { identityBlocksPlacement, identityExplanation, readFailure, stoppedRecovery } from "./sourceExplain";
-import { ExpandThrough, IncomingReferences, OutgoingReferences, ReferenceActions, ReferenceDetails, addressableReference, incomingColumns, incomingCountText, referenceName } from "./SourceReferences";
+import { IncomingLedger, IncomingReferences, OutgoingReferences, ReferenceActions, ReferenceDetails, addressableReference, incomingColumns, incomingCountText, referenceName } from "./SourceReferences";
+import { DISCOVERY_PAGE, useIncomingDiscovery, useOutgoingDiscovery } from "./useReferenceDiscovery";
 import { sourcePresentation, sourceRecordLink } from "./sourcePresentation";
 import { SourceCanvas } from "./SourceCanvas";
 import { schemaNamed, SOURCE_SHOW_DEFAULT, SourceFieldList, SourcePlacement, SourceShowBand, SourceUnplaceable, type SourceShow } from "./SourceFieldControls";
@@ -36,6 +37,7 @@ import {
   separateSourceRecords,
   clearSourceField,
   adoptSourceRecords,
+  contributeSourceRecords,
   expandSourceGroup,
   expansionKey,
   expansionShown,
@@ -64,9 +66,16 @@ type BrowseState = { relation: Relation | null; offset: number; limit: number; w
 /** The child table read as "rows referencing this record through FK k". The
  * count is the Reader's, from this same capture; the rows are read anew. */
 type IncomingSubject = { parent: RecordSubject; declaration: SourceFKDeclaration; count: SourceIncomingCount };
-type TableVisit = { browse: BrowseState; draft: SourceFindDraft; search: SourceSearchRequest | null | undefined; sort: SourceOrder | null;
-  searchPage: { offset: number; limit: number }; incoming: IncomingSubject | null; reader: ReaderStep; trail: ReaderStep[]; readerOpen: boolean };
-type ReaderStep = { row: SourceRow | null; placed: RecordSubject | null; observation: ObservationSubject | null; referencePage: number };
+/**
+ * The workspace a move leaves (decision 4): both panels' subjects, the table's
+ * scope with its Find, sort and window, the selection, and which dock leads.
+ * One Back restores all of it.
+ */
+type WorkspaceStep = { browse: BrowseState; draft: SourceFindDraft; search: SourceSearchRequest | null | undefined; sort: SourceOrder | null;
+  searchPage: { offset: number; limit: number }; incoming: IncomingSubject | null; catalogueVisible: boolean;
+  row: SourceRow | null; placed: RecordSubject | null; observation: ObservationSubject | null; readerOpen: boolean; primary: SourceDock };
+/** Steps kept for Back. */
+const HISTORY = 50;
 
 const FOCUS_TARGETS = {
   readerPanel: 'source-reader', tablePanel: 'source-tables',
@@ -186,7 +195,6 @@ function Workspace({ context }: { context: SourceContext }) {
   const [browse, setBrowse] = useState<BrowseState>({ relation: null, offset: 0, limit: PAGE, window: 0 });
   const { relation } = browse;
   const [catalogueVisible, setCatalogueVisible] = useState(true);
-  const [tableTrail, setTableTrail] = useState<TableVisit[]>([]);
   // undefined = browsing; null = unsubmitted draft; object = submitted search.
   const [findDraft, setFindDraft] = useState(emptySourceFind);
   const [search, setSearch] = useState<SourceSearchRequest | null | undefined>();
@@ -195,6 +203,9 @@ function Workspace({ context }: { context: SourceContext }) {
   // World's sort: one column, by the database, for the table on show.
   const [sort, setSort] = useState<SourceOrder | null>(null);
   const { offset, limit } = search === undefined ? browse : searchPage;
+  // The set on show is the rows referencing one record through one declaration.
+  const referencing = search?.mode === "reference" && incoming && search.record === incoming.parent.recordId &&
+    search.fk === incoming.declaration.declaration_id ? incoming : null;
   const [row, setRow] = useState<SourceRow | null>(null);
   // The canvas field: verified records placed in this complete context only.
   const [field, setField] = useState(() => emptySourceField(contextKey));
@@ -204,8 +215,7 @@ function Workspace({ context }: { context: SourceContext }) {
   // A Reader subject chosen from the canvas, independent of the table window.
   const [placedSubject, setPlacedSubject] = useState<RecordSubject | null>(null);
   const [observationSubject, setObservationSubject] = useState<ObservationSubject | null>(null);
-  const [trail, setTrail] = useState<ReaderStep[]>([]);
-  const [referencePage, setReferencePage] = useState(0);
+  const [history, setHistory] = useState<WorkspaceStep[]>([]);
   const placementOwner = useRef<{ sequence: number; controller?: AbortController }>({ sequence: 0 });
   const [placementRead, setPlacementRead] = useState<{ subject: string; pending: boolean; error?: Error } | null>(null);
   const cancelPlacement = () => {
@@ -213,7 +223,8 @@ function Workspace({ context }: { context: SourceContext }) {
     placementOwner.current.controller?.abort();
     setPlacementRead(null);
   };
-  const clearTrail = () => { setObservationSubject(null); setTrail([]); setReferencePage(0); cancelPlacement(); };
+  /** Leaving the Reader subject: an observation open in it closes, and a placement on its way stops. */
+  const leaveSubject = () => { setObservationSubject(null); cancelPlacement(); };
   const [reveal, setReveal] = useState<{ id: string; token: number } | null>(null);
   // Selectors tried in order: the first present control takes focus.
   const [focusRequest, setFocusRequest] = useState<string[] | null>(null);
@@ -245,23 +256,20 @@ function Workspace({ context }: { context: SourceContext }) {
     ? catalogue?.data?.relations.find((item) => item.name === placedSubject.table) ?? placedRelation(placedSubject.table, recordResult?.data ?? undefined)
     : relation;
   const readerRecordSubject = Boolean(row || placedSubject);
+  // Placement needs the verified record in hand, read in this context.
+  const record = recordResult?.data && recordResult.data.record_id === handle ? recordResult.data : null;
 
-  const loadReferences = useCallback(async (signal: AbortSignal) => {
-    if (!handle || observationSubject) return null;
-    return api.outgoingReferences(handle, 10, referencePage, signal);
-  }, [api, handle, observationSubject, referencePage]);
-  const referencesResult = useSourceRead(loadReferences, onFailure, !fatal && !!recordResult?.data && !observationSubject);
-  // Read separately from outgoing: either can fail without hiding the other.
-  const [incomingWindow, setIncomingWindow] = useState<{ record: string; offset: number } | null>(null);
-  const incomingOffset = incomingWindow && incomingWindow.record === handle ? incomingWindow.offset : 0;
-  const incomingAvailable = recordResult?.data?.record_id === handle && !!recordResult?.data?.actions.incoming_references;
-  const loadIncoming = useCallback(async (signal: AbortSignal) => {
-    if (!handle || !readerTable || observationSubject) return null;
-    const page = await api.incomingReferences(handle, 10, incomingOffset, signal);
+  // Every declared reference of the record in hand, both directions, page after
+  // page (decision 4): the outgoing ones make its values ways to their records,
+  // the incoming ones list what refers to it. Each direction can fail alone.
+  const readOutgoing = useCallback((id: string, at: number, signal: AbortSignal) => api.outgoingReferences(id, DISCOVERY_PAGE, at, signal), [api]);
+  const outgoing = useOutgoingDiscovery(record?.record_id, !fatal && !observationSubject, readOutgoing, onFailure);
+  const readIncoming = useCallback(async (id: string, at: number, signal: AbortSignal) => {
+    const page = await api.incomingReferences(id, DISCOVERY_PAGE, at, signal);
     if (page.groups.some((group) => group.declaration.parent_table !== readerTable)) throw new SourceReadError("source_reference_mismatch", 409);
     return page;
-  }, [api, handle, readerTable, observationSubject, incomingOffset]);
-  const incomingResult = useSourceRead(loadIncoming, onFailure, !fatal && incomingAvailable && !observationSubject);
+  }, [api, readerTable]);
+  const incomingDiscovery = useIncomingDiscovery(record?.record_id, !fatal && !!record?.actions.incoming_references && !observationSubject, readIncoming, onFailure);
   const loadObservation = useCallback(async (signal: AbortSignal) => {
     if (!observationSubject) return null;
     const observation = await api.reference(observationSubject.childId, observationSubject.declarationId, signal);
@@ -276,7 +284,7 @@ function Workspace({ context }: { context: SourceContext }) {
   useEffect(() => {
     if (!fatal) return;
     cancelPlacement();
-    setObservationSubject(null); setTrail([]); setTableTrail([]); setFocusRequest(null); setIncoming(null);
+    setObservationSubject(null); setHistory([]); setFocusRequest(null); setIncoming(null);
     setField(emptySourceField(contextKey));
     setPlacedSubject(null);
     setReveal(null);
@@ -384,33 +392,37 @@ function Workspace({ context }: { context: SourceContext }) {
     frame = requestAnimationFrame(focusLive);
     return () => cancelAnimationFrame(frame);
   }, [focusRequest]);
+  // Filtering refines the set in place: it is not a step Back returns to.
   const changeSearch = (next: SourceSearchRequest | null | undefined) => {
-    clearTrail();
+    leaveSubject();
     setSearch(next); setSearchPage({ offset: 0, limit: PAGE }); setIncoming(null);
     setBrowse((current) => ({ ...current, window: current.window + 1 }));
     setRow(null);
   };
   const showCatalogue = () => { cancelPlacement(); setCatalogueVisible(true); openTables(); };
-  const backTable = (keyboard = false) => {
-    const previous = tableTrail.at(-1);
+  // The workspace as it stands, read at the moment of the move: a follow that
+  // waited for a read remembers what was open when it was asked for.
+  // The catalogue is a way to choose a table, not a place to come back to:
+  // Back returns to the table behind it, or to the catalogue only before any.
+  const snapshot = (): WorkspaceStep => ({ browse, draft: findDraft, search, sort, searchPage, incoming, catalogueVisible: !relation,
+    row, placed: placedSubject, observation: observationSubject, readerOpen, primary });
+  const snapshotRef = useRef(snapshot);
+  snapshotRef.current = snapshot;
+  /** Record the workspace a move is about to leave (decision 4). */
+  const remember = () => { const step = snapshotRef.current(); setHistory((steps) => [...steps.slice(-(HISTORY - 1)), step]); };
+  /** One Back for both panels: the Reader subject, the table's scope, its Find, sort and window, and the selection. */
+  const goBack = (keyboard = false) => {
+    const previous = history.at(-1);
     if (!previous) return;
     cancelPlacement();
     setBrowse(previous.browse); setFindDraft(previous.draft); setSearch(previous.search); setSearchPage(previous.searchPage);
-    setIncoming(previous.incoming); setSort(previous.sort);
+    setIncoming(previous.incoming); setSort(previous.sort); setCatalogueVisible(previous.catalogueVisible);
     // A window-only occurrence is not an identity that can be restored into a fresh read.
-    setRow(previous.reader.row?.record_id ? previous.reader.row : null);
-    setPlacedSubject(previous.reader.placed); setObservationSubject(previous.reader.observation);
-    setReferencePage(previous.reader.referencePage);
-    setTrail(previous.trail.filter((step) => !step.row || !!step.row.record_id)); setReaderOpen(previous.readerOpen);
-    setTableTrail((steps) => steps.slice(0, -1)); setCatalogueVisible(false);
-    if (keyboard) {
-      setPrimary(previous.readerOpen ? "reader" : "tables");
-      setFocusRequest([previous.readerOpen ? FOCUS_TARGETS.reader : FOCUS_TARGETS.table]);
-    }
-  };
-  const rememberTable = () => {
-    if (relation) setTableTrail((steps) => [...steps.slice(-19), { browse, draft: findDraft, search, sort, searchPage, incoming,
-      reader: { row, placed: placedSubject, observation: observationSubject, referencePage }, trail, readerOpen }]);
+    setRow(previous.row?.record_id ? previous.row : null);
+    setPlacedSubject(previous.placed); setObservationSubject(previous.observation);
+    setReaderOpen(previous.readerOpen); setPrimary(previous.primary);
+    setHistory((steps) => steps.slice(0, -1));
+    if (keyboard) setFocusRequest([previous.readerOpen ? FOCUS_TARGETS.reader : FOCUS_TARGETS.table]);
   };
   const choose = (item: Relation, keyboard = false) => {
     setCatalogueVisible(false);
@@ -418,8 +430,8 @@ function Workspace({ context }: { context: SourceContext }) {
       if (keyboard) setFocusRequest([FOCUS_TARGETS.table]);
       return;
     }
-    rememberTable();
-    clearTrail();
+    remember();
+    leaveSubject();
     setFindDraft(emptySourceFind);
     setSearch(undefined); setSearchPage({ offset: 0, limit: PAGE }); setIncoming(null); setSort(null);
     setBrowse((current) => ({ relation: item, offset: 0, limit: PAGE, window: current.window + 1 }));
@@ -429,7 +441,7 @@ function Workspace({ context }: { context: SourceContext }) {
   // Ascending, descending, unsorted: World's header cycle. A new order is a
   // new table, so the window starts again at its first page.
   const reorder = (next: SourceOrder | null) => {
-    clearTrail(); setSort(next); setRow(null);
+    leaveSubject(); setSort(next); setRow(null);
     setSearchPage((current) => ({ ...current, offset: 0 }));
     setBrowse((current) => ({ ...current, offset: 0, window: current.window + 1 }));
   };
@@ -438,13 +450,13 @@ function Workspace({ context }: { context: SourceContext }) {
   // its table does, and direct placement places it. A row without a verified
   // key opens its table, filtered by the same text.
   const openFound = (hit: SourceFindHit, text: string) => {
-    clearTrail(); cancelPlacement();
+    remember(); leaveSubject();
     if (hit.record_id) {
       setPlacedSubject({ recordId: hit.record_id, table: hit.table, key: hit.key }); setRow(null); openReader();
       if (presentation.placement === "direct") setDirectRow(hit.record_id);
       return;
     }
-    rememberTable(); setCatalogueVisible(false);
+    setCatalogueVisible(false);
     setFindDraft({ ...emptySourceFind, text });
     setSearch({ mode: "literal", text }); setSearchPage({ offset: 0, limit: PAGE }); setIncoming(null); setSort(null);
     setBrowse((current) => ({ relation: catalogue?.data?.relations.find((item) => item.name === hit.table) ?? childRelation(hit.table),
@@ -457,8 +469,9 @@ function Workspace({ context }: { context: SourceContext }) {
     choose(catalogue?.data?.relations.find((item) => item.name === name) ?? schemaRead?.data?.find((item) => item.name === name) ?? childRelation(name));
     openTables();
   };
+  // Paging moves through the set in place: not a step.
   const page = (nextOffset: number, nextLimit: number) => {
-    clearTrail();
+    leaveSubject();
     if (search === undefined) setBrowse((current) => ({ ...current, offset: nextOffset, limit: nextLimit, window: current.window + 1 }));
     else {
       setSearchPage({ offset: nextOffset, limit: nextLimit });
@@ -479,7 +492,7 @@ function Workspace({ context }: { context: SourceContext }) {
       return;
     }
     cancelPlacement();
-    rememberTable();
+    remember();
     setCatalogueVisible(false);
     setFindDraft(emptySourceFind);
     setSearch({ mode: "reference", record: record.record_id, fk: fk.declaration_id }); setSearchPage({ offset: 0, limit: PAGE });
@@ -491,13 +504,15 @@ function Workspace({ context }: { context: SourceContext }) {
     openTables();
     if (keyboard) setFocusRequest([FOCUS_TARGETS.table]);
   };
+  // A row chosen from a set opens in the Reader. With direct placement it is
+  // placed; chosen from the rows referencing a record, the exact observation
+  // joining it to that record is drawn, wherever the Reader has been since.
   const select = (next: SourceRow) => {
-    clearTrail(); setRow(next); setPlacedSubject(null); openReader();
-    if (presentation.placement === "direct") setDirectRow(next.record_id ?? null);
+    remember(); leaveSubject(); setRow(next); setPlacedSubject(null); openReader();
+    if (presentation.placement !== "direct" || !next.record_id) return;
+    if (referencing) void drawFromSet(next.record_id, referencing);
+    else setDirectRow(next.record_id);
   };
-
-  // Placement needs the verified record in hand, read in this context.
-  const record = recordResult?.data && recordResult.data.record_id === handle ? recordResult.data : null;
   const shownPlaced = placedRecord(field, handle);
   // What the table panel marks as on the canvas, as World's did: each placed
   // record's row, and each table whose every row is placed. A table's size is
@@ -602,15 +617,20 @@ function Workspace({ context }: { context: SourceContext }) {
   const [recordLink] = useState(() => sourceRecordLink(window.location.search));
   const [linkNote, setLinkNote] = useState<string | null>(() =>
     recordLink && "problem" in recordLink ? `the linked record was not opened: ${recordLink.problem}` : null);
+  // A lookup refused only because the service was busy can be asked again.
+  const [linkRetry, setLinkRetry] = useState(false);
+  const [linkAttempt, setLinkAttempt] = useState(0);
   const linkFollowed = useRef(false);
   useEffect(() => {
     if (!recordLink || !("link" in recordLink) || linkFollowed.current || restore.reading || fatal) return;
-    linkFollowed.current = true;
+    linkFollowed.current = true; setLinkRetry(false);
     const { table, key } = recordLink.link;
     const controller = new AbortController();
+    let settled = false;
     (async () => {
       try {
         const page = await api.search(table, { mode: "primary_key", key }, 2, 0, controller.signal);
+        settled = true;
         const exact = page.rows.filter((item) => item.key.length === key.length && item.key.every((cell, index) =>
           cell.column === key[index].column && cell.storage_class === key[index].storage_class &&
           "exact" in cell && cell.exact === key[index].exact));
@@ -621,17 +641,21 @@ function Workspace({ context }: { context: SourceContext }) {
         }
         const found = exact[0];
         if (!found.record_id) { setLinkNote(`the linked ${table} row has no verified record identity in this session`); return; }
-        clearTrail(); cancelPlacement();
+        // The first restorable state: nothing before it to go back to.
+        leaveSubject();
         setPlacedSubject({ recordId: found.record_id, table, key: found.key }); setRow(null); openReader();
         if (presentation.placement === "direct") setDirectRow(found.record_id);
         setLinkNote(null);
       } catch (error) {
         if (controller.signal.aborted) return;
         setLinkNote(`the linked record was not opened: ${error instanceof SourceReadError ? error.code : "the read failed"}`);
+        if (error instanceof SourceReadError && readFailure(error).recovery === "retry") { linkFollowed.current = false; setLinkRetry(true); }
       }
     })();
-    return () => controller.abort();
-  }, [restore.reading, fatal]);
+    // A lookup abandoned before it answered (an effect run again, as React's
+    // development mode does) has not followed the link: the next run asks again.
+    return () => { if (!controller.signal.aborted) { controller.abort(); if (!settled) linkFollowed.current = false; } };
+  }, [restore.reading, fatal, linkAttempt]);
   // Writing back waits for the restore to end, and for a person's choice when it could not read.
   useEffect(() => {
     if (restore.reading || restore.unread || fatal) return;
@@ -692,7 +716,7 @@ function Workspace({ context }: { context: SourceContext }) {
   // One bulk run at a time: World's add-all, or a group expansion. Each page
   // is one field update; a run started from the table stops when the table
   // on show changes under it, as World's buffer check does.
-  const [bulk, setBulk] = useState<{ kind: "add" | "expand"; key?: string; placed: number; skipped: number } | null>(null);
+  const [bulk, setBulk] = useState<{ kind: "add" | "expand"; key?: string; placed: number; skipped: number; reached: number; total: number | null } | null>(null);
   // What each run did, kept by the action it answers (an expansion key, or the
   // table window an add all read) and shown where that action is offered.
   const [outcomes, setOutcomes] = useState(new Map<string, BulkOutcome>());
@@ -719,18 +743,18 @@ function Workspace({ context }: { context: SourceContext }) {
     setRevealRecord(null);
     setReveal((current) => ({ id: placed.elementId, token: (current?.token ?? 0) + 1 }));
   }, [field, revealRecord]);
-  /** Place what `read` returns, page after page, or (`whole` false) only its first page. */
+  /** Place what `read` returns, page after page, the whole set (decision 4); `total` when the set's size is known. */
   const runBulk = async (kind: "add" | "expand", key: string | undefined, origin: string, table: string,
-    read: (offset: number) => Promise<SourceRecordWindow>, place: (page: SourceRecordWindow) => void, whole = true) => {
+    read: (offset: number) => Promise<SourceRecordWindow>, place: (page: SourceRecordWindow) => void, total: number | null) => {
     if (bulk || fatal) return;
     const token = ++bulkToken.current, shownAtStart = tableShownRef.current;
     const live = () => bulkToken.current === token && (kind === "expand" || tableShownRef.current === shownAtStart);
     // A new run answers for its action: the last result of it is not this one's.
-    setOutcome(origin, null); setBulk({ kind, key, placed: 0, skipped: 0 });
+    setOutcome(origin, null); setBulk({ kind, key, placed: 0, skipped: 0, reached: 0, total });
     let offset = 0, placed = 0, skipped = 0, already = 0, unread = false;
     let identity: SourceIdentity | undefined;
     const finish = (state: BulkOutcome["state"], extra: Partial<BulkOutcome> = {}) =>
-      setOutcome(origin, { kind, origin, table, state, placed, already, skipped, unread, identity, ...extra });
+      setOutcome(origin, { kind, origin, table, state, placed, already, skipped, unread, identity, total, ...extra });
     const stopped = () => finish("stopped", { stopped: stopRequest.current === token ? "person" : "table_changed" });
     try {
       for (;;) {
@@ -743,11 +767,11 @@ function Workspace({ context }: { context: SourceContext }) {
         // Bring the run into view where it starts, as a single placement is.
         if (!offset && page.records.length) setRevealRecord(page.records[0].record.record_id);
         placed += fresh; already += page.records.length - fresh; skipped += page.skipped;
-        setBulk({ kind, key, placed, skipped });
+        setBulk({ kind, key, placed, skipped, reached: placed + already + skipped, total });
         // No row of this window had a record identity, and the table says none
         // will: further pages would be read only to be skipped.
         if (!page.records.length && page.skipped && identityBlocksPlacement(page.identity)) { unread = page.has_more; break; }
-        if (!whole || !page.has_more || page.next_offset === null) break;
+        if (!page.has_more || page.next_offset === null) break;
         offset = page.next_offset;
       }
       finish(skipped ? (placed || already ? "partial" : "nothing") : placed || already ? "complete" : "nothing");
@@ -761,53 +785,58 @@ function Workspace({ context }: { context: SourceContext }) {
     }
   };
   // Every page is checked whole before it is placed: one bad record places none.
-  const placePage = (records: SourceRecord[]) => {
+  // What the set introduces is noted under its key, so "remove set" takes off only that.
+  const contributePage = (key: string, records: SourceRecord[]) => {
     try { placeSourceRecords(emptySourceField(contextKey), contextKey, records, grounded); }
     catch { throw new SourceReadError("source_context_mismatch", 409); }
     for (const placed of records) { learnRows(placed.name, placed.identity); rememberDisplay(placed); }
-    setField((current) => placeSourceRecords(current, contextKey, records, grounded).field);
+    setField((current) => contributeSourceRecords(current, contextKey, key, records, grounded));
   };
-  /** The whole group (the Reader's expand through), or only `shown`, the window on show (add all, O8.5). */
-  const expandGroup = async (parentId: string, fk: SourceFKDeclaration, shown?: { offset: number; limit: number; order: SourceOrder | null }) => {
+  /** Every row referencing `parentId` through `fk`, each with its connection: the whole group. */
+  const expandGroup = async (parentId: string, fk: SourceFKDeclaration, total: number | null) => {
     const key = expansionKey(parentId, fk.declaration_id);
     let parent: SourceRecord | null = null;
     await runBulk("expand", key, key, fk.child_table, async (offset) => {
       parent ??= await api.record(parentId);
-      const request = { mode: "reference" as const, record: parentId, fk: fk.declaration_id };
-      return shown ? api.recordWindow(fk.child_table, request, shown.limit, shown.offset, undefined, shown.order)
-        : api.recordWindow(fk.child_table, request, 100, offset);
+      return api.recordWindow(fk.child_table, { mode: "reference" as const, record: parentId, fk: fk.declaration_id }, 100, offset);
     }, (page) => {
       const members = page.records.map((entry) => ({ record: entry.record, observation: entry.observation! }));
       try { expandSourceGroup(emptySourceField(contextKey), contextKey, key, parent!, members, grounded); }
       catch { throw new SourceReadError("source_reference_mismatch", 409); }
       for (const member of [parent!, ...members.map((entry) => entry.record)]) { learnRows(member.name, member.identity); rememberDisplay(member); }
       setField((current) => expandSourceGroup(current, contextKey, key, parent!, members, grounded));
-    }, !shown);
+    }, total);
   };
-  const takeBackGroup = (parentId: string, fk: SourceFKDeclaration) => {
-    const key = expansionKey(parentId, fk.declaration_id);
+  /** Take off exactly what one set placement contributed. */
+  const removeSet = (key: string) => {
     cancelPlacement(); setField((current) => retractSourceExpansion(current, key)); setOutcome(key, null);
   };
-  const addOrigin = `add:${tableShown}:${offset}:${limit}`;
   // A table read with verified keys, or one that should verify: the rows decide.
   const canAddAll = !!relation && !identityBlocksPlacement(windowRows?.identity) && (windowRows?.identity?.status === "verified" || placeableTable(relation));
-  // World's table footer, page-limited by the owner (O8.5): add the rows on the
-  // page shown (its offset, size, search, sort or reference group), or take
-  // every row of the table off.
-  const addAll = () => {
-    if (!relation || search === null) return;
-    const shown = { offset, limit, order: sort };
-    if (referencing) { void expandGroup(referencing.parent.recordId, referencing.declaration, shown); return; }
-    const table = relation.name, request = search ?? null;
-    void runBulk("add", undefined, addOrigin, table, () => api.recordWindow(table, request, shown.limit, shown.offset, undefined, shown.order),
-      (page) => placePage(page.records.map((entry) => entry.record)), false);
+  const blockedCause = !canAddAll && identityBlocksPlacement(windowRows?.identity) && windowRows?.ordering !== "unspecified_window_only"
+    ? identityExplanation(windowRows?.identity)?.short ?? null : null;
+  // The set on show in Tables: the rows referencing a record through one
+  // declaration, or a table, whole or filtered. Its size is claimed only when
+  // known: the group's exact count, or a whole table's verified row count.
+  const setKey = !relation || search === null ? null : referencing ? expansionKey(referencing.parent.recordId, referencing.declaration.declaration_id)
+    : `set:${relation.name}:${JSON.stringify(search ?? null)}`;
+  const setTotal = referencing ? referencing.count.status === "exact" ? referencing.count.value : null
+    : relation && search === undefined ? tableRows.get(relation.name) ?? null : null;
+  /** Keep every row of the set on show on the canvas (decision 4), page after page, stoppable. */
+  const keepAll = () => {
+    if (!relation || !setKey) return;
+    if (referencing) { void expandGroup(referencing.parent.recordId, referencing.declaration, setTotal); return; }
+    const table = relation.name, request = search ?? null, key = setKey;
+    void runBulk("add", key, key, table, (at) => api.recordWindow(table, request, 100, at),
+      (window) => contributePage(key, window.records.map((entry) => entry.record)), setTotal);
   };
   const undoSeparate = separated?.field === field ? () => {
     setField({ ...field, positions: new Map(separated.before) });
     setSeparated(null);
   } : undefined;
   const selectMark = (elementId: string | null, travel = false) => {
-    clearTrail();
+    if (elementId || row || placedSubject || observationSubject) remember();
+    leaveSubject();
     const reference = field.references.find((item) => item.elementId === elementId);
     if (reference) {
       const childMark = field.records.find((item) => item.elementId === reference.child)!;
@@ -826,35 +855,27 @@ function Workspace({ context }: { context: SourceContext }) {
     if (travel) setReveal((current) => ({ id: elementId, token: (current?.token ?? 0) + 1 }));
   };
 
-  const pushReader = () => setTrail((steps) => [...steps, { row, placed: placedSubject, observation: observationSubject, referencePage }]);
   const inspectReference = (next: SourceFKObservation) => {
     if (!record || next.child_record_id !== record.record_id) return;
-    cancelPlacement(); pushReader();
+    // Inspecting audits the reference: it leaves the canvas alone (decision 4).
+    remember(); leaveSubject();
     setObservationSubject({ childId: record.record_id, declarationId: next.declaration.declaration_id, observationId: next.observation_id });
-    if (presentation.placement === "direct") setDirectReference(next.observation_id);
     openReader();
-  };
-  const goBack = () => {
-    const previous = trail.at(-1);
-    if (!previous) return;
-    cancelPlacement();
-    setRow(previous.row); setPlacedSubject(previous.placed); setObservationSubject(previous.observation);
-    setReferencePage(previous.referencePage); setTrail((steps) => steps.slice(0, -1));
   };
   const openParent = () => {
     if (!observation || !addressableReference(observation)) return;
-    cancelPlacement(); pushReader();
+    remember(); leaveSubject();
     const parent = observation.parent!;
     setPlacedSubject(placedRecord(field, parent.record_id) ?? { recordId: parent.record_id!, table: parent.name, key: parent.key });
-    setObservationSubject(null); setReferencePage(0); openReader();
+    openReader();
   };
   /** The record holding the reference: the other end of a connection. */
   const openChild = () => {
     if (!observation) return;
-    cancelPlacement(); pushReader();
+    remember(); leaveSubject();
     setPlacedSubject(placedRecord(field, observation.child_record_id) ??
       { recordId: observation.child_record_id, table: observation.grounding.table, key: observation.grounding.key });
-    setObservationSubject(null); setReferencePage(0); openReader();
+    openReader();
   };
   const showReference = async () => {
     if (!observation || !record) return;
@@ -881,8 +902,8 @@ function Workspace({ context }: { context: SourceContext }) {
       rememberDisplay(parent);
       learnRows(record.name, record.identity); learnRows(parent.name, parent.identity);
       setField((current) => {
-        const shown = showSourceReference(current, contextKey, observation, record, parent, grounded).field;
-        return adoptSourceRecords(shown, [record.record_id, parent.record_id].map((id) => placedRecord(shown, id)!.elementId));
+        const shown = showSourceReference(current, contextKey, observation, record, parent, grounded);
+        return adoptSourceRecords(shown.field, [...[record.record_id, parent.record_id].map((id) => placedRecord(shown.field, id)!.elementId), shown.elementId]);
       });
       setCanvasMounted(true);
       // The field update is atomic. Reveal is resolved against its latest identities below.
@@ -897,33 +918,108 @@ function Workspace({ context }: { context: SourceContext }) {
       return false;
     }
   };
+  /**
+   * Draw one followed observation between two verified records already read:
+   * both are placed if absent, and both and the connection become the
+   * person's own, so no set placement takes them back. False when it cannot stand.
+   */
+  const drawFollowed = (observation: SourceFKObservation, child: SourceRecord, parent: SourceRecord): boolean => {
+    if (fatal || !addressableReference(observation)) return false;
+    try { showSourceReference(fieldRef.current, contextKey, observation, child, parent, grounded); } catch { return false; }
+    for (const end of [child, parent]) { rememberDisplay(end); learnRows(end.name, end.identity); }
+    setField((current) => {
+      try {
+        const shown = showSourceReference(current, contextKey, observation, child, parent, grounded);
+        return adoptSourceRecords(shown.field, [...[child.record_id, parent.record_id].map((id) => placedRecord(shown.field, id)!.elementId), shown.elementId]);
+      } catch { return current; }
+    });
+    setCanvasMounted(true);
+    setReferenceReveal(observation.observation_id);
+    return true;
+  };
+  // The placement last asked for, so one that failed on the way can be asked again.
+  const lastPlacement = useRef<(() => void) | null>(null);
+  const drawController = useRef<AbortController | null>(null);
+  /** A row chosen from the rows referencing a record: draw the exact observation joining them. */
+  const drawFromSet = async (childId: string, set: IncomingSubject) => {
+    lastPlacement.current = () => void drawFromSet(childId, set);
+    drawController.current?.abort();
+    const controller = new AbortController(), signal = controller.signal;
+    drawController.current = controller;
+    const subject = JSON.stringify([contextKey, null, set.declaration.child_table, childId]);
+    try {
+      const [child, reference, parent] = await Promise.all([api.record(childId, signal),
+        api.reference(childId, set.declaration.declaration_id, signal), api.record(set.parent.recordId, signal)]);
+      if (signal.aborted) return;
+      if (reference.parent?.record_id !== parent.record_id || !drawFollowed(reference, child, parent)) throw new SourceReadError("source_reference_mismatch", 409);
+      setPlacementRead(null);
+    } catch (error) {
+      if (signal.aborted) return;
+      const failure = error instanceof Error ? error : new Error(String(error));
+      setPlacementRead({ subject, pending: false, error: failure });
+      if (failure instanceof SourceReadError) onFailure(failure);
+    }
+  };
+  // Following an incoming group: exactly one row with a verified handle opens
+  // in the Reader, its connection drawn; anything else opens in Tables.
+  const handleRef = useRef(handle);
+  handleRef.current = handle;
+  const followController = useRef<AbortController | null>(null);
+  const [following, setFollowing] = useState<string | null>(null);
+  const followIncoming = async (group: SourceIncomingGroup, keyboard = false) => {
+    if (!record || group.declaration.validation.status !== "verified_declaration") return;
+    const fk = group.declaration, parent = record;
+    if (!(group.count.status === "exact" && group.count.value === 1)) { openIncoming(group, keyboard); return; }
+    followController.current?.abort();
+    const controller = new AbortController();
+    followController.current = controller;
+    setFollowing(fk.declaration_id);
+    let only: SourceRecordWindow["records"][number] | null = null;
+    try {
+      // The count says one; the row read establishes it: complete, exactly one, with a verified handle.
+      const window = await api.recordWindow(fk.child_table, { mode: "reference", record: parent.record_id, fk: fk.declaration_id }, 2, 0, controller.signal);
+      if (window.records.length === 1 && window.skipped === 0 && !window.has_more && window.records[0].observation) only = window.records[0];
+    } catch (error) {
+      if (controller.signal.aborted) return;
+      if (error instanceof SourceReadError && error.stopsContext) { onFailure(error); return; }
+      // Otherwise Tables reads the group itself and says what failed there.
+    }
+    if (followController.current !== controller) return;
+    followController.current = null; setFollowing(null);
+    if (handleRef.current !== parent.record_id) return;
+    if (!only) { openIncoming(group, keyboard); return; }
+    remember(); leaveSubject();
+    const child = only.record;
+    setPlacedSubject(placedRecord(fieldRef.current, child.record_id) ?? { recordId: child.record_id, table: child.name, key: child.grounding.key });
+    setRow(null); openReader();
+    if (keyboard) setFocusRequest([FOCUS_TARGETS.reader]);
+    if (presentation.placement === "direct") drawFollowed(only.observation!, child, parent);
+  };
   // World's reader: a value naming a disc goes to it. Here a foreign-key value
   // whose reference resolves goes to the record it names; with direct
-  // placement the connection is shown on the way, as inspecting it would.
-  // The value last followed, so a placement that failed on the way can be asked again.
-  const lastReach = useRef<SourceFKObservation | null>(null);
+  // placement the connection is shown on the way.
   const reachReference = async (next: SourceFKObservation) => {
     if (!record || next.child_record_id !== record.record_id || !addressableReference(next)) return;
-    lastReach.current = next;
+    lastPlacement.current = () => void reachReference(next);
     if (presentation.placement === "direct" && !(await placeReference(next, record))) return;
-    cancelPlacement(); pushReader();
+    remember(); leaveSubject();
     const parent = next.parent!;
-    setPlacedSubject(placedRecord(field, parent.record_id!) ?? { recordId: parent.record_id!, table: parent.name, key: parent.key });
-    setObservationSubject(null); setReferencePage(0); openReader();
+    setPlacedSubject(placedRecord(fieldRef.current, parent.record_id!) ?? { recordId: parent.record_id!, table: parent.name, key: parent.key });
+    openReader();
   };
+  // Each FK column of a resolved reference, with every reference it takes part
+  // in: one makes the value a way to its record, several offer a choice.
   const reach = useMemo(() => {
-    // Each FK column of a resolved reference; a column two references share
-    // reaches neither, rather than guess between them.
-    const byColumn = new Map<string, SourceFKObservation | null>();
-    for (const observation of referencesResult?.data?.observations ?? []) {
+    const byColumn = new Map<string, SourceFKObservation[]>();
+    for (const observation of outgoing?.items ?? []) {
       if (!addressableReference(observation)) continue;
       for (const pair of observation.declaration.pairs) {
         if (!pair.child_column) continue;
-        byColumn.set(pair.child_column, byColumn.has(pair.child_column) ? null : observation);
+        byColumn.set(pair.child_column, [...(byColumn.get(pair.child_column) ?? []), observation]);
       }
     }
-    return new Map([...byColumn].filter((entry): entry is [string, SourceFKObservation] => entry[1] !== null));
-  }, [referencesResult?.data]);
+    return byColumn;
+  }, [outgoing?.items]);
   // The full references list waits behind a closed disclosure, kept open once opened.
   const [referencesOpen, setReferencesOpen] = useState(false);
   const [referenceReveal, setReferenceReveal] = useState<string | null>(null);
@@ -933,18 +1029,6 @@ function Workspace({ context }: { context: SourceContext }) {
     if (reference) setReveal((current) => ({ id: reference.elementId, token: (current?.token ?? 0) + 1 }));
     setReferenceReveal(null);
   }, [field.references, referenceReveal]);
-  // Direct placement (the default, O1): inspecting a reference also shows it, once
-  // the observation and its child record are read. Only an addressable
-  // observation is shown; any other status stays in the Reader as before.
-  const [directReference, setDirectReference] = useState<string | null>(null);
-  useEffect(() => {
-    if (!directReference) return;
-    if (observationSubject?.observationId !== directReference) { setDirectReference(null); return; }
-    if (observationResult?.error || recordResult?.error) { setDirectReference(null); return; }
-    if (observation?.observation_id !== directReference || !record) return;
-    setDirectReference(null);
-    if (addressableReference(observation)) void showReference();
-  });
   const shownReference = observationSubject ? field.references.find((item) => item.observation.observation_id === observationSubject.observationId) : undefined;
   const selectedElement = observationSubject ? shownReference?.elementId ?? null : shownPlaced?.elementId ?? null;
   const activePlacement = placementRead?.subject === readerSubject ? placementRead : null;
@@ -984,19 +1068,17 @@ function Workspace({ context }: { context: SourceContext }) {
   useEffect(() => { if (!restore.reading) setSchemaView(!hasRecords); }, [hasRecords, restore.reading]);
 
   const counts = overview?.data?.counts;
-  const referencing = search?.mode === "reference" && incoming && search.record === incoming.parent.recordId &&
-    search.fk === incoming.declaration.declaration_id ? incoming : null;
   // The table panel shows the result of the action it offers: add all for this
   // window, or the group it is narrowed to (whichever control started it).
-  const dockOutcome = referencing ? outcomes.get(expansionKey(referencing.parent.recordId, referencing.declaration.declaration_id))
-    : outcomes.get(addOrigin);
+  const dockOutcome = setKey ? outcomes.get(setKey) : undefined;
+  const setShown = !!setKey && expansionShown(field, setKey);
   const readerTitle = observationSubject ? "reference" : readerTable ?? "reader";
   const readerKey = placedSubject?.key ?? row?.key;
   const readerCaption = observationSubject ? observation ? referenceName(observation) : "loading reference…" : !readerRecordSubject ? readerRelation?.kind === "view" ? "view · computed output" : readerRelation?.kind : handle && readerKey ? sourceKeyText(readerKey)
     : `row ${offset + (row ? windowRows?.rows.indexOf(row) ?? 0 : 0) + 1} · this page only`;
   const readerActions = observationSubject ? observationResult?.error ? null
     : observation && <ReferenceActions observation={observation} childReady={!!record} visible={!!shownReference} pending={!!activePlacement?.pending}
-      onOpenParent={openParent} onCancel={() => {
+      onCancel={() => {
         cancelPlacement(); setFocusRequest(['#source-reader .motion-swap__is .source-reference-actions [data-reference-show]', FOCUS_TARGETS.reader]);
       }} onShow={() => void showReference()} onHide={() => {
         cancelPlacement();
@@ -1017,36 +1099,33 @@ function Workspace({ context }: { context: SourceContext }) {
     : !handle && row ? <><SourceUnplaceable relation={readerRelation} identity={windowRows?.identity} /><RecordDetails row={row} relation={readerRelation} context={context} identity={windowRows?.identity} columns={windowRows?.columns} /></>
     : recordResult?.error ? <Problem error={recordResult.error} onRetry={recordResult.retry} />
     : record ? <>{activePlacement?.error && <div className="source-placement-problem" data-placement-problem>
-      <Problem error={activePlacement.error} onRetry={() => { if (lastReach.current) void reachReference(lastReach.current); }} /></div>}
+      <Problem error={activePlacement.error} onRetry={() => lastPlacement.current?.()} /></div>}
     <RecordDetails row={record} record={record} relation={readerRelation} context={context} reach={reach} onReach={(observation) => void reachReference(observation)} nameOf={nameOf}>
-      {record.actions.incoming_references && <ExpandThrough page={incomingResult?.data ?? undefined}
-        state={(group) => {
-          const key = expansionKey(record.record_id, group.declaration.declaration_id);
-          return { shown: expansionShown(field, key), running: bulk?.key === key ? bulk.placed : null, outcome: outcomes.get(key) };
-        }}
-        onExpand={(group) => void expandGroup(record.record_id, group.declaration)}
-        onTakeBack={(group) => takeBackGroup(record.record_id, group.declaration)} />}
-      {record.actions.incoming_references && <IncomingReferences page={incomingResult?.data ?? undefined} error={incomingResult?.error} onRetry={incomingResult?.retry} offset={incomingOffset}
+      {record.actions.incoming_references && <IncomingReferences groups={incomingDiscovery?.total !== null ? incomingDiscovery?.items : undefined} done={!!incomingDiscovery?.done}
+        capped={incomingDiscovery?.capped} error={incomingDiscovery?.error} onRetry={incomingDiscovery?.retry} following={following}
         open={!catalogueVisible && incoming?.parent.recordId === record.record_id && relation?.name === incoming.declaration.child_table ? incoming.declaration.declaration_id : null}
-        onPage={(next) => setIncomingWindow({ record: record.record_id, offset: next })} onOpen={openIncoming} />}
+        onFollow={(group, keyboard) => void followIncoming(group, keyboard)} />}
       {/* "on this disc" (O8.7) is paused by the owner: kept, not shown. */}
-      {/* The declared references, statuses and all, behind a disclosure: the
-          values above reach what resolves (the owner hid the section, O14). */}
-      <ReaderDisclosure data-own-state className="source-details source-references" label={`references${referencesResult?.data?.total ? ` · ${referencesResult.data.total} declared` : ""}`}
+      {/* The complete list of declared references, both directions, statuses
+          and counts (zeros included), behind a disclosure: the values above
+          reach what resolves, and "referenced by" lists what leads somewhere. */}
+      <ReaderDisclosure data-own-state className="source-details source-references" label="references"
         open={referencesOpen} onToggle={(event) => {
           // Only the live Reader speaks: the outgoing copy a swap keeps for its
           // exit reports its own toggles, and must not close the new one.
           if (event.currentTarget.closest(".motion-swap__was")) return;
           const open = event.currentTarget.open; if (open !== referencesOpen) setReferencesOpen(open);
         }}>
-        <OutgoingReferences bare page={referencesResult?.data ?? undefined} error={referencesResult?.error} onRetry={referencesResult?.retry} offset={referencePage} onPage={setReferencePage} onInspect={inspectReference} />
+        <OutgoingReferences observations={outgoing?.total !== null ? outgoing?.items : undefined} total={outgoing?.total ?? null} done={!!outgoing?.done}
+          capped={outgoing?.capped} error={outgoing?.error} onRetry={outgoing?.retry} onInspect={inspectReference} />
+        {record.actions.incoming_references && <IncomingLedger groups={incomingDiscovery?.items} />}
       </ReaderDisclosure>
       </RecordDetails></> : <Loading />;
   // Presentation restoration waits for asynchronous content, not just the
   // initial loading panel. This neither starts nor authorizes a source read.
   const readerReady = observationSubject ? !!observationResult?.error || !!observation && !!(record || recordResult?.error)
-    : !readerRecordSubject || !handle || !!recordResult?.error || !!record && !!(referencesResult?.data || referencesResult?.error) &&
-      (!record.actions.incoming_references || !!(incomingResult?.data || incomingResult?.error));
+    : !readerRecordSubject || !handle || !!recordResult?.error || !!record && !!outgoing && (outgoing.total !== null || !!outgoing.error) &&
+      (!record.actions.incoming_references || !!incomingDiscovery && (incomingDiscovery.total !== null || !!incomingDiscovery.error));
   const canvasStyle = { left: layout.left, right: layout.right };
   const invitation = usePresence(!relation && field.records.length === 0 && !fatal && !schemaView);
 
@@ -1069,7 +1148,8 @@ function Workspace({ context }: { context: SourceContext }) {
     <div className="source-stage" ref={stageRef}>
       <section className="source-canvas" tabIndex={-1} aria-label="Source canvas" data-unobscured={layout.canvas} data-camera-insets={JSON.stringify(layout.camera)}>
         {!schemaView && restore.reading && <p className="source-restore" role="status">restoring the canvas…</p>}
-        {linkNote && <p className="source-restore source-restore--problem" role="alert" data-record-link-problem>{linkNote}</p>}
+        {linkNote && <div className="source-restore source-restore--problem" role="alert" data-record-link-problem><p>{linkNote}</p>
+          {linkRetry && <TableAction className="source-retry" data-retry onClick={() => { setLinkNote(null); setLinkAttempt((count) => count + 1); }}>try again</TableAction>}</div>}
         {!schemaView && restore.field && restore.field === field && (restore.restored || restore.lost || restore.unplaceable) ? <p className="source-restore" role="status">
           restored {restore.restored} {restore.restored === 1 ? "record" : "records"} from the last visit
           {restore.lost ? ` · ${restore.lost} not found in this capture` : ""}{restore.unplaceable ? ` · ${restore.unplaceable} cannot be placed in this session` : ""}
@@ -1145,7 +1225,7 @@ function Workspace({ context }: { context: SourceContext }) {
             </div> : relation ? <div className="source-table-view">
               <TableHeader className="source-table-heading" title={relation.name} heading onClose={() => setTablesOpen(false)} subjects={<nav className="table__subjects" aria-label="table navigation">
                 <TableAction data-catalogue onClick={showCatalogue}>tables</TableAction>
-                {tableTrail.length > 0 && <PanelBack onBack={(event) => backTable(event.detail === 0)} label="back to previous table" />}
+                {history.length > 0 && <PanelBack onBack={(event) => goBack(event.detail === 0)} />}
               </nav>} actions={<>{sort && <TableAction data-unsort onClick={() => reorder(null)}>unsort</TableAction>}
                 {canAddAll && (() => {
                   // O17: the person names this table's records by one of its columns, or by key.
@@ -1162,8 +1242,8 @@ function Workspace({ context }: { context: SourceContext }) {
                   </label>;
                 })()}
                 <TableAction data-table-info onClick={() => {
-                cancelPlacement(); if (readerRecordSubject || observationSubject) pushReader();
-                setObservationSubject(null); setReferencePage(0); setRow(null); setPlacedSubject(null); openReader();
+                if (readerRecordSubject || observationSubject) remember();
+                leaveSubject(); setRow(null); setPlacedSubject(null); openReader();
               }}>table info</TableAction></>} />
               {/* Where Find would be: the relationship this table is narrowed to, as World's
                   "mentioning", and World's "whole relation" to drop it. */}
@@ -1172,29 +1252,34 @@ function Workspace({ context }: { context: SourceContext }) {
                 <b>{nameOf(referencing.parent.table, referencing.parent.key, referencing.parent.recordId)}</b>{" "}
                 through {incomingColumns(referencing.declaration)}{referencing.count.status !== "exact" && ` · ${incomingCountText(referencing.count)}`}</p>
                 <TableAction data-whole-table onClick={(event) => {
-                  changeSearch(undefined);
+                  // Widening the set is a move: Back recovers the narrowed set.
+                  remember(); changeSearch(undefined);
                   if (event.detail === 0) setFocusRequest(['#source-tables .source-table-slot .motion-swap__is .source-find input[type="search"]', FOCUS_TARGETS.table]);
                 }}>whole table</TableAction></div>}
               {relation.read_status === "available" && !referencing && <SourceFind draft={findDraft} onDraft={setFindDraft} name={relation.name} columns={relation.columns ?? []} onEdit={() => changeSearch(null)} onSubmit={changeSearch} onClear={() => changeSearch(undefined)} />}
-              {relation.read_status === "available" ? search === null ? <p className="source-find-prompt" role="status">press enter to filter</p> : <SourceRowsView searching={search !== undefined} named={naming[relation.name]} name={relation.name} rows={windowRows} error={windowResult?.error} onRetry={windowResult?.retry} selected={row} placed={placedHandles} onTakeOff={takeOffRecord} order={sort} onOrder={cycleSort} offset={offset} limit={limit} onPage={page} onSelect={select} scroll={tableScroll} /> : <p role="alert">read unavailable · {relation.reason}</p>}
+              {relation.read_status === "available" ? search === null ? <p className="source-find-prompt" role="status">press enter to filter</p> : <SourceRowsView searching={search !== undefined} named={naming[relation.name]} name={relation.name} rows={windowRows} error={windowResult?.error} onRetry={windowResult?.retry} selected={row} placed={placedHandles} onTakeOff={takeOffRecord} order={sort} onOrder={cycleSort} offset={offset} limit={limit} onPage={page} onSelect={select} scroll={tableScroll}
+                actions={(canAddAll || setShown || bulk?.key === setKey || blockedCause) && <span className="source-bulk__actions">
+                  {/* Where rows cannot be placed there is nothing to keep: no button, and no sentence about one.
+                      The cause is said once in this panel: above the rows when the row window already names it
+                      (a view, a table without a key), otherwise here, where the action would be. */}
+                  {blockedCause && <small className="source-limitation" data-placement-limit>{blockedCause}</small>}
+                  {bulk && bulk.key === setKey ? <>
+                    <span role="status" data-keeping style={{ fontVariantNumeric: "tabular-nums" }}>keeping… {bulk.reached.toLocaleString("en-US")}{bulk.total !== null ? ` of ${bulk.total.toLocaleString("en-US")}` : ""}</span>
+                    <button type="button" onClick={stopBulk}>stop</button></>
+                    : canAddAll && <button type="button" data-keep-all onClick={keepAll} disabled={!!bulk} style={{ fontVariantNumeric: "tabular-nums" }}>
+                      keep all{setTotal !== null ? ` ${setTotal.toLocaleString("en-US")}` : ""}</button>}
+                  {setShown && !(bulk?.key === setKey) && <button type="button" data-remove-set onClick={() => removeSet(setKey!)}>remove set</button>}
+                </span>} /> : <p role="alert">read unavailable · {relation.reason}</p>}
               {relation.read_status === "available" && search !== null && <div className="source-bulk">
-                {bulk?.skipped ? <p className="source-note">{bulk.skipped} {bulk.skipped === 1 ? "row" : "rows"} without a verified key · not placed</p> : null}
-                {!bulk && dockOutcome && <BulkOutcomeNote outcome={dockOutcome} />}
-                {!canAddAll && identityBlocksPlacement(windowRows?.identity) && <p className="source-limitation" data-placement-limit>rows of {relation.name} cannot be placed · {identityExplanation(windowRows?.identity)!.short}</p>}
-                <TableFooter className="table__foot source-bulk__actions">
-                  <button type="button" onClick={addAll} disabled={!!bulk || !canAddAll} aria-busy={!!bulk || undefined}
-                    title={canAddAll ? "Place every row on this page on the canvas" : "No verified records to place on the canvas"}
-                    style={{ fontVariantNumeric: "tabular-nums" }}>{bulk ? `adding… ${bulk.placed}` : "add all"}</button>
-                  {bulk && <button type="button" onClick={stopBulk}>stop</button>}
-                  <button type="button" onClick={() => takeOffTable(relation.name)} disabled={!!bulk || !tablesOnCanvas.has(relation.name)}
-                    title="Take every row of this table off the canvas">clear</button>
-                </TableFooter></div>}
+                {bulk?.key === setKey && bulk.skipped ? <p className="source-note">{bulk.skipped} {bulk.skipped === 1 ? "row" : "rows"} without a verified key · not placed</p> : null}
+                {!(bulk?.key === setKey) && dockOutcome && <BulkOutcomeNote outcome={dockOutcome} />}
+              </div>}
             </div> : <div />}
           </Swap></div></div>
         </OverlayPanel>
         <OverlayPanel id="source-reader" title="reader" side="right" open={layout.reader.open} onToggle={(open) => open ? openReader() : dismissReader()} handleWhen="closed" width={layout.reader.width} onWidthChange={(size) => { setReaderWidth(size); setPrimary("reader"); storePanelSize("ki.source.reader.width", size); }} minWidth={SOURCE_DOCK_MIN} maxWidth={layout.reader.maxWidth} reserve={layout.left} flush>
           <Swap id={readerSubject} className="motion-swap--fill">
-            <SourceReaderPanel title={readerTitle} caption={readerCaption} onClose={dismissReader} onBack={trail.length > 0 ? goBack : undefined} scroll={readerScroll} ready={readerReady} actions={readerActions}>{readerBody}</SourceReaderPanel>
+            <SourceReaderPanel title={readerTitle} caption={readerCaption} onClose={dismissReader} onBack={history.length > 0 ? () => goBack() : undefined} scroll={readerScroll} ready={readerReady} actions={readerActions}>{readerBody}</SourceReaderPanel>
           </Swap>
         </OverlayPanel>
       </>}

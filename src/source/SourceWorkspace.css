@@ -217,3 +217,15 @@
 .source-text__more:focus-visible { outline: 2px solid var(--ink); outline-offset: 1px; }
 /* NULL is not text: muted and italic, so the TEXT "NULL" and a NULL never look alike. */
 .source-value--null > code { color: var(--ink-muted); font-style: italic; }
+
+/* A value in more than one declared reference: the person chooses which to follow (decision 4). */
+.source-reach-choice { display: inline-flex; flex-wrap: wrap; gap: 0 .75em; margin-left: .75em; }
+.source-reach-choice .source-reach { display: inline; width: auto; font-size: .92em; }
+.source-discovery { margin: .25rem 0 0; color: var(--ink-muted); }
+
+/* One bar under the rows: the page size on the left, what can be done with the
+   whole set on the right. The label inside keeps the select's styling only. */
+.source-window-bar { align-items: center; justify-content: space-between; }
+.source-window-bar .source-window-size { padding: 0; border: 0; }
+.source-bulk__actions { display: flex; align-items: center; gap: 6px; margin-left: auto; color: var(--ink-muted); font-size: var(--type-label); }
+.source-bulk:empty { display: none; }

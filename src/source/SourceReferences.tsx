@@ -1,14 +1,11 @@
 /** Fetch-free evidence panels. Request ownership lives above the Swap boundary. */
 import { ReaderAction, ReaderActions } from "../world/ReaderChrome";
 import { ReaderDisclosure } from "../world/ReaderDisclosure";
-import { TableFooter } from "../world/tableChrome";
-import type { SourceContext, SourceFKDeclaration, SourceFKObservation, SourceIncomingCount, SourceIncomingGroup,
-  SourceIncomingReferences, SourceReferences } from "../api/source";
+import type { SourceContext, SourceFKDeclaration, SourceFKObservation, SourceIncomingCount, SourceIncomingGroup } from "../api/source";
 import { CaptureDetails, DeclarationDetails, Loading, Problem } from "./SourceDetails";
 import { sourceKeyText } from "./sourceField";
 import { SourceValue } from "./SourceValue";
-import { BulkOutcomeNote, type BulkOutcome } from "./SourceOutcome";
-import { declarationExplanation, identityBlocksPlacement, identityExplanation } from "./sourceExplain";
+import { declarationExplanation } from "./sourceExplain";
 
 export const REFERENCE_STATUS: Record<SourceFKObservation["status"], string> = {
   resolved: "resolved",
@@ -90,23 +87,30 @@ export function ReferenceEvidence({ observation, detailed = false, ends }: { obs
   </div>;
 }
 
-export function OutgoingReferences({ page, error, offset, onPage, onInspect, onRetry, bare = false }: {
-  page?: SourceReferences; error?: Error; offset: number;
-  onPage: (offset: number) => void; onInspect: (observation: SourceFKObservation) => void; onRetry?: () => void;
-  /** Inside a disclosure that already names it: no heading of its own. */
-  bare?: boolean;
+/**
+ * The declared outgoing references, every one, statuses and all: the complete
+ * list behind "references" (decision 4). The record's values reach what
+ * resolves; this list is where a NULL, dangling or unchecked reference is audited.
+ */
+export function OutgoingReferences({ observations, total, done, capped, error, onInspect, onRetry }: {
+  observations?: SourceFKObservation[]; total: number | null; done: boolean; capped?: boolean; error?: Error;
+  onInspect: (observation: SourceFKObservation) => void; onRetry?: () => void;
 }) {
-  return <section className="world-reader__section source-outgoing" aria-label="outgoing references">{!bare && <h3>references{page && page.total > 0 && <small> · {page.total} declared</small>}</h3>}
-    {error ? <Problem error={error} onRetry={onRetry} /> : !page ? <Loading /> : page.total === 0 ? <p className="source-note">none declared</p> : page.observations.map((observation) => <article className="source-fk" key={observation.observation_id}>
+  return <section className="world-reader__section source-outgoing" aria-label="outgoing references">
+    {!observations ? error ? <Problem error={error} onRetry={onRetry} /> : <Loading /> : total === 0 ? null : observations.map((observation) => <article className="source-fk" key={observation.observation_id}>
       <ReferenceEvidence observation={observation} />
       <ReaderAction bleed aria-label={`inspect FK ${observation.declaration.recorded_id} reference`} onClick={() => onInspect(observation)}>inspect reference</ReaderAction>
     </article>)}
-    <TableFooter role="navigation" className="table__foot table__pager source-pager" aria-label="outgoing reference pages" hidden={!!page && page.total <= 10 && offset === 0}>
-      <button type="button" aria-disabled={offset === 0 || !page && !error} onClick={() => { if (offset > 0 && (page || error)) onPage(Math.max(0, offset - 10)); }}>previous references</button>
-      <span>{page ? `${page.total ? offset + 1 : 0}–${offset + page.observations.length} of ${page.total} constraints${page.has_more ? " · more available" : ""}` : error ? "page unavailable" : "loading…"}</span>
-      <button type="button" aria-disabled={!page?.has_more} onClick={() => { if (page?.has_more) onPage(page.next_offset!); }}>next references</button>
-    </TableFooter>
+    {observations && <DiscoveryState done={done} capped={capped} error={error} onRetry={onRetry} />}
   </section>;
+}
+
+/** Said only while a list is incomplete: still reading, stopped at its limit, or a page failed. */
+export function DiscoveryState({ done, capped, error, onRetry }: { done: boolean; capped?: boolean; error?: Error; onRetry?: () => void }) {
+  if (error) return <div className="source-discovery" data-discovery="incomplete"><small className="source-limitation">coverage incomplete</small> <Problem error={error} onRetry={onRetry} /></div>;
+  if (capped) return <p className="source-discovery" data-discovery="capped"><small className="source-limitation">coverage incomplete · declaration limit</small></p>;
+  if (!done) return <p className="source-discovery" role="status" data-discovery="checking"><small>checking declarations…</small></p>;
+  return null;
 }
 
 export function incomingColumns(fk: SourceFKDeclaration): string {
@@ -130,92 +134,60 @@ export function incomingBrowsable(group: SourceIncomingGroup): boolean {
   return group.declaration.validation.status === "verified_declaration" && !(group.count.status === "exact" && group.count.value === 0);
 }
 
-/** One line per declaration that names this record's table, as World lists a
- * referent's relations. Opening a line reads its rows in the Tables dock; it
- * places nothing on the canvas. */
-export function IncomingReferences({ page, error, offset, open, onPage, onOpen, onRetry }: {
-  page?: SourceIncomingReferences; error?: Error; offset: number; open?: string | null;
-  onPage: (offset: number) => void; onOpen: (group: SourceIncomingGroup, keyboard: boolean) => void; onRetry?: () => void;
+/**
+ * The incoming declarations that lead somewhere (decision 4): each with rows,
+ * or whose count is not known, as World lists a referent's relations, plus an
+ * invalid declaration as the exception it is. A declaration with an exact zero
+ * is silent here; the complete list, zeros included, is under "references".
+ * Groups show as their pages arrive. Following a group with exactly one row
+ * opens that row; any other group opens in Tables.
+ */
+export function IncomingReferences({ groups, done, capped, error, open, following, onFollow, onRetry }: {
+  groups?: SourceIncomingGroup[]; done: boolean; capped?: boolean; error?: Error; open?: string | null; following?: string | null;
+  onFollow: (group: SourceIncomingGroup, keyboard: boolean) => void; onRetry?: () => void;
 }) {
-  const groups = page?.groups ?? [];
-  const listed = groups.filter(incomingBrowsable);
-  const absent = groups.filter((group) => group.count.status === "exact" && group.count.value === 0 &&
-    group.declaration.validation.status === "verified_declaration");
-  const limited = groups.filter((group) => group.declaration.validation.status !== "verified_declaration");
-  return <section className="world-reader__section world-reader__section--list source-incoming" aria-label="incoming references"><h3>referenced by{page && page.total > 0 && <small> · {page.total} declared</small>}</h3>
-    {error ? <Problem error={error} onRetry={onRetry} /> : !page ? <Loading /> : page.total === 0 ? <p className="source-note world-reader__absent">none declared</p> : <>
+  const listed = (groups ?? []).filter(incomingBrowsable);
+  const limited = (groups ?? []).filter((group) => group.declaration.validation.status !== "verified_declaration");
+  if (groups && done && !error && !capped && !listed.length && !limited.length) return null;
+  return <section className="world-reader__section world-reader__section--list source-incoming" aria-label="incoming references"><h3>referenced by</h3>
+    {!groups ? error ? <Problem error={error} onRetry={onRetry} /> : <Loading /> : <>
       {listed.length > 0 && <ul className="gm__list">{listed.map((group) => {
-        const fk = group.declaration, current = open === fk.declaration_id;
+        const fk = group.declaration, current = open === fk.declaration_id, busy = following === fk.declaration_id;
         return <li key={fk.declaration_id}><button type="button" className={current ? "is-selected" : undefined} aria-pressed={current}
-          aria-label={`${incomingName(fk)}, ${incomingCountText(group.count)}, open in tables`} title={group.count.reason ?? undefined}
-          onClick={(event) => onOpen(group, event.detail === 0)}>
+          aria-busy={busy || undefined} aria-label={`${incomingName(fk)}, ${incomingCountText(group.count)}`} title={group.count.reason ?? undefined}
+          onClick={(event) => onFollow(group, event.detail === 0)}>
           <span className="gm__list-name">{incomingName(fk)}</span>
-          <span className="gm__list-meta" data-incoming-count={group.count.status}>{group.count.status === "exact" ? group.count.value : incomingCountText(group.count)} · table</span>
+          <span className="gm__list-meta" data-incoming-count={group.count.status}>{group.count.status === "exact" ? group.count.value : incomingCountText(group.count)}</span>
         </button></li>;
       })}</ul>}
-      {absent.length > 0 && <p className="world__note world-reader__absent" data-incoming-absent>No rows in this capture reference this record through {absent.map((group) => incomingName(group.declaration)).join("; ")}.</p>}
       {limited.map((group) => <p className="source-limitation world-reader__absent" key={group.declaration.declaration_id} data-declaration-limit>
         {incomingName(group.declaration)} · {declarationExplanation(group.declaration.validation.reason)} No count, and its rows are not followed.
         <small> · declaration <code>{group.declaration.validation.status}</code>{group.declaration.validation.reason && <> · <code>{group.declaration.validation.reason}</code></>}</small></p>)}
+      <DiscoveryState done={done} capped={capped} error={error} onRetry={onRetry} />
     </>}
-    <TableFooter role="navigation" className="table__foot table__pager source-pager" aria-label="incoming reference pages" hidden={!!page && page.total <= 10 && offset === 0}>
-      <button type="button" aria-disabled={offset === 0 || !page && !error} onClick={() => { if (offset > 0 && (page || error)) onPage(Math.max(0, offset - 10)); }}>previous declarations</button>
-      <span>{page ? `${page.total ? offset + 1 : 0}–${offset + page.groups.length} of ${page.total} declarations` : error ? "page unavailable" : "loading…"}</span>
-      <button type="button" aria-disabled={!page?.has_more} onClick={() => { if (page?.has_more) onPage(page.next_offset!); }}>next declarations</button>
-    </TableFooter>
+  </section>;
+}
+
+/** Every incoming declaration with its count, zeros included: the complete list under "references". */
+export function IncomingLedger({ groups }: { groups?: SourceIncomingGroup[] }) {
+  if (!groups?.length) return null;
+  return <section className="world-reader__section source-incoming-ledger" aria-label="incoming declarations"><h4>referenced through</h4>
+    <dl className="source-facts">{groups.map((group) => <div key={group.declaration.declaration_id} data-incoming-ledger={group.count.status}>
+      <dt>{incomingName(group.declaration)}</dt><dd>{group.count.status === "exact" ? group.count.value : incomingCountText(group.count)}</dd>
+    </div>)}</dl>
   </section>;
 }
 
 /** Hiding is display only; it never stands for a change to the recorded data. */
 export const HIDE_CONNECTION = "hide connection on canvas · the recorded reference is unchanged";
 
-/**
- * World's "expand through" (O8.9): each group of records referencing this one
- * through a declaration, placed on the canvas with its connections in one
- * action, and taken back the same way. Acting on the canvas comes before
- * reading the rows, as in World, so it stands above "referenced by".
- */
-export function ExpandThrough({ page, state, onExpand, onTakeBack }: {
-  page?: SourceIncomingReferences;
-  state: (group: SourceIncomingGroup) => { shown: boolean; running: number | null; outcome?: BulkOutcome };
-  onExpand: (group: SourceIncomingGroup) => void;
-  onTakeBack: (group: SourceIncomingGroup) => void;
-}) {
-  const groups = (page?.groups ?? []).filter(incomingBrowsable);
-  if (!groups.length) return null;
-  return <section className="world-reader__section world-reader__section--list source-expand" aria-label="expand through"><h3>expand through</h3>
-    <ul className="gm__list">{groups.map((group) => {
-      const fk = group.declaration, { shown, running, outcome } = state(group);
-      // Known before the click: the service says this table's rows cannot have
-      // a record identity in this session. The count still stands, and the
-      // rows stay readable through "referenced by" below.
-      const limit = !shown && identityBlocksPlacement(group.child_identity) ? identityExplanation(group.child_identity) : null;
-      const count = group.count.status === "exact" ? group.count.value : incomingCountText(group.count);
-      return <li key={fk.declaration_id}><button type="button" className={shown ? "is-selected" : undefined} aria-pressed={shown}
-        disabled={running !== null} aria-busy={running !== null || undefined} aria-disabled={limit ? true : undefined}
-        aria-label={`${incomingName(fk)}, ${shown ? "take off the canvas" : limit ? `${incomingCountText(group.count)}, cannot be placed: ${limit.short}`
-          : `${incomingCountText(group.count)}, place on the canvas`}`}
-        onClick={() => limit ? undefined : shown ? onTakeBack(group) : onExpand(group)}>
-        <span className="gm__list-name">{incomingName(fk)}</span>
-        <span className="gm__list-meta" data-expand-state={shown ? "shown" : running !== null ? "running" : limit ? "unplaceable" : "available"}>
-          {shown ? "take off" : running !== null ? `expanding… ${running}` : limit ? <>{count} · not placeable</> : count}</span>
-      </button>
-      {limit && !outcome && <p className="source-limitation" data-expand-limit>{fk.child_table} rows cannot be placed · {limit.short} · they can be read under "referenced by"
-        <small> · <code>{group.child_identity!.status}</code>{group.child_identity!.reason && <> · <code>{group.child_identity!.reason}</code></>}</small></p>}
-      {outcome && running === null && <BulkOutcomeNote outcome={outcome} />}</li>;
-    })}</ul>
-  </section>;
-}
-
-export function ReferenceActions({ observation, visible, pending, childReady, onOpenParent, onShow, onHide, onCancel }: {
+export function ReferenceActions({ observation, visible, pending, childReady, onShow, onHide, onCancel }: {
   observation: SourceFKObservation; visible: boolean; pending: boolean; childReady: boolean;
-  onOpenParent: () => void; onShow: () => void; onHide: () => void; onCancel: () => void;
+  onShow: () => void; onHide: () => void; onCancel: () => void;
 }) {
   return (
-    <ReaderActions className="world-reader__actions source-reference-actions">{addressableReference(observation) && <>
-      <ReaderAction onClick={onOpenParent}>open referenced record</ReaderAction>
-      <ReaderAction data-reference-show disabled={pending || !childReady} onClick={onShow}>{visible ? "reveal connection" : "show connection"}</ReaderAction>
-    </>}
+    <ReaderActions className="world-reader__actions source-reference-actions">
+    {addressableReference(observation) && <ReaderAction data-reference-show disabled={pending || !childReady} onClick={onShow}>{visible ? "reveal connection" : "show connection"}</ReaderAction>}
     {visible && <ReaderAction data-reference-hide title={HIDE_CONNECTION} onClick={onHide}>hide connection</ReaderAction>}
     {pending && <ReaderAction onClick={onCancel}>cancel placement</ReaderAction>}
     </ReaderActions>

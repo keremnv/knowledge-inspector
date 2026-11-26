@@ -110,12 +110,15 @@ test("direct placement trial: a reselected row and a reopened endpoint are never
     await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
     await canvasRest(page, "source", 1);
     await openSourceReferences(page); await reader(page).locator(".source-outgoing article").filter({ hasText: "→ Album" }).getByRole("button", { name: /inspect FK/ }).click();
+    // Inspecting audits and leaves the canvas alone (decision 4); showing draws.
+    await expect(list(page).locator("[data-field-reference]")).toHaveCount(0);
+    await reader(page).getByRole("button", { name: "show connection", exact: true }).click();
     await canvasRest(page, "source", 2);
     await expect(list(page).locator("[data-field-reference]")).toHaveCount(1);
     const before = await at(page);
     await reader(page).getByRole("button", { name: "hide connection", exact: true }).click();
     await expect(list(page).locator("[data-field-reference]")).toHaveCount(0);
-    await reader(page).getByRole("button", { name: "open referenced record", exact: true }).click();
+    await reader(page).getByRole("button", { name: /, the record this references$/ }).click();
     await expect(reader(page).locator('[data-placement="show"]')).toHaveText("reveal");
     await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
     await canvasRest(page, "source", 2);

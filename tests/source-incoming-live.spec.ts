@@ -29,9 +29,9 @@ for (const motion of ["reduce", "no-preference"] as const) {
       await page.goto(`${origin}/source?placement=explicit`); await choose(page, "Album");
       await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
       await expect(reader(page).locator("h2")).toHaveAccessibleName(/AlbumId=1$/);
-      await expect(incoming(page).locator("h3")).toHaveText("referenced by · 1 declared");
-      const group = incoming(page).getByRole("button", { name: "Track · AlbumId, 10 rows, open in tables" });
-      await expect(group).toContainText("10 · table");
+      await expect(incoming(page).locator("h3")).toHaveText("referenced by");
+      const group = incoming(page).getByRole("button", { name: "Track · AlbumId, 10 rows", exact: true });
+      await expect(group.locator("[data-incoming-count]")).toHaveText("10");
       await shot(page, `album-reader-${motion}.png`);
       const page1 = page.waitForResponse(isSearch);
       await group.press("Enter");
@@ -59,8 +59,15 @@ for (const motion of ["reduce", "no-preference"] as const) {
       await expect(album.locator("[data-reference-status]")).toHaveAttribute("data-reference-status", "resolved");
       await openSourceReferences(page); await album.getByRole("button", { name: /inspect FK/ }).click();
       await expect(reader(page)).toContainText(first.observation_id);
-      // Normal table navigation: the previous table and its selected record return.
-      await tables(page).getByRole("button", { name: "back to previous table" }).click();
+      // One Back per step (decision 4): the Track row, the Track set beside the
+      // Album, then the Album table with its selected record.
+      const back = tables(page).getByRole("button", { name: "Back", exact: true });
+      await back.click();
+      await expect(reader(page).locator("h2")).toHaveAccessibleName(/TrackId=1$/);
+      await back.click();
+      await expect(tables(page).locator("[data-incoming-subject]")).toBeVisible();
+      await expect(reader(page).locator("h2")).toHaveAccessibleName(/AlbumId=1$/);
+      await back.click();
       await expect(tables(page).locator("h2")).toHaveText("Album");
       await expect(tables(page).getByRole("searchbox")).toHaveValue("");
       await expect(tables(page).getByRole("button", { name: "Inspect row 1", exact: true })).toHaveAttribute("aria-pressed", "true");
@@ -87,10 +94,12 @@ test("referenced by: exact zero, self-reference and parallel declarations stay d
   await serveSource(UPSTREAM, async ({ origin }) => {
     await page.goto(`${origin}/source`); await choose(page, "Employee");
     await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
-    await expect(incoming(page).getByRole("button", { name: "Employee · ReportsTo, 2 rows, open in tables" })).toBeVisible();
-    // Zero is an observed absence in this capture, a note rather than a control.
-    await expect(incoming(page).locator("[data-incoming-absent]")).toHaveText("No rows in this capture reference this record through Customer · SupportRepId.");
+    await expect(incoming(page).getByRole("button", { name: "Employee · ReportsTo, 2 rows", exact: true })).toBeVisible();
+    // Zero is an observed absence in this capture: silent here, counted under references (decision 4).
     await expect(incoming(page).getByRole("button", { name: /Customer/ })).toHaveCount(0);
+    await expect(incoming(page)).not.toContainText("Customer");
+    await openSourceReferences(page);
+    await expect(reader(page).locator("[data-incoming-ledger]").filter({ hasText: "Customer · SupportRepId" }).locator("dd")).toHaveText("0");
     await shot(page, "employee-reader.png");
     await incoming(page).getByRole("button", { name: /Employee · ReportsTo/ }).click();
     await expect(tables(page).locator("[data-incoming-subject]")).toHaveText("2 rows referencing Employee 1 through ReportsTo");
@@ -103,7 +112,7 @@ test("referenced by: exact zero, self-reference and parallel declarations stay d
     // Track is referenced by two declarations from two tables; both are listed.
     await choose(page, "Track");
     await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
-    await expect(incoming(page).locator(".gm__list button")).toHaveText(["InvoiceLine · TrackId1 · table", "PlaylistTrack · TrackId3 · table"]);
+    await expect(incoming(page).locator(".gm__list button")).toHaveText(["InvoiceLine · TrackId1", "PlaylistTrack · TrackId3"]);
   });
 });
 
@@ -126,10 +135,11 @@ test("referenced by: an unavailable count is not zero, and unaddressable rows st
   await fixture((db) => serveSource(db, async ({ origin }) => {
     await page.goto(`${origin}/source?placement=explicit`); await choose(page, "Parent");
     await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
-    const big = incoming(page).getByRole("button", { name: "Big · p, count unavailable · query limit reached, open in tables" });
-    await expect(big).toContainText("count unavailable · query limit reached · table");
-    await expect(incoming(page).getByRole("button", { name: "Keyless · p, 2 rows, open in tables" })).toBeVisible();
-    await expect(incoming(page).locator("[data-incoming-absent]")).toHaveText("No rows in this capture reference this record through Spare · p.");
+    const big = incoming(page).getByRole("button", { name: "Big · p, count unavailable · query limit reached", exact: true });
+    await expect(big.locator("[data-incoming-count]")).toHaveText("count unavailable · query limit reached");
+    await expect(incoming(page).getByRole("button", { name: "Keyless · p, 2 rows", exact: true })).toBeVisible();
+    // Spare's exact zero is silent here.
+    await expect(incoming(page)).not.toContainText("Spare");
     await shot(page, "unavailable-reader.png");
     // The same group can still be browsed: unavailable never meant empty.
     await big.click();
@@ -137,7 +147,7 @@ test("referenced by: an unavailable count is not zero, and unaddressable rows st
     await expect(tables(page).locator(".source-pager [role=status]")).toHaveText("matches 1–50 · more available");
     await expect(tables(page).locator(".source-browse__status")).toContainText("key verification incomplete");
     // Keyless children are listed, counted and readable, never addressable.
-    await tables(page).getByRole("button", { name: "back to previous table" }).click();
+    await tables(page).getByRole("button", { name: "Back", exact: true }).click();
     await incoming(page).getByRole("button", { name: /^Keyless · p/ }).click();
     await expect(tables(page).locator(".source-pager [role=status]")).toHaveText("matches 1–2 · no more matches");
     await expect(tables(page).locator(".source-browse__status")).toContainText("no primary key");

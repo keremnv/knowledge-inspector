@@ -28,7 +28,7 @@ async function fixture(use: (db: string) => Promise<void>) {
 async function openParent(p: Page, origin: string) {
   await p.goto(`${origin}/source?placement=explicit`); await choose(p, "parent");
   await tables(p).getByRole("button", { name: "Inspect row 1", exact: true }).click();
-  await expect(incoming(p).locator("h3")).toHaveText("referenced by · 12 declared");
+  await expect(incoming(p).locator("h3")).toHaveText("referenced by");
 }
 
 test("a spent page budget is named per group, never zero, and every group stays browsable", async ({ page }) => {
@@ -41,12 +41,12 @@ test("a spent page budget is named per group, never zero, and every group stays 
     expect(body.data.groups.map((g: any) => [g.count.status, g.count.reason])).toEqual([
       ["unavailable", "source_query_budget_exceeded"], ["unavailable", "incoming_page_budget_exceeded"],
       ...Array(8).fill(["not_checked", "incoming_page_budget_exceeded"])]);
-    await expect(meta(page)).toHaveText(["count unavailable · query limit reached · table", "count unavailable · page limit reached · table",
-      ...Array(8).fill("count not checked · page limit reached · table")]);
-    // A page of fewer declarations has its own budget.
-    await incoming(page).getByRole("button", { name: "next declarations" }).click();
-    await expect(meta(page)).toHaveText(["count unavailable · query limit reached · table", "count unavailable · page limit reached · table"]);
-    await incoming(page).getByRole("button", { name: "previous declarations" }).click();
+    // Every declaration page is read in turn (decision 4); a page of fewer
+    // declarations has its own budget, so the last two are counted afresh.
+    await expect(meta(page)).toHaveText(["count unavailable · query limit reached", "count unavailable · page limit reached",
+      ...Array(8).fill("count not checked · page limit reached"),
+      "count unavailable · query limit reached", "count unavailable · page limit reached"]);
+    await expect(incoming(page).locator("[data-discovery]")).toHaveCount(0);
     await incoming(page).locator(".gm__list li button").nth(5).click();
     await expect(tables(page).locator("[data-incoming-subject]")).toHaveText("rows referencing parent 1 through c · count not checked · page limit reached");
     await expect(tables(page).getByRole("button", { name: "Inspect row 50", exact: true })).toBeVisible();
@@ -60,6 +60,9 @@ test("admission overload is a recoverable busy refusal: the field stays and try 
     await openParent(page, origin);
     await reader(page).getByRole("button", { name: "show on canvas", exact: true }).click();
     await expect(list(page).locator("[data-field-record]")).toHaveText(["parent 1"]);
+    // The page's own declaration pages are read first: then the eight holders below are the only readers.
+    await expect(incoming(page).locator(".gm__list li button")).toHaveCount(12);
+    await expect(incoming(page).locator("[data-discovery]")).toHaveCount(0);
     const context = await (await fetch(`${origin}/source/v1/session`)).json();
     const suffix = `session=${encodeURIComponent(context.session)}&generation=${encodeURIComponent(context.generation)}`;
     const handle = (await (await fetch(`${origin}/source/v1/rows?${suffix}&table=parent&limit=1`)).json()).data.rows[0].record_id;
