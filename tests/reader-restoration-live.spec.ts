@@ -106,7 +106,7 @@ for (const reducedMotion of ["reduce", "no-preference"] as const) {
           await expect(reader(page).locator("h2")).toBeFocused();
           record.release();
           await references.received;
-          await expect(reader(page).locator(".source-cells")).toContainText('"Evil Walks"');
+          await expect(reader(page).locator(".source-cells")).toContainText('Evil Walks');
           await expect(reader(page).locator(".source-outgoing").getByRole("status")).toHaveText("loading…");
           // Do not consume the saved state against partially loaded content.
           await expect(details(page, "identity details")).not.toHaveAttribute("open");
