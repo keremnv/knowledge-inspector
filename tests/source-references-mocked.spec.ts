@@ -39,21 +39,22 @@ async function start(p: Page, search = "?placement=explicit") {
 for (const motion of ["reduce", "no-preference"] as const) {
   test.describe(`FK request ownership ${motion}`, () => {
     test.use({ reducedMotion: motion });
-    test("paging preserves constraint totals, fetches only requested pages, and zero is quiet", async ({ page }) => {
+    test("every declaration page is read in turn, the complete list stands without a pager, and zero is quiet", async ({ page }) => {
       const requests = await mock(page, Array.from({ length: 12 }, (_, i) => observation(child, parent, i)));
       await start(page);
-      expect(requests.filter((u) => u.pathname.endsWith("/references"))).toHaveLength(1);
-      await expect(reader(page).locator(".source-outgoing article")).toHaveCount(10);
-      await expect(reader(page)).toContainText("references · 12 declared");
-      await reader(page).getByRole("button", { name: "Next references" }).press("Enter");
-      await expect(reader(page).locator(".source-outgoing article")).toHaveCount(2);
-      await expect(reader(page).getByRole("button", { name: "Next references" })).toBeFocused();
+      // Ten declarations a request, one page after another (decision 4).
+      await expect(reader(page).locator(".source-outgoing article")).toHaveCount(12);
       expect(requests.filter((u) => u.pathname.endsWith("/references")).map((u) => u.searchParams.get("offset"))).toEqual(["0", "10"]);
+      await expect(reader(page).getByRole("button", { name: "Next references" })).toHaveCount(0);
+      await expect(reader(page).locator(".source-outgoing [data-discovery]")).toHaveCount(0);
       await openSourceReferences(page); await reader(page).getByRole("button", { name: "inspect FK 11 reference" }).press("Enter");
       await reader(page).getByRole("button", { name: "Back", exact: true }).press("Enter");
-      await expect(reader(page).locator(".source-outgoing article")).toHaveCount(2);
+      await expect(reader(page).locator(".source-outgoing article")).toHaveCount(12);
       await tables(page).getByRole("button", { name: "Inspect row 2", exact: true }).click();
-      await expect(reader(page)).toContainText("none declared");
+      // No declared references: silent.
+      await expect(reader(page).locator(".source-outgoing")).toBeAttached();
+      await expect(reader(page).locator(".source-outgoing article")).toHaveCount(0);
+      await expect(reader(page)).not.toContainText("none declared");
       await expect(page.locator(".source-canvas > .source-layer:not(.source-schema) canvas")).toHaveCount(0);
     });
 
@@ -67,7 +68,7 @@ for (const motion of ["reduce", "no-preference"] as const) {
         await expect(reader(page).locator("[data-reference-status]")).toHaveAttribute("data-reference-status", statuses[i]);
         await expect(reader(page)).toContainText('"010"'); await expect(reader(page)).toContainText("SQLite TEXT");
         await expect(reader(page).getByRole("button", { name: /^(show|reveal) connection$/ })).toHaveCount(i === 0 ? 1 : 0);
-        await expect(reader(page).getByRole("button", { name: "open referenced record" })).toHaveCount(i === 0 ? 1 : 0);
+        await expect(reader(page).getByRole("button", { name: /, the record this references$/ })).toHaveCount(i === 0 ? 1 : 0);
         await reader(page).getByRole("button", { name: "Back", exact: true }).click();
       }
       await expect(page.locator(".source-canvas > .source-layer:not(.source-schema) canvas")).toHaveCount(0);
@@ -87,7 +88,7 @@ for (const motion of ["reduce", "no-preference"] as const) {
         await page.goto("/source?placement=explicit"); await tables(page).getByRole("button", { name: "Child table", exact: true }).click();
         await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
         if (operation !== "references") { await openSourceReferences(page); await reader(page).getByRole("button", { name: "inspect FK 0 reference" }).click(); }
-        if (operation === "parent") await reader(page).getByRole("button", { name: "open referenced record" }).click();
+        if (operation === "parent") await reader(page).getByRole("button", { name: /, the record this references$/ }).click();
         await started.promise;
         await tables(page).getByRole("button", { name: "Inspect row 2", exact: true }).click();
         await expect(reader(page).locator("h2")).toHaveAccessibleName("Child, id=2");
@@ -206,13 +207,13 @@ test("placed records carry no status line under their Reader actions", async ({ 
   await expect(reader(page).locator(".source-placement [role=status]")).toHaveCount(0);
   await openSourceReferences(page); await reader(page).getByRole("button", { name: "inspect FK 0 reference" }).click();
   await reader(page).getByRole("button", { name: "show connection" }).click();
-  await reader(page).getByRole("button", { name: "open referenced record" }).click();
+  await reader(page).getByRole("button", { name: /, the record this references$/ }).click();
   await expect(reader(page).locator('[data-placement="show"]')).toHaveText("reveal");
   await expect(reader(page).locator(".source-placement [role=status]")).toHaveCount(0);
 });
 
 test.describe("direct placement, the default (O1)", () => {
-  test("selecting a row places it and inspecting a resolved reference shows it", async ({ page }) => {
+  test("selecting a row places it; inspecting a reference leaves the canvas alone until it is shown", async ({ page }) => {
     await mock(page, [observation(), { ...observation(child, parent, 1), status: "dangling", reason: null, parent: null }]);
     await start(page, "");
     await expect(page.locator("[data-field-record]")).toHaveCount(1);
@@ -222,6 +223,11 @@ test.describe("direct placement, the default (O1)", () => {
     await expect(page.locator("[data-field-reference]")).toHaveCount(0);
     await reader(page).getByRole("button", { name: "Back", exact: true }).click();
     await openSourceReferences(page); await reader(page).getByRole("button", { name: "inspect FK 0 reference", exact: true }).click();
+    await expect(reader(page).locator("[data-reference-status]")).toHaveAttribute("data-reference-status", "resolved");
+    // Inspecting audits (decision 4): nothing is drawn until asked.
+    await page.waitForTimeout(300);
+    await expect(page.locator("[data-field-record]")).toHaveCount(1); await expect(page.locator("[data-field-reference]")).toHaveCount(0);
+    await reader(page).getByRole("button", { name: "show connection" }).click();
     await expect(reader(page).getByRole("button", { name: "hide connection" })).toBeVisible();
     await expect(page.locator("[data-field-record]")).toHaveCount(2); await expect(page.locator("[data-field-reference]")).toHaveCount(1);
     await reader(page).getByRole("button", { name: "hide connection" }).click();
@@ -298,7 +304,7 @@ test.describe("individual canvas membership", () => {
     await expect(names(page)).toHaveText(["Parent 10", "Child 1"]);
     await expect(names(page).first()).toHaveAttribute("data-field-record", visited!);
     await reader(page).getByRole("button", { name: "hide connection" }).click();
-    await reader(page).getByRole("button", { name: "open referenced record" }).click();
+    await reader(page).getByRole("button", { name: /, the record this references$/ }).click();
     await expect(reader(page).locator('[data-placement="show"]')).toHaveText("reveal");
     await reader(page).locator('[data-placement="show"]').click();
     await reader(page).getByRole("button", { name: "close", exact: true }).first().click();

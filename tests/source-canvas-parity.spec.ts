@@ -72,7 +72,7 @@ for (const reducedMotion of ['reduce', 'no-preference'] as const) {
               if (driver.context === 'source') {
                 await expect(driver.reader().locator('[data-reference-status]')).toHaveText('resolved');
                 await expect(page.locator('.source-field-list [data-field-reference]')).toHaveAttribute('aria-pressed', 'true');
-                await driver.reader().getByRole('button', { name: 'open referenced record', exact: true }).press('Enter');
+                await driver.reader().getByRole('button', { name: /, the record this references$/ }).press('Enter');
                 await expect(driver.reader().locator('h2')).toHaveAccessibleName('Album, AlbumId=1');
                 await driver.reader().getByRole('button', { name: 'Back', exact: true }).press('Enter');
                 await expect(driver.reader().locator('[data-reference-status]')).toHaveText('resolved');

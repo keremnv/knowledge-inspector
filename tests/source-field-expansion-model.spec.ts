@@ -59,8 +59,10 @@ test("taking an expansion back removes only what it introduced and nobody opened
   const plain = retractSourceExpansion(expanded, group);
   expect(ids(plain)).toEqual([child.record_id, parent.record_id]);
   expect(plain.references).toEqual([]);
-  // Hiding all its connections leaves the note, but nothing shown.
+  // Hiding all its connections leaves the note, and the records it introduced
+  // still stand: the set still has something of its own to remove (decision 5).
   const hidden = expanded.expansions.get(group)!.references.reduce((f, id) => hideSourceReference(f, id), expanded);
-  expect(expansionShown(hidden, group)).toBe(false);
+  expect(expansionShown(hidden, group)).toBe(true);
+  expect(expansionShown(retractSourceExpansion(hidden, group), group)).toBe(false);
   expect(retractSourceExpansion(plain, group)).toBe(plain);
 });

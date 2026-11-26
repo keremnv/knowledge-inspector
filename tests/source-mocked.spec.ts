@@ -55,7 +55,10 @@ test("client encodes the fixed context and registered handles exactly once on ev
   await tables(page).getByRole("button", { name: "Inspect row 2", exact: true }).click();
   await expect(reader(page).locator(".source-cells code")).toHaveText("9007199254740993");
   expect(requests.find((url) => url.pathname.endsWith("/record"))?.searchParams.get("id")).toBe("sr1:Alpha/9007199254740993 %Ω");
-  await expect(reader(page).locator("section.source-outgoing")).toContainText("none declared");
+  // No declared references: silent (decision 1), no list and no sentence.
+  await expect(reader(page).locator("section.source-outgoing")).toBeAttached();
+  await expect(reader(page).locator("section.source-outgoing .source-fk")).toHaveCount(0);
+  await expect(reader(page).locator("section.source-outgoing")).not.toContainText("none declared");
   expect(new Set(requests.map((url) => url.pathname))).toEqual(new Set(["/source/v1/session", "/source/v1/overview", "/source/v1/schema", "/source/v1/rows", "/source/v1/record", "/source/v1/references"]));
   expect(requests.find((url) => url.pathname.endsWith("/session"))?.search).toBe("");
 });

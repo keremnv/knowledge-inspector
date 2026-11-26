@@ -124,9 +124,13 @@ for (const motion of ["reduce", "no-preference"] as const) {
       await page.keyboard.press("Enter");
       await expect(reader(page).locator("h2")).toBeFocused();
       // Heading focus precedes the reference read. Check final Tab order only
-      // after the short-result response has removed the loading pager.
-      await expect(reader(page).locator(".source-outgoing")).toContainText("none declared");
+      // after the response has replaced the loading status (no references: silent).
+      await expect(reader(page).locator(".source-outgoing")).toBeAttached();
+      await expect(reader(page).locator(".source-outgoing [role=status]")).toHaveCount(0);
       await expect(reader(page).getByRole("navigation", { name: "outgoing reference pages" })).toBeHidden();
+      // One Back for the workspace (decision 4): choosing the row was a move.
+      await page.keyboard.press("Tab");
+      await expect(reader(page).getByRole("button", { name: "Back", exact: true })).toBeFocused();
       await page.keyboard.press("Tab");
       await expect(reader(page).getByRole("button", { name: "close" })).toBeFocused();
       // Canonical Reader order: subject chrome, readable evidence, pinned actions.
@@ -159,7 +163,7 @@ for (const motion of ["reduce", "no-preference"] as const) {
     });
 
     for (const destination of ["pager", "close", "tables"] as const) {
-      test(`loading reference pager recovers focus without stealing later navigation: ${destination}`, async ({ page }) => {
+      test(`loading references keep focus where it is without stealing later navigation: ${destination}`, async ({ page }) => {
         const started = deferred(), release = deferred();
         await mock(page, async (_route, url) => {
           if (!url.pathname.endsWith("/references")) return false;
@@ -173,17 +177,20 @@ for (const motion of ["reduce", "no-preference"] as const) {
           await started.promise;
           const heading = reader(page).locator("h2");
           await expect(heading).toBeFocused();
-          // The loading pager lives in the references disclosure (O14.2): open
-          // it, give the heading its focus back, and walk the same path.
+          // The references disclosure (O14.2) holds only a loading status while
+          // the read is pending: open it, give the heading its focus back, and
+          // walk the same path. Nothing focusable appears or vanishes there.
           await openSourceReferences(page);
           await heading.focus();
           const summary = reader(page).locator("details.source-references > summary");
+          await page.keyboard.press("Tab");
+          await expect(reader(page).getByRole("button", { name: "Back", exact: true })).toBeFocused();
           await page.keyboard.press("Tab");
           await expect(reader(page).getByRole("button", { name: "close" })).toBeFocused();
           await page.keyboard.press("Tab");
           await expect(summary).toBeFocused();
           await page.keyboard.press("Tab");
-          await expect(reader(page).getByRole("button", { name: "previous references" })).toBeFocused();
+          await expect(reader(page).getByText("value details", { exact: true })).toBeFocused();
           if (destination === "close") {
             await page.keyboard.press("Shift+Tab");
             await page.keyboard.press("Shift+Tab");
@@ -194,7 +201,7 @@ for (const motion of ["reduce", "no-preference"] as const) {
             await expect(tables(page).getByRole("button", { name: "Inspect row 2", exact: true })).toBeFocused();
           }
           release.resolve();
-          await expect(reader(page).locator(".source-outgoing")).toContainText("none declared");
+          await expect(reader(page).locator(".source-outgoing [role=status]")).toHaveCount(0);
           await expect(reader(page).getByRole("navigation", { name: "outgoing reference pages" })).toBeHidden();
           if (destination === "close") {
             await expect(reader(page).getByRole("button", { name: "close" })).toBeFocused();
@@ -205,9 +212,9 @@ for (const motion of ["reduce", "no-preference"] as const) {
             await page.keyboard.press("Tab");
             await expect(tables(page).getByRole("button", { name: "Inspect row 3", exact: true })).toBeFocused();
           } else {
-            await expect(heading).toBeFocused();
+            await expect(reader(page).getByText("value details", { exact: true })).toBeFocused();
             await page.keyboard.press("Tab");
-            await expect(reader(page).getByRole("button", { name: "close" })).toBeFocused();
+            await expect(reader(page).getByText("identity details", { exact: true })).toBeFocused();
           }
         } finally { release.resolve(); }
       });

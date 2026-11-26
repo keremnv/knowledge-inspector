@@ -104,10 +104,10 @@ test("O14 a foreign-key value reaches its record, World's dotted value; the refe
     expect(await album.evaluate((el) => getComputedStyle(el).textDecorationStyle)).toBe("dotted");
     // The press is the whole value cell, as World's, not the glyphs of "1".
     expect(await album.evaluate((el) => Math.round(el.getBoundingClientRect().width - el.parentElement!.getBoundingClientRect().width))).toBe(0);
-    // The declared references: closed, named with their count, the evidence inside.
+    // The declared references: closed, the complete list inside.
     const references = reader(page).locator("details.source-references");
     await expect(references).not.toHaveAttribute("open");
-    await expect(references.locator(":scope > summary")).toHaveText("references · 3 declared");
+    await expect(references.locator(":scope > summary")).toHaveText("references");
     await expect(reader(page).locator("section.source-outgoing article")).toHaveCount(3);
     await expect(reader(page).locator("h3", { hasText: /^references/ })).toHaveCount(0);
     // Reaching: the Reader goes to Album 1, the connection is drawn (direct), Back returns.
@@ -188,12 +188,12 @@ test("O8.6 headers sort by the database, cycle ascending, descending, off, and u
   });
 });
 
-test("O8.5 add all places the rows on the page shown and no more, clear takes the table off", async ({ page }) => {
+test("decision 4 (was O8.5) keep all keeps the whole set, not the page shown; remove set takes off what it kept", async ({ page }) => {
   test.skip(!prepared(), "Prepare pinned Chinook");
   await serveSource(UPSTREAM, async ({ origin, requests }) => {
     await page.goto(`${origin}/source`); await choose(page, "MediaType");
     const footer = tables(page).locator(".source-bulk__actions");
-    await footer.getByRole("button", { name: "add all", exact: true }).click();
+    await footer.locator("[data-keep-all]").click();
     await expect(records(page)).toHaveCount(5);
     // The run is brought into view where it starts, as one placement is.
     await canvasRest(page, "source", 5);
@@ -202,58 +202,48 @@ test("O8.5 add all places the rows on the page shown and no more, clear takes th
     expect(first.x).toBeGreaterThan(insets.left); expect(first.x).toBeLessThan(view.width - insets.right);
     expect(first.y).toBeGreaterThan(insets.top); expect(first.y).toBeLessThan(view.height - insets.bottom);
     await expect(tables(page).locator("tbody tr[data-present]")).toHaveCount(5);
-    await footer.getByRole("button", { name: "clear", exact: true }).click();
+    await footer.getByRole("button", { name: "remove set", exact: true }).click();
     await expect(list(page)).toHaveCount(0);
-    // Page-limited by the owner: 10 rows shown, 10 added; the next page adds its 10.
+    // A filtered set, one row per page: keep all keeps every match, read 100 at a time.
     await choose(page, "Track");
-    await tables(page).getByRole("combobox", { name: "rows per page" }).selectOption("10");
-    await expect(tables(page).locator("tbody tr")).toHaveCount(10);
-    await footer.getByRole("button", { name: "add all", exact: true }).click();
-    await expect(records(page)).toHaveCount(10);
-    await expect(tables(page).locator("tbody tr[data-present]")).toHaveCount(10);
-    await tables(page).getByRole("button", { name: "next rows", exact: true }).click();
-    await expect(tables(page).locator("tbody tr[data-present]")).toHaveCount(0);
-    await footer.getByRole("button", { name: "add all", exact: true }).click();
-    await expect(records(page)).toHaveCount(20);
-    await expect(tables(page).locator("tbody tr[data-present]")).toHaveCount(10);
-    await expect(records(page).nth(10)).toHaveText("Track 11");
+    await tables(page).getByRole("searchbox").fill("Evil Walks"); await tables(page).getByRole("searchbox").press("Enter");
+    await expect(tables(page).locator("tbody tr")).not.toHaveCount(0);
+    const matches = await tables(page).locator("tbody tr").count();
+    expect(matches).toBeGreaterThan(0); expect(matches).toBeLessThan(50);
+    await tables(page).getByRole("combobox", { name: "rows per page" }).selectOption("1");
+    await expect(tables(page).locator("tbody tr")).toHaveCount(1);
+    // No total is claimed for a filtered set.
+    await expect(footer.locator("[data-keep-all]")).toHaveText("keep all");
+    await footer.locator("[data-keep-all]").click();
+    await expect(records(page)).toHaveCount(matches);
     await page.waitForTimeout(500);
-    expect(await records(page).count()).toBe(20);
+    expect(await records(page).count()).toBe(matches);
     const windows = requests.filter((u) => u.pathname.endsWith("/records") && u.searchParams.get("table") === "Track");
-    expect(windows.map((u) => [u.searchParams.get("offset"), u.searchParams.get("limit")])).toEqual([["0", "10"], ["10", "10"]]);
+    expect(windows.map((u) => [u.searchParams.get("offset"), u.searchParams.get("limit")])).toEqual([["0", "100"]]);
   });
 });
 
-test("O8.9 expand through places a group with its connections, take off takes back only what it introduced", async ({ page }) => {
+test("decision 4 (was O8.9) keeping a referencing set draws its connections; remove set takes back only what it introduced", async ({ page }) => {
   test.skip(!prepared(), "Prepare pinned Chinook");
   await serveSource(UPSTREAM, async ({ origin }) => {
     await page.goto(`${origin}/source`); await choose(page, "Album");
     await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
-    const line = reader(page).locator(".source-expand").getByRole("button", { name: /^Track · AlbumId, 10 rows, place on the canvas$/ });
-    await line.click();
+    await reader(page).locator(".source-incoming").getByRole("button", { name: /^Track · AlbumId, 10 rows$/ }).click();
+    // One row per page: the whole group is still the unit.
+    await tables(page).getByRole("combobox", { name: "rows per page" }).selectOption("1");
+    const footer = tables(page).locator(".source-bulk__actions");
+    await footer.getByRole("button", { name: "keep all 10", exact: true }).click();
     await expect(records(page)).toHaveCount(11);
     await expect(connections(page)).toHaveCount(10);
-    await expect(reader(page).locator(".source-expand [data-expand-state]")).toHaveText("take off");
-    // Open one member individually: it stays when the group is taken back.
+    await expect(footer.getByRole("button", { name: "remove set", exact: true })).toBeVisible();
+    // Open one member individually: it stays when the set is removed.
     await list(page).getByRole("button", { name: "Track 6", exact: true }).press("Enter");
     await reader(page).getByRole("button", { name: "reveal", exact: true }).click();
     await list(page).getByRole("button", { name: "Album 1", exact: true }).press("Enter");
-    await reader(page).locator(".source-expand").getByRole("button", { name: /take off the canvas$/ }).click();
+    await footer.getByRole("button", { name: "remove set", exact: true }).click();
     await expect(records(page)).toHaveText(["Album 1", "Track 6"]);
     await expect(connections(page)).toHaveCount(0);
-    // add all in the narrowed table is the same expansion, limited to the page shown (O8.5).
-    await reader(page).locator(".source-incoming").getByRole("button", { name: /^Track · AlbumId, 10 rows, open in tables$/ }).click();
-    await tables(page).getByRole("combobox", { name: "rows per page" }).selectOption("1");
-    await expect(tables(page).locator("tbody tr")).toHaveCount(1);
-    const addAll = tables(page).locator(".source-bulk__actions").getByRole("button", { name: "add all", exact: true });
-    await addAll.click();
-    await expect(connections(page)).toHaveCount(1);
-    await tables(page).getByRole("button", { name: "next rows", exact: true }).click();
-    await addAll.click();
-    await expect(connections(page)).toHaveCount(2);
-    await page.waitForTimeout(500);
-    await expect(connections(page)).toHaveCount(2);
-    await expect(reader(page).locator(".source-expand [data-expand-state]")).toHaveText("take off");
+    await expect(footer.getByRole("button", { name: "remove set", exact: true })).toHaveCount(0);
   });
 });
 
@@ -282,9 +272,9 @@ test("O8.6 the catalogue searches by name and filters by placement; add all is o
       await expect(page.locator("#source-tables .source-placement-filter [role=status]")).toHaveText("2 of 3");
       await page.getByRole("combobox", { name: "Canvas placement" }).selectOption("all");
       await choose(page, "keyless");
-      await expect(tables(page).locator(".source-bulk__actions").getByRole("button", { name: "add all", exact: true })).toBeDisabled();
+      await expect(tables(page).locator(".source-bulk__actions").locator("[data-keep-all]")).toBeDisabled();
       await choose(page, "keyed");
-      await tables(page).locator(".source-bulk__actions").getByRole("button", { name: "add all", exact: true }).click();
+      await tables(page).locator(".source-bulk__actions").locator("[data-keep-all]").click();
       await expect(records(page)).toHaveCount(2);
     });
   } finally { await rm(dir, { recursive: true, force: true }); }
@@ -442,7 +432,8 @@ test("O8.12 the schema is the empty canvas's screen, as World's vocabulary: ever
     await page.keyboard.press("Escape");
     await expect(schema).toHaveClass(/is-parked/);
     await page.locator('.ov__handle[aria-controls="source-tables"]').click();
-    // The last record leaving brings the schema back.
+    // The last record leaving brings the schema back (the catalogue's clear).
+    await tables(page).locator("[data-catalogue]").click();
     await page.locator("#source-tables").getByRole("button", { name: "clear", exact: true }).last().click();
     await expect(records(page)).toHaveCount(0);
     await expect(schema).not.toHaveClass(/is-parked/);

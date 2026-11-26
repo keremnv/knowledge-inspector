@@ -217,3 +217,8 @@
 .source-text__more:focus-visible { outline: 2px solid var(--ink); outline-offset: 1px; }
 /* NULL is not text: muted and italic, so the TEXT "NULL" and a NULL never look alike. */
 .source-value--null > code { color: var(--ink-muted); font-style: italic; }
+
+/* A value in more than one declared reference: the person chooses which to follow (decision 4). */
+.source-reach-choice { display: inline-flex; flex-wrap: wrap; gap: 0 .75em; margin-left: .75em; }
+.source-reach-choice .source-reach { display: inline; width: auto; font-size: .92em; }
+.source-discovery { margin: .25rem 0 0; color: var(--ink-muted); }

@@ -13,7 +13,10 @@ import { chooseSourceTable as choose } from "./source-navigation";
 
 const tables = (p: Page) => p.locator("#source-tables .source-table-slot > .motion-swap > .motion-swap__is");
 const reader = (p: Page) => p.locator("#source-reader > .motion-swap > .motion-swap__is");
-const group = (p: Page, name: string) => reader(p).locator(".source-expand li").filter({ hasText: name });
+// Keeping a set is asked for in Tables, on the set on show (decision 4); its outcome stays there.
+const openSet = async (p: Page, name: RegExp) => { await reader(p).locator(".source-incoming").getByRole("button", { name }).click(); await expect(tables(p).locator("[data-incoming-subject]")).toBeVisible(); };
+const keep = (p: Page) => tables(p).locator("[data-keep-all]");
+const outcomeOf = (p: Page) => tables(p).locator("[data-outcome]");
 
 const SQL = `
 CREATE TABLE parent(id INTEGER PRIMARY KEY, name TEXT);
@@ -38,72 +41,51 @@ async function openParent(page: Page, origin: string, row = 1) {
   await expect(reader(page).locator("h2")).toHaveAccessibleName(new RegExp(`id=${row}$`));
 }
 
-test("an expansion whose rows cannot be handed out says so in the Reader, with the dock closed", async ({ page }) => {
-  // Room for three record handles: the two parents take two, the group's three rows do not fit (review I2: comments · 3).
+// The review's I2 case (comments · 3, room for three handles) used to be asked
+// with the Tables dock closed, from the Reader's "expand through". Keeping a set
+// is now asked for on the set in Tables, which reads its rows first: the limit
+// is then known, and said, before the click. One case covers both.
+for (const keyRows of [2, 3]) test(`once the session can hand out no more records (${keyRows} handles), keep all says so before the click and the rows stay readable`, async ({ page }) => {
   await fixture(SQL, async (db) => serveSource(db, async ({ origin, captureFingerprint }) => {
     const before = await captureFingerprint();
     await openParent(page, origin);
-    await tables(page).getByRole("button", { name: "close" }).first().click();
-    const notes = group(page, "note · parent_id");
-    await notes.getByRole("button", { name: /note · parent_id, 3 rows, place on the canvas/ }).click();
-    const outcome = notes.locator("[data-outcome]");
-    await expect(outcome).toHaveAttribute("data-outcome", "nothing");
-    await expect(outcome).toHaveAttribute("role", "status");
-    await expect(outcome).toContainText("nothing placed · 3 rows without a record identity · not placed");
-    await expect(outcome).toContainText("handed out as many records as it can hold");
-    await expect(outcome).toContainText("identity_registry_budget_exceeded");
-    await expect(outcome).toBeInViewport();
-    // Still there once the run is long over.
-    await page.waitForTimeout(1500);
-    await expect(outcome).toBeVisible();
-    expect(await captureFingerprint()).toEqual(before);
-  }, { key_rows: 3 }));
-});
-
-test("once the session can hand out no more records, a group says so before the click and its rows stay readable", async ({ page }) => {
-  // Room for two record handles: the two parents fill it.
-  await fixture(SQL, async (db) => serveSource(db, async ({ origin, captureFingerprint }) => {
-    const before = await captureFingerprint();
-    await openParent(page, origin);
-    const notes = group(page, "note · parent_id");
-    await expect(notes.locator("[data-outcome]")).toHaveCount(0);
-    await expect(notes.getByRole("button", { name: /cannot be placed: this session's record limit is reached/ })).toHaveAttribute("aria-disabled", "true");
-    await expect(notes.locator("[data-expand-limit]")).toContainText("note rows cannot be placed");
-    await expect(notes.locator("[data-expand-limit]")).toContainText("they can be read under \"referenced by\"");
-    // Browsing the rows stays available.
-    await reader(page).locator(".source-incoming").getByRole("button", { name: /note · parent_id, 3 rows, open in tables/ }).click();
+    await openSet(page, /^note · parent_id, 3 rows$/);
     await expect(tables(page).locator("[data-incoming-subject]")).toContainText("3 rows referencing");
-    await expect(tables(page).getByRole("button", { name: "add all" })).toBeDisabled();
+    await expect(tables(page).locator("tbody tr")).toHaveCount(3);
+    await expect(keep(page)).toBeDisabled();
     await expect(tables(page).locator("[data-placement-limit]")).toContainText("rows of note cannot be placed");
+    await expect(tables(page).locator("[data-placement-limit]")).toContainText("this session's record limit is reached");
+    await expect(outcomeOf(page)).toHaveCount(0);
     expect(await captureFingerprint()).toEqual(before);
-  }, { key_rows: 2 }));
+  }, { key_rows: keyRows }));
 });
 
-test("a failure after the first page reports what was placed and why it stopped (partial success)", async ({ page }) => {
+test("a failure after the first page reports how far it got and why it stopped (partial success)", async ({ page }) => {
   await fixture(SQL, async (db) => serveSource(db, async ({ origin }) => {
     await page.route("**/source/v1/records?*", (route: Route) => new URL(route.request().url()).searchParams.get("offset") === "100"
       ? route.fulfill({ status: 422, contentType: "application/json", body: JSON.stringify({ error: "source_query_budget_exceeded" }) })
       : route.continue());
     await openParent(page, origin);
-    const items = group(page, "item · parent_id");
-    await items.getByRole("button", { name: /item · parent_id, 150 rows, place on the canvas/ }).click();
-    const outcome = items.locator("[data-outcome]");
+    await openSet(page, /^item · parent_id, 150 rows$/);
+    await expect(keep(page)).toHaveText("keep all 150");
+    await keep(page).click();
+    const outcome = outcomeOf(page);
     await expect(outcome).toHaveAttribute("data-outcome", "failed");
     await expect(outcome).toHaveAttribute("role", "alert");
-    await expect(outcome).toContainText("could not finish · placed 100");
+    await expect(outcome).toContainText("could not finish · 100 of 150 · kept 100");
     await expect(outcome).toContainText("Reading the next rows did not finish within the query limit.");
     await expect(outcome).toContainText("source_query_budget_exceeded");
-    // Nothing is shown as success, and retrying replaces the result.
+    // Nothing is shown as success; remove set takes off what it kept, and running again replaces the result.
     await page.unroute("**/source/v1/records?*");
-    await items.getByRole("button", { name: /item · parent_id, take off the canvas/ }).click();
+    await tables(page).getByRole("button", { name: "remove set", exact: true }).click();
     await expect(outcome).toHaveCount(0);
-    await items.getByRole("button", { name: /item · parent_id, 150 rows, place on the canvas/ }).click();
-    await expect(items.locator("[data-outcome]")).toHaveAttribute("data-outcome", "complete");
-    await expect(items.locator("[data-outcome]")).toHaveText("placed 150");
+    await keep(page).click();
+    await expect(outcomeOf(page)).toHaveAttribute("data-outcome", "complete");
+    await expect(outcomeOf(page)).toHaveText("kept 150");
   }), 150);
 });
 
-test("stopping a run says it stopped and how much it placed", async ({ page }) => {
+test("stopping a run says it stopped and how far it got", async ({ page }) => {
   await fixture(SQL, async (db) => serveSource(db, async ({ origin }) => {
     let release: () => void = () => {};
     const held = new Promise<void>((resolve) => { release = resolve; });
@@ -112,29 +94,28 @@ test("stopping a run says it stopped and how much it placed", async ({ page }) =
       await route.continue().catch(() => {});
     });
     await openParent(page, origin);
-    const items = group(page, "item · parent_id");
-    await items.getByRole("button", { name: /item · parent_id, 250 rows, place on the canvas/ }).click();
+    await openSet(page, /^item · parent_id, 250 rows$/);
+    await expect(keep(page)).toHaveText("keep all 250");
+    await keep(page).click();
     // The first page is on the canvas and the run is waiting for the second.
-    await expect(items.getByRole("button", { name: /item · parent_id/ })).toHaveAttribute("aria-busy", "true");
-    await expect(tables(page).locator(".source-bulk__actions button[aria-busy]").first()).toHaveText("adding… 100");
+    await expect(tables(page).locator("[data-keeping]")).toHaveText("keeping… 100 of 250");
     await tables(page).getByRole("button", { name: "stop" }).click();
     release();
-    const outcome = items.locator("[data-outcome]");
-    await expect(outcome).toHaveAttribute("data-outcome", "stopped");
-    await expect(outcome).toHaveText("stopped · placed 100");
+    await expect(outcomeOf(page)).toHaveAttribute("data-outcome", "stopped");
+    await expect(outcomeOf(page)).toHaveText("stopped · 100 of 250 · kept 100");
   }), 250);
 });
 
-test("an expansion of records already on the canvas says so", async ({ page }) => {
+test("keeping a set whose records are already on the canvas says so", async ({ page }) => {
   await fixture(SQL, async (db) => serveSource(db, async ({ origin }) => {
     await openParent(page, origin);
     await choose(page, "note");
     for (const row of [1, 2]) await tables(page).getByRole("button", { name: `Inspect row ${row}`, exact: true }).click();
     await choose(page, "parent");
     await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
-    const notes = group(page, "note · parent_id");
-    await notes.getByRole("button", { name: /note · parent_id, 3 rows, place on the canvas/ }).click();
-    await expect(notes.locator("[data-outcome]")).toHaveText("placed 1 · 2 already on the canvas");
+    await openSet(page, /^note · parent_id, 3 rows$/);
+    await keep(page).click();
+    await expect(outcomeOf(page)).toHaveText("kept 1 · 2 already on the canvas");
   }));
 });
 

@@ -121,7 +121,7 @@ for (const width of [1440, 900]) for (const colorScheme of ["light", "dark"] as 
           await expect(disclosure(page, "reference details").locator("summary")).toBeVisible();
           await disclosure(page, "reference details").locator("summary").press("Space");
           await expect(reader(page).locator(".source-reference-pairs")).toBeVisible();
-          await reader(page).getByRole("button", { name: "open referenced record", exact: true }).click();
+          await reader(page).getByRole("button", { name: /, the record this references$/ }).click();
           await expect(reader(page).locator("h2")).toHaveAccessibleName("Album, AlbumId=1");
           await reader(page).getByRole("button", { name: "Back", exact: true }).press("Enter");
           await expect(disclosure(page, "reference details")).toHaveAttribute("open", "");

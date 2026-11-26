@@ -535,7 +535,9 @@ a found record is opened (direct placement places it). Nothing else is
 consulted: no label, substring, case-folded or partial key opens a record. A
 malformed link, an unknown table, a key that matches no row, or a row without a
 verified identity opens nothing and is reported in the canvas as an alert
-(`data-record-link-problem`). Without these parameters the workspace behaves
+(`data-record-link-problem`); a lookup refused because the service was busy
+offers **try again**. The record opened is the first state Back can restore.
+Without these parameters the workspace behaves
 exactly as before. The link adds no endpoint and no write; it is a client-side
 use of the existing read API. Tests: `tests/source-record-link.app.ts`.
 
@@ -574,38 +576,77 @@ refused, any parse error meaning "not JSON"). Tests:
 `tests/source-json-reading.spec.ts` (the reading) and
 `tests/source-json-view.app.ts` (installed application, generic fixture).
 
-### Source UI outgoing exploration
+### Source UI following records
 
-The Source Reader uses the existing two FK endpoints, with ten declared
-constraints per requested outgoing page and exact child/declaration reads for
-observation inspection. `total` remains the declared outgoing FK constraint
-count. Opening a matched parent reads its verified handle; it does not navigate
-to a table's first row or place records. Explicit **Show reference on canvas**
-reads the actual parent record before contributing endpoints and the exact
-observation to a session-local Source working set. In that working set, records
-and connections are independent. A record placed or reached individually stays
-until it is removed. **hide connection** hides only that connection, and both
-of its records stay. Removing a record takes it and its incident connections,
-never another record. Showing a record or connection already on the canvas adds
-nothing and moves nothing. Hiding and removal affect only the working set: the
-recorded reference, its declaration and its observation are unchanged, and
-neither action reads the source. No API write, alternate FK resolver,
-conceptual assertion or historical-enforcement receipt is introduced. See outgoing exploration evidence.
+Owner decision 4 (`docs/DECISIONS.md`, "Following records"). Following a
+declared reference leaves the same trail in either direction. Left shows sets
+of rows (Tables); right shows one subject (Reader). No endpoint is added: the
+UI uses `references`, `reference`, `record`, `search` and `records`.
 
-### Source UI incoming exploration
+**Discovery.** For the record in the Reader the workspace reads every page of
+its outgoing and of its incoming references, ten declarations per request, one
+page after another (at most 50 pages each). What has arrived is shown at once;
+"checking declarations…" stands until the last page, and "coverage
+incomplete" (with the failure and "try again", which resumes at the failed
+page) when a page fails or the page limit is reached. Leaving the record stops
+the rest. An empty list implies absence only after every page succeeded.
 
-The Reader lists **referenced by** below a record's outgoing **references**, ten
-declarations per page, in World's relation-list form: `child table · FK
-columns`, then the count and `table`. A declaration with an exact zero count is a
-quiet note ("No rows in this capture reference this record through …"). An
-unavailable count shows its reason and stays browsable. An invalid or unsupported
-declaration is listed with its validation reason, no count and no rows. Choosing
-a line opens the child table in the Tables dock in reference mode: Find is
-replaced by `N rows referencing <parent table> · <key> through <FK columns>`, and
-**whole table** (World's "whole relation") drops the narrowing. The Reader keeps
-the parent until a row is chosen; **back to previous table** restores the
-previous table, its Find and its selection. Nothing is placed on the canvas. Group
-expansion is not implemented.
+**Outgoing.** A value whose column takes part in exactly one resolved,
+addressable reference is a dotted way to its parent; a value in more than one
+(`span.source`, in the references to `source` and to `source_field`) is
+followed by one `→ <parent table>` choice per reference. Following opens the
+verified parent in the Reader; with direct placement it first reads the parent
+record and draws the exact observation (both records placed if absent).
+
+**Incoming.** "referenced by" lists the incoming declarations that lead
+somewhere: an exact count above zero, or a count that is not exact (shown as
+its count status). An invalid declaration is listed with its validation reason,
+no count and no rows. A declaration with an exact zero is not listed there.
+Following a group whose exact count is one reads the group's record window
+(`records?mode=reference`, limit 2); when it is complete, holds exactly one
+record and that record has a verified handle and observation, the child opens
+in the Reader and (direct placement) the observation is drawn. Any other group
+opens in Tables in reference mode: Find is replaced by `N rows referencing
+<parent> through <FK columns>` and **whole table** widens it. Choosing a row
+there opens it in the Reader and (direct placement) reads the child, the exact
+observation and the parent, and draws that observation to the parent that
+defined the set, wherever the Reader has been since.
+
+**References (details).** The disclosure **references** is the complete list:
+every outgoing observation with its status and **inspect reference**, and
+every incoming declaration with its count, zeros included ("referenced
+through"). Inspecting an observation opens it in the Reader and leaves the
+canvas unchanged; its `from` and `→` ends open the child and the parent, and
+**show connection** / **hide connection** change only the drawing.
+
+**Back.** Every move that changes what is open (a row, a follow, a set, a Find
+hit, a canvas mark, an inspected reference, table info, whole table) records
+the workspace it leaves: Reader subject, table scope with its Find, sort and
+window, the selection, the catalogue state and the leading dock. One **back**,
+offered in either panel, restores it (up to 50 steps). Filtering, sorting and
+paging refine the set in place and are not steps. A record opened from an
+address is the first restorable state. A window-only row is not restored.
+
+**Keeping a set.** The Tables footer offers **keep all** for the set on show
+(a table, a filtered table, or a referencing group), with its size when known
+(the group's exact count, or a whole table's verified row count). It reads
+the whole set, 100 records per `records` page; a group also draws each
+member's observation to its parent. While it runs, "keeping… N of M" and
+**stop**; afterwards its outcome ("kept N", "stopped · N of M · kept K",
+"N already on the canvas", rows without a record identity). **remove set**
+takes off exactly what that run contributed: the connections it drew and the
+records it introduced, unless a record has since been opened, followed to, or
+joined by another drawn connection. Records already on the canvas before the
+run stay. Right-clicking a table in the catalogue still takes all its records
+off.
+
+**Unchanged.** In the working set records and connections are independent:
+**hide connection** hides only a connection; removing a record takes it and
+its incident connections, never another record; showing what is already shown
+adds and moves nothing. Hiding and removal never read the source or change the
+recorded reference, its declaration or its observation. No API write,
+alternate FK resolver, conceptual assertion or historical-enforcement receipt
+is introduced.
 
 ### Incoming references
 

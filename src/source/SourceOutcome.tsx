@@ -1,6 +1,6 @@
 /**
- * What a bulk placement (add all) or a group expansion (expand through)
- * actually did, kept where the action was asked for until the same action
+ * What keeping a set on the canvas (keep all: a table, a filtered table, or a
+ * referencing group) actually did, kept where the action was asked for until the same action
  * runs again or its result is taken off the canvas. A run that placed nothing
  * says so: no exception reaching the page is not success.
  */
@@ -25,18 +25,24 @@ export type BulkOutcome = {
   identity?: SourceIdentity;
   error?: Error;
   stopped?: "person" | "table_changed";
+  /** The set's size, when known: its exact count or a table's verified rows. */
+  total?: number | null;
 };
 
 const rows = (n: number) => `${n} ${n === 1 ? "row" : "rows"}`;
+
+const n = (value: number) => value.toLocaleString("en-US");
 
 export function outcomeSummary(outcome: BulkOutcome): string {
   const { placed, already, skipped } = outcome;
   const parts: string[] = [];
   if (outcome.state === "stopped") parts.push(outcome.stopped === "table_changed" ? "stopped when the table on show changed" : "stopped");
   if (outcome.state === "failed") parts.push("could not finish");
-  if (placed || outcome.state === "stopped" || outcome.state === "failed" || outcome.state === "complete" && !already) parts.push(`placed ${placed}`);
-  else if (outcome.state === "nothing" || outcome.state === "partial") parts.push("nothing placed");
-  if (already) parts.push(placed || outcome.state !== "complete" ? `${already} already on the canvas` : `all ${already} already on the canvas`);
+  // How far a run that did not finish got through a set of known size.
+  if ((outcome.state === "stopped" || outcome.state === "failed") && typeof outcome.total === "number") parts.push(`${n(placed + already + skipped)} of ${n(outcome.total)}`);
+  if (placed || outcome.state === "stopped" || outcome.state === "failed" || outcome.state === "complete" && !already) parts.push(`kept ${n(placed)}`);
+  else if (outcome.state === "nothing" || outcome.state === "partial") parts.push("nothing kept");
+  if (already) parts.push(placed || outcome.state !== "complete" ? `${n(already)} already on the canvas` : `all ${n(already)} already on the canvas`);
   if (skipped) parts.push(`${rows(skipped)} without a record identity · not placed`);
   if (outcome.state === "nothing" && !skipped && !already) parts.push("no rows were found");
   return parts.join(" · ");
