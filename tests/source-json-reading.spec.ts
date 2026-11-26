@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { parseSourceJson, sourceJson, sourceJsonSize, SOURCE_JSON_MAX_DEPTH } from "../src/source/sourceJsonReading";
+import { visibleRuns } from "../src/source/sourceVisibleText";
 
 test("numbers keep their lexeme: no rounding, no normalising", () => {
   const read = parseSourceJson('{"big": 12345678901234567890, "money": 1.10, "huge": 1e400, "neg": -0, "e": 2E-3}');
@@ -58,4 +59,13 @@ test("sizes are said as the collapsed line says them", () => {
   expect(sourceJsonSize(parseSourceJson('{"a": 1, "b": 2}')!)).toBe("2 keys");
   expect(sourceJsonSize(parseSourceJson("[1]")!)).toBe("1 item");
   expect(sourceJsonSize(parseSourceJson("[1, 2, 3]")!)).toBe("3 items");
+});
+
+test("visible text: characters as themselves, invisible ones as marked escapes", () => {
+  expect(visibleRuns('sex == "male" and \\ x')).toEqual([{ text: 'sex == "male" and \\ x', escape: false }]);
+  expect(visibleRuns("a\nb\tc")).toEqual([{ text: "a", escape: false }, { text: "\\n", escape: true }, { text: "b", escape: false },
+    { text: "\\t", escape: true }, { text: "c", escape: false }]);
+  expect(visibleRuns("\u0000\u200b\u202e\ufeff")).toEqual(["\\u0000", "\\u200B", "\\u202E", "\\uFEFF"].map((text) => ({ text, escape: true })));
+  expect(visibleRuns("")).toEqual([]);
+  expect(visibleRuns("é ü 日本")).toEqual([{ text: "é ü 日本", escape: false }]);
 });

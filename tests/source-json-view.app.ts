@@ -17,7 +17,7 @@ import { join } from "node:path";
 const INSTALLED = process.env.KI_EXECUTABLE;
 const digest = (path: string) => createHash("sha256").update(readFileSync(path)).digest("hex");
 
-const DOCUMENT = '{"id": "judgment:z3:1", "count": 12345678901234567890, "score": 1.10, "outcome": "met", "outcome": "not_met", ' +
+const DOCUMENT = '{"id": "judgment:z3:1", "clause": "sex == \\"male\\"\\nand hypogonadism", "count": 12345678901234567890, "score": 1.10, "outcome": "met", "outcome": "not_met", ' +
   '"evidence": [{"clause": "c1", "facts": {"testosterone": {"value": 65, "unit": "ng/dL"}}}], "items": [' +
   Array.from({ length: 250 }, (_, i) => i).join(", ") + "]}";
 const FIXTURE = `
@@ -85,10 +85,18 @@ test.describe("JSON values", () => {
     await expect(view.locator(".source-json__number").filter({ hasText: /^12345678901234567890$/ })).toHaveCount(1);
     await expect(view.locator(".source-json__number").filter({ hasText: /^1\.10$/ })).toHaveCount(1);
     // Both "outcome" members, in recorded order; the second is marked.
-    await expect(view.locator(".source-json__key").filter({ hasText: /^"outcome"$/ })).toHaveCount(2);
+    await expect(view.locator(".source-json__key").filter({ hasText: /^outcome$/ })).toHaveCount(2);
     await expect(view.locator("[data-json-repeated]")).toHaveCount(1);
     await expect(view.locator("[data-json-repeated]").locator("..")).toContainText('"not_met"');
-    await expect(view).toContainText("TEXT read as JSON · exact text under value details");
+    // No explanatory sentence under the value.
+    await expect(body(page)).not.toContainText("read as JSON");
+  });
+
+  test("a string shows its characters, not its escapes; invisible characters are shown as marked escapes", async ({ page }) => {
+    await open(page, base, "json");
+    const clause = body(page).locator("li").filter({ has: page.locator(".source-json__key", { hasText: /^clause$/ }) }).first().locator(".source-json__string");
+    await expect(clause).toHaveText('"sex == "male"\\nand hypogonadism"');
+    await expect(clause.locator("[data-escape]")).toHaveText(["\\n"]);
   });
 
   test("the first two levels are open; deeper ones open on request", async ({ page }) => {
@@ -97,15 +105,15 @@ test.describe("JSON values", () => {
     // The document and its members are open; evidence's first item (depth 2) is not, nor what it holds.
     const item = view.getByRole("button", { name: /^item 0, object, 2 keys, expand$/ });
     await expect(item).toHaveAttribute("aria-expanded", "false");
-    await expect(view).not.toContainText('"clause"');
+    await expect(view.locator(".source-json__key", { hasText: /^c$/ })).toHaveCount(0);
     await item.click();
-    await expect(view).toContainText('"clause"');
+    await expect(view.locator(".source-json__key", { hasText: /^facts$/ })).toHaveCount(1);
     const facts = view.getByRole("button", { name: /^facts, object, 1 key, expand$/ });
     await expect(facts).toHaveAttribute("aria-expanded", "false");
-    await expect(view).not.toContainText('"testosterone"');
+    await expect(view).not.toContainText("testosterone");
     await facts.click();
     await expect(view.getByRole("button", { name: /^facts, object, 1 key, collapse$/ })).toHaveAttribute("aria-expanded", "true");
-    await expect(view).toContainText('"testosterone"');
+    await expect(view).toContainText("testosterone");
   });
 
   test("a long array shows 100 items and the rest on request", async ({ page }) => {

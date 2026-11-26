@@ -205,6 +205,7 @@
 .source-json__key, .source-json__index, .source-json__literal { color: var(--ink-muted); }
 .source-json__more { display: block; margin: .15rem 0 .15rem 1.1rem; border: 0; background: none; padding: 0; font: inherit; color: var(--ink-muted); text-decoration: underline; cursor: pointer; }
 .source-value .source-json__repeated { display: inline; margin: 0 0 0 .45rem; color: var(--ink-muted); font-family: var(--font-sans); }
-.source-value .source-json__note { display: block; margin-top: .35rem; color: var(--ink-muted); font-family: var(--font-sans); }
+.source-json__quote { color: var(--ink-muted); opacity: .55; }
+.source-text__escape { color: var(--ink-muted); border-bottom: 1px dotted var(--ink-muted); }
 /* A JSON value takes the row's full width, its column name above it, so the tree is not squeezed into the value column. */
 .source-facts > div:has(> dd > [data-json-view]) { grid-template-columns: minmax(0, 1fr); gap: .35rem; }
