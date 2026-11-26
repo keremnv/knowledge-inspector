@@ -26,7 +26,7 @@ A TEXT value is shown as its characters, not as a quoted, JSON-escaped string: `
 not `"sex == \"male\" and hypogonadism"`. What the quotes used to make visible is shown another way:
 - the empty TEXT is marked `empty`; spaces at either end are shown as `␣` and marked;
 - characters a reader cannot see (controls, separators, zero-width and bidirectional characters) are shown as their
-  escape (`\n`, `​`) and marked;
+  escape (`\n`, `\u200B`) and marked;
 - NULL keeps its own style (muted, italic), so the TEXT "NULL" and a NULL do not look alike; the TEXT "5" and the
   INTEGER 5 differ by storage class style;
 - in the Reader, lines break as written and a long TEXT is shortened until "show all"; in a table cell a line break
