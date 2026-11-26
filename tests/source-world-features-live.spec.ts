@@ -247,7 +247,7 @@ test("decision 4 (was O8.9) keeping a referencing set draws its connections; rem
   });
 });
 
-test("O8.6 the catalogue searches by name and filters by placement; add all is offered only where rows can be placed", async ({ page }) => {
+test("O8.6 the catalogue searches by name and filters by placement; keep all is offered only where rows can be placed", async ({ page }) => {
   const { execFileSync } = await import("node:child_process");
   const { mkdtemp, rm } = await import("node:fs/promises");
   const { tmpdir } = await import("node:os");
@@ -272,7 +272,7 @@ test("O8.6 the catalogue searches by name and filters by placement; add all is o
       await expect(page.locator("#source-tables .source-placement-filter [role=status]")).toHaveText("2 of 3");
       await page.getByRole("combobox", { name: "Canvas placement" }).selectOption("all");
       await choose(page, "keyless");
-      await expect(tables(page).locator(".source-bulk__actions").locator("[data-keep-all]")).toBeDisabled();
+      await expect(tables(page).locator("[data-keep-all]")).toHaveCount(0);
       await choose(page, "keyed");
       await tables(page).locator(".source-bulk__actions").locator("[data-keep-all]").click();
       await expect(records(page)).toHaveCount(2);

@@ -627,9 +627,12 @@ offered in either panel, restores it (up to 50 steps). Filtering, sorting and
 paging refine the set in place and are not steps. A record opened from an
 address is the first restorable state. A window-only row is not restored.
 
-**Keeping a set.** The Tables footer offers **keep all** for the set on show
-(a table, a filtered table, or a referencing group), with its size when known
-(the group's exact count, or a whole table's verified row count). It reads
+**Keeping a set.** The bar under the rows, beside the page size, offers
+**keep all** for the set on show (a table, a filtered table, or a referencing
+group), with its size when known (the group's exact count, or a whole table's
+verified row count). Where rows cannot be placed it is not offered; the cause
+is said once in the panel, above the rows when the row window names it,
+otherwise as a label where the button would be. It reads
 the whole set, 100 records per `records` page; a group also draws each
 member's observation to its parent. While it runs, "keeping… N of M" and
 **stop**; afterwards its outcome ("kept N", "stopped · N of M · kept K",

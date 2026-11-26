@@ -813,6 +813,8 @@ function Workspace({ context }: { context: SourceContext }) {
   };
   // A table read with verified keys, or one that should verify: the rows decide.
   const canAddAll = !!relation && !identityBlocksPlacement(windowRows?.identity) && (windowRows?.identity?.status === "verified" || placeableTable(relation));
+  const blockedCause = !canAddAll && identityBlocksPlacement(windowRows?.identity) && windowRows?.ordering !== "unspecified_window_only"
+    ? identityExplanation(windowRows?.identity)?.short ?? null : null;
   // The set on show in Tables: the rows referencing a record through one
   // declaration, or a table, whole or filtered. Its size is claimed only when
   // known: the group's exact count, or a whole table's verified row count.
@@ -1255,19 +1257,23 @@ function Workspace({ context }: { context: SourceContext }) {
                   if (event.detail === 0) setFocusRequest(['#source-tables .source-table-slot .motion-swap__is .source-find input[type="search"]', FOCUS_TARGETS.table]);
                 }}>whole table</TableAction></div>}
               {relation.read_status === "available" && !referencing && <SourceFind draft={findDraft} onDraft={setFindDraft} name={relation.name} columns={relation.columns ?? []} onEdit={() => changeSearch(null)} onSubmit={changeSearch} onClear={() => changeSearch(undefined)} />}
-              {relation.read_status === "available" ? search === null ? <p className="source-find-prompt" role="status">press enter to filter</p> : <SourceRowsView searching={search !== undefined} named={naming[relation.name]} name={relation.name} rows={windowRows} error={windowResult?.error} onRetry={windowResult?.retry} selected={row} placed={placedHandles} onTakeOff={takeOffRecord} order={sort} onOrder={cycleSort} offset={offset} limit={limit} onPage={page} onSelect={select} scroll={tableScroll} /> : <p role="alert">read unavailable · {relation.reason}</p>}
-              {relation.read_status === "available" && search !== null && <div className="source-bulk">
-                {bulk?.key === setKey && bulk.skipped ? <p className="source-note">{bulk.skipped} {bulk.skipped === 1 ? "row" : "rows"} without a verified key · not placed</p> : null}
-                {!(bulk?.key === setKey) && dockOutcome && <BulkOutcomeNote outcome={dockOutcome} />}
-                {!canAddAll && identityBlocksPlacement(windowRows?.identity) && <p className="source-limitation" data-placement-limit>rows of {relation.name} cannot be placed · {identityExplanation(windowRows?.identity)!.short}</p>}
-                <TableFooter className="table__foot source-bulk__actions">
+              {relation.read_status === "available" ? search === null ? <p className="source-find-prompt" role="status">press enter to filter</p> : <SourceRowsView searching={search !== undefined} named={naming[relation.name]} name={relation.name} rows={windowRows} error={windowResult?.error} onRetry={windowResult?.retry} selected={row} placed={placedHandles} onTakeOff={takeOffRecord} order={sort} onOrder={cycleSort} offset={offset} limit={limit} onPage={page} onSelect={select} scroll={tableScroll}
+                actions={(canAddAll || setShown || bulk?.key === setKey || blockedCause) && <span className="source-bulk__actions">
+                  {/* Where rows cannot be placed there is nothing to keep: no button, and no sentence about one.
+                      The cause is said once in this panel: above the rows when the row window already names it
+                      (a view, a table without a key), otherwise here, where the action would be. */}
+                  {blockedCause && <small className="source-limitation" data-placement-limit>{blockedCause}</small>}
                   {bulk && bulk.key === setKey ? <>
                     <span role="status" data-keeping style={{ fontVariantNumeric: "tabular-nums" }}>keeping… {bulk.reached.toLocaleString("en-US")}{bulk.total !== null ? ` of ${bulk.total.toLocaleString("en-US")}` : ""}</span>
                     <button type="button" onClick={stopBulk}>stop</button></>
-                    : <button type="button" data-keep-all onClick={keepAll} disabled={!!bulk || !canAddAll} style={{ fontVariantNumeric: "tabular-nums" }}>
+                    : canAddAll && <button type="button" data-keep-all onClick={keepAll} disabled={!!bulk} style={{ fontVariantNumeric: "tabular-nums" }}>
                       keep all{setTotal !== null ? ` ${setTotal.toLocaleString("en-US")}` : ""}</button>}
                   {setShown && !(bulk?.key === setKey) && <button type="button" data-remove-set onClick={() => removeSet(setKey!)}>remove set</button>}
-                </TableFooter></div>}
+                </span>} /> : <p role="alert">read unavailable · {relation.reason}</p>}
+              {relation.read_status === "available" && search !== null && <div className="source-bulk">
+                {bulk?.key === setKey && bulk.skipped ? <p className="source-note">{bulk.skipped} {bulk.skipped === 1 ? "row" : "rows"} without a verified key · not placed</p> : null}
+                {!(bulk?.key === setKey) && dockOutcome && <BulkOutcomeNote outcome={dockOutcome} />}
+              </div>}
             </div> : <div />}
           </Swap></div></div>
         </OverlayPanel>

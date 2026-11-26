@@ -79,7 +79,10 @@ the Reader, a choice among rows opens in Tables, and Back restores the workspace
    Tables (all pages), not the page shown, and says the scope before it runs ("keep all 2", "keep all 10,106"; no
    total is claimed where none is known). It can be stopped, and reports how far it got ("kept 120 of 10,106 ·
    stopped"). "remove set" takes off exactly what that run contributed: a record already on the canvas before it,
-   or reached afterwards by another path, stays.
+   or reached afterwards by another path, stays. Both sit on the bar under the rows, beside the page size, never on a
+   bar of their own, and only where rows can be placed: a view or a table without a key shows no button and no
+   sentence about one. When the line above the rows does not already name the cause (the session's record limit),
+   the cause stands where the button would be, as a label.
 
 **What this removes.** The Reader's "expand through" list (bulk placement of a group is "keep all" on the set in
 Tables); "references · N declared" as a way to navigate (it stays, under details, as the complete list);

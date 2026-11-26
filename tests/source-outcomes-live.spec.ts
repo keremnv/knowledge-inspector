@@ -45,16 +45,16 @@ async function openParent(page: Page, origin: string, row = 1) {
 // with the Tables dock closed, from the Reader's "expand through". Keeping a set
 // is now asked for on the set in Tables, which reads its rows first: the limit
 // is then known, and said, before the click. One case covers both.
-for (const keyRows of [2, 3]) test(`once the session can hand out no more records (${keyRows} handles), keep all says so before the click and the rows stay readable`, async ({ page }) => {
+for (const keyRows of [2, 3]) test(`once the session can hand out no more records (${keyRows} handles), the set says so before any click and the rows stay readable`, async ({ page }) => {
   await fixture(SQL, async (db) => serveSource(db, async ({ origin, captureFingerprint }) => {
     const before = await captureFingerprint();
     await openParent(page, origin);
     await openSet(page, /^note · parent_id, 3 rows$/);
     await expect(tables(page).locator("[data-incoming-subject]")).toContainText("3 rows referencing");
     await expect(tables(page).locator("tbody tr")).toHaveCount(3);
-    await expect(keep(page)).toBeDisabled();
-    await expect(tables(page).locator("[data-placement-limit]")).toContainText("rows of note cannot be placed");
-    await expect(tables(page).locator("[data-placement-limit]")).toContainText("this session's record limit is reached");
+    // Nothing can be kept: no button, and the cause said once, where the action would be.
+    await expect(keep(page)).toHaveCount(0);
+    await expect(tables(page).locator("[data-placement-limit]")).toHaveText("this session's record limit is reached");
     await expect(outcomeOf(page)).toHaveCount(0);
     expect(await captureFingerprint()).toEqual(before);
   }, { key_rows: keyRows }));
