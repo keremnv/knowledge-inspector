@@ -48,11 +48,11 @@ for (const motion of ["reduce", "no-preference"] as const) {
       await expect(tables(page).getByRole("button", { name: "Inspect row 10", exact: true })).toBeVisible();
       if (process.env.KI_SOURCE_SHOTS && motion === "reduce") await captureSettledSource(page, "track-schema.png");
       const row = tables(page).getByRole("row").filter({ has: page.getByRole("button", { name: "Inspect row 10", exact: true }) });
-      await expect(row).toContainText('"Evil Walks"');
+      await expect(row).toContainText("Evil Walks");
       await tables(page).getByRole("button", { name: "Inspect row 10", exact: true }).focus();
       await page.keyboard.press("Enter");
       await expect(reader(page).locator("h2")).toBeFocused();
-      await expect(reader(page).locator(".source-cells").getByText('"Evil Walks"', { exact: true })).toBeVisible();
+      await expect(reader(page).locator(".source-cells").getByText("Evil Walks", { exact: true })).toBeVisible();
       // The caption is a separate phrase to assistive technology, not a run-on.
       await expect(reader(page).locator("h2")).toHaveAccessibleName(/^Track\s*, TrackId=10$/);
       // The table owns the dock; its catalogue no longer takes row space.
@@ -145,9 +145,12 @@ test("real fixture: empty, keyless, mixed values, generated columns, invalid and
     await expect(tables(page).getByRole("button", { name: "next rows" })).toBeDisabled();
     await choose(page, "Keyless");
     await expect(tables(page)).toContainText("no primary key");
-    for (const [index, text] of [[1, "NULL"], [2, '""'], [3, '"NULL"'], [4, "9223372036854775807"], [5, "0.1"], [6, "BLOB · 2 bytes · preview only"]] as const) {
+    // TEXT is shown as its characters: the empty TEXT is marked "empty", and the TEXT "NULL" is told from NULL by its storage class.
+    for (const [index, text, storage] of [[1, "NULL", "null"], [2, "empty", "text"], [3, "NULL", "text"], [4, "9223372036854775807", "integer"],
+      [5, "0.1", "real"], [6, "BLOB · 2 bytes · preview only", "blob"]] as const) {
       await tables(page).getByRole("button", { name: `Inspect row ${index}`, exact: true }).click();
       await expect(reader(page).locator(".source-cells code").first()).toHaveText(text);
+      await expect(reader(page).locator(".source-cells .source-value").first()).toHaveClass(new RegExp(`source-value--${storage}(\\s|$)`));
       await expect(reader(page)).toContainText("No registered source handle");
     }
     await expect(reader(page)).toContainText("not a complete recoverable value");

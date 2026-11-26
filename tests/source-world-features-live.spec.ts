@@ -173,18 +173,18 @@ test("O8.6 headers sort by the database, cycle ascending, descending, off, and u
   await serveSource(UPSTREAM, async ({ origin, requests }) => {
     await page.goto(`${origin}/source`); await choose(page, "Genre");
     const firstName = () => tables(page).locator("tbody tr").first().locator("td").nth(2);
-    await expect(firstName()).toHaveText('"Rock"');
+    await expect(firstName()).toHaveText("Rock");
     const header = tables(page).getByRole("columnheader", { name: "Name" });
     await header.getByRole("button").click();
     await expect(header).toHaveAttribute("aria-sort", "ascending");
-    await expect(firstName()).toHaveText('"Alternative"');
+    await expect(firstName()).toHaveText("Alternative");
     await header.getByRole("button").click();
     await expect(header).toHaveAttribute("aria-sort", "descending");
-    await expect(firstName()).toHaveText('"World"');
+    await expect(firstName()).toHaveText("World");
     expect(requests.some((u) => u.pathname.endsWith("/rows") && u.searchParams.get("order") === "Name" && u.searchParams.get("desc") === "1")).toBe(true);
     await tables(page).getByRole("button", { name: "unsort", exact: true }).click();
     await expect(header).not.toHaveAttribute("aria-sort");
-    await expect(firstName()).toHaveText('"Rock"');
+    await expect(firstName()).toHaveText("Rock");
   });
 });
 
@@ -513,7 +513,7 @@ test("O11 the table filter ignores case by default, and precise lookup can match
     await filter.getByRole("searchbox").fill("rock");
     await filter.getByRole("searchbox").press("Enter");
     await expect(tables(page).locator("tbody tr")).toHaveCount(2);
-    await expect(tables(page).locator("tbody")).toContainText('"Rock And Roll"');
+    await expect(tables(page).locator("tbody")).toContainText("Rock And Roll");
     await filter.locator("summary", { hasText: "precise lookup" }).click();
     await filter.getByRole("checkbox", { name: "match case" }).check();
     await expect(filter.locator(".source-filter-options small")).toHaveText("matches case");

@@ -126,7 +126,7 @@ export function RecordDetails({ row, relation, context, record, identity, column
         // A TEXT holding one JSON object or array is shown as its JSON reading;
         // "value details" below keeps the exact TEXT.
         const json = cell.storage_class === "text" ? sourceJson(cell.exact) : null;
-        return json ? <SourceJson node={json} /> : <SourceValue value={cell} />;
+        return json ? <SourceJson node={json} /> : <SourceValue value={cell} block />;
       })()}</dd>
     </div>)}</dl>
     {children}

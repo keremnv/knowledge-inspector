@@ -36,7 +36,7 @@ for (const motion of ["reduce", "no-preference"] as const) {
       await expect(tables(page)).toContainText("press enter to filter");
       expect(requests.filter((r) => r.pathname.endsWith("/search"))).toHaveLength(0);
       await input.press("Enter");
-      await expect(tables(page).getByRole("row").nth(1)).toContainText('"Evil Walks"');
+      await expect(tables(page).getByRole("row").nth(1)).toContainText("Evil Walks");
       await expect(tables(page).getByRole("row").nth(1)).toContainText("Name");
       expect(requests.find((r) => r.pathname.endsWith("/search"))?.searchParams.has("column")).toBe(false);
       await expect(input).toBeFocused();
@@ -44,7 +44,7 @@ for (const motion of ["reduce", "no-preference"] as const) {
       await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).press("Enter");
       await expect(reader(page).locator("h2")).toHaveAccessibleName(/^Track\s*, TrackId=10$/);
       await expect(reader(page).locator("h2")).toBeFocused();
-      await expect(reader(page)).toContainText('"Evil Walks"');
+      await expect(reader(page)).toContainText("Evil Walks");
       await shot(page, `reader-track-${motion}.png`);
       await page.keyboard.press("Escape");
       await expect(tables(page).getByRole("button", { name: "Inspect row 1", exact: true })).toBeFocused();

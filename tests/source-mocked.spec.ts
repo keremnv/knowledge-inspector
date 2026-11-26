@@ -466,7 +466,7 @@ for (const motion of ["reduce", "no-preference"] as const) {
       await tables(page).getByRole("combobox", { name: "rows per page" }).selectOption("1");
       await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
       await expect(reader(page).locator(".world-reader__heading > p")).toHaveText("row 1 · this page only");
-      await expect(reader(page).locator(".source-cells code")).toHaveText('"duplicate"');
+      await expect(reader(page).locator(".source-cells code")).toHaveText("duplicate");
       expect(requests.some((url) => url.pathname.endsWith("/record"))).toBe(false);
     });
 

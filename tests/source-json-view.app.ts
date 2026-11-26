@@ -135,10 +135,10 @@ test.describe("JSON values", () => {
 
   test("TEXT that is not one strict JSON object or array stays TEXT", async ({ page }) => {
     await open(page, base, "trailing-comma");
-    await expect(body(page)).toContainText('"{\\"a\\": 1,}"');
+    await expect(body(page).locator("code")).toHaveText('{"a": 1,}');
     await expect(body(page).locator("[data-json-view]")).toHaveCount(0);
     await open(page, base, "scalar");
-    await expect(body(page)).toContainText('"5"');
+    await expect(body(page).locator("code")).toHaveText("5");
     await expect(body(page).locator("[data-json-view]")).toHaveCount(0);
   });
 });
