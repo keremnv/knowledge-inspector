@@ -7,12 +7,14 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { serveSource } from "./source-serve";
 import { UPSTREAM, prepared } from "./chinook-serve";
+// Precise lookup is hidden in the interface for now (SourceFind); these tests keep it working.
+test.beforeEach(({ page }) => page.addInitScript(() => localStorage.setItem("ki.source.preciseLookup", "on")));
 
 const tables = (page: Page) => page.locator("#source-tables .source-table-slot > .motion-swap > .motion-swap__is");
 const reader = (page: Page) => page.locator("#source-reader > .motion-swap > .motion-swap__is");
 async function find(page: Page, table: string, text: string) {
   await tables(page).getByRole("searchbox", { name: `filter ${table}`, exact: true }).fill(text);
-  await tables(page).getByRole("button", { name: "filter", exact: true }).click();
+  await tables(page).locator(".source-find input[type=search]").press("Enter");
 }
 async function shot(page: Page, name: string) {
   if (!process.env.KI_SOURCE_SHOTS) return;
@@ -32,11 +34,10 @@ for (const motion of ["reduce", "no-preference"] as const) {
       await tables(page).getByRole("button", { name: "next rows" }).click();
       await expect(tables(page).getByRole("button", { name: "Inspect row 51", exact: true })).toBeVisible();
       const input = tables(page).getByRole("searchbox", { name: "filter Track", exact: true });
+      // The filter runs when typing pauses, as the catalogue's search does: no Enter needed.
       await input.fill("Evil Walks");
-      await expect(tables(page)).toContainText("press enter to filter");
-      expect(requests.filter((r) => r.pathname.endsWith("/search"))).toHaveLength(0);
-      await input.press("Enter");
       await expect(tables(page).getByRole("row").nth(1)).toContainText("Evil Walks");
+      expect(requests.filter((r) => r.pathname.endsWith("/search"))).toHaveLength(1);
       await expect(tables(page).getByRole("row").nth(1)).toContainText("Name");
       expect(requests.find((r) => r.pathname.endsWith("/search"))?.searchParams.has("column")).toBe(false);
       await expect(input).toBeFocused();
@@ -51,7 +52,7 @@ for (const motion of ["reduce", "no-preference"] as const) {
       await preciseSourceLookup(page);
       await tables(page).getByRole("combobox", { name: "search columns" }).selectOption('"Name"');
       await expect(tables(page)).toContainText("press enter to filter");
-      await tables(page).getByRole("button", { name: "filter", exact: true }).click();
+      await tables(page).locator(".source-find input[type=search]").press("Enter");
       await expect(tables(page).getByRole("row")).toHaveCount(2);
       await tables(page).getByRole("form", { name: /^filter / }).getByRole("button", { name: "clear" }).click();
       await expect(tables(page).getByRole("button", { name: "Inspect row 51", exact: true })).toBeVisible();
@@ -60,7 +61,7 @@ for (const motion of ["reduce", "no-preference"] as const) {
       await tables(page).getByRole("textbox", { name: "exact TrackId", exact: true }).fill("10");
       await expect(tables(page).locator(".source-filter-options > small")).toHaveText("exact key");
       await expect(input).toHaveValue("");
-      await tables(page).getByRole("button", { name: "filter", exact: true }).click();
+      await tables(page).getByRole("button", { name: "look up", exact: true }).click();
       await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
       await expect(reader(page).locator("h2")).toHaveAccessibleName(/^Track\s*, TrackId=10$/);
       await choose(page, "PlaylistTrack");
@@ -68,7 +69,7 @@ for (const motion of ["reduce", "no-preference"] as const) {
       await tables(page).getByRole("combobox", { name: "lookup mode" }).selectOption("primary_key");
       await tables(page).getByRole("textbox", { name: "exact PlaylistId", exact: true }).fill("1");
       await tables(page).getByRole("textbox", { name: "exact TrackId", exact: true }).fill("10");
-      await tables(page).getByRole("button", { name: "filter", exact: true }).click();
+      await tables(page).getByRole("button", { name: "look up", exact: true }).click();
       await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
       await expect(reader(page).locator("h2")).toHaveAccessibleName(/^PlaylistTrack\s*, PlaylistId=1; TrackId=10$/);
       await shot(page, `composite-${motion}.png`);
@@ -116,7 +117,7 @@ test("real search retains duplicate and mixed rows, local view identities and tr
       await tables(page).getByRole("combobox", { name: "lookup mode" }).selectOption("primary_key");
       await tables(page).getByRole("textbox", { name: "exact __proto__", exact: true }).fill("literal");
       await tables(page).getByRole("combobox", { name: "__proto__ storage class" }).selectOption("text");
-      await tables(page).getByRole("button", { name: "filter", exact: true }).click();
+      await tables(page).getByRole("button", { name: "look up", exact: true }).click();
       await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
       await expect(reader(page).locator("h2")).toHaveAccessibleName(/^strange\s*, __proto__="literal"$/);
       await choose(page, "mixed"); await find(page, "mixed", "10");

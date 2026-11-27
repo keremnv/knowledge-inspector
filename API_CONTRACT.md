@@ -620,12 +620,19 @@ canvas unchanged; its `from` and `→` ends open the child and the parent, and
 **show connection** / **hide connection** change only the drawing.
 
 **Back.** Every move that changes what is open (a row, a follow, a set, a Find
-hit, a canvas mark, an inspected reference, table info, whole table) records
+hit, a canvas mark, an inspected reference, table info, whole table, opening the
+table list from a table) records
 the workspace it leaves: Reader subject, table scope with its Find, sort and
 window, the selection, the catalogue state and the leading dock. One **back**,
 offered in either panel, restores it (up to 50 steps). Filtering, sorting and
 paging refine the set in place and are not steps. A record opened from an
 address is the first restorable state. A window-only row is not restored.
+
+**Table filter.** The search box under a table's header sends `mode=literal`
+with the typed text when typing pauses (300 ms), or at once on Enter; an older
+request is abandoned when a newer one starts. The rows stay on show while the
+person types. `column`, `case=match` and `mode=primary_key` remain in the
+contract; their controls (precise lookup) are hidden in the interface for now.
 
 **Keeping a set.** The bar under the rows, beside the page size, offers
 **keep all** for the set on show (a table, a filtered table, or a referencing

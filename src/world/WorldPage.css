@@ -477,9 +477,9 @@
   border-left: 1px solid var(--rule);
 }
 
-.world-reader__actions .node-reader__link:hover,
+.world-reader__actions .node-reader__link:hover:not(:disabled),
 .world-reader__actions .node-reader__link:focus-visible {
-  background: var(--panel);
+  background: color-mix(in srgb, var(--ink) 7%, transparent);
   color: var(--ink);
 }
 
@@ -860,14 +860,27 @@
   background: var(--canvas);
   border: 1px solid var(--rule);
   cursor: pointer;
+  transition:
+    color var(--motion-hold-duration, 90ms) linear,
+    border-color var(--motion-hold-duration, 90ms) linear;
 }
 
-.table__bar button:hover,
+/* One hover for every bordered chip, the one Back and close already had: the
+   label and the border go to ink. A disabled chip fades and does not answer. */
+.table__bar button:hover:not(:disabled),
 .table__search button:hover,
-.table__action:hover,
+.table__action:hover:not(:disabled),
+.table__foot button:hover:not(:disabled):not([aria-disabled="true"]),
 .table__bar button[aria-pressed="true"] {
   color: var(--ink);
 }
+.table__bar .table__action:hover:not(:disabled),
+.table__search button:hover,
+.table__action:hover:not(:disabled),
+.table__foot button:hover:not(:disabled):not([aria-disabled="true"]) {
+  border-color: var(--ink);
+}
+.table__action:disabled { opacity: 0.42; cursor: default; }
 
 .table__bar button[aria-pressed="true"] {
   border-color: var(--ink);
@@ -932,9 +945,6 @@
   cursor: pointer;
 }
 
-.table__foot button:hover:not(:disabled):not([aria-disabled="true"]) {
-  color: var(--ink);
-}
 
 .table__foot button:disabled, .table__foot button[aria-disabled="true"] {
   opacity: 0.42;
@@ -973,8 +983,11 @@
   cursor: pointer;
 }
 
+/* Every borderless control (rows, list items, the Reader's action bar, a
+   dotted value) answers hover with the same tint: ink laid over whatever the
+   surface is, so it shows even where the panel and canvas colours coincide. */
 .table__row[data-loaded]:hover, .table__data tbody tr:hover {
-  background: var(--canvas);
+  background: color-mix(in srgb, var(--ink) 7%, transparent);
 }
 
 /* Already on the field. The mark is a rule in the margin rather than a colour,
@@ -1845,7 +1858,7 @@ button.change__row:hover .change__name {
 .table__data tbody tr { cursor: pointer; }
 .table__data tbody tr.is-selected { box-shadow: inset 3px 0 0 var(--ink); }
 .table__catalogue .table__row { position: static; width: 100%; height: 26px; grid-template-columns: minmax(0, 1fr) auto; border: 0; border-bottom: 1px solid var(--rule); background: none; font: inherit; text-align: left; }
-.table__catalogue .table__row:hover { background: var(--canvas); }
+.table__catalogue .table__row:hover { background: color-mix(in srgb, var(--ink) 7%, transparent); }
 .table__catalogue .table__row[aria-pressed="true"] { box-shadow: inset 3px 0 0 var(--ink); }
 .table__catalogue .table__row .table__origin { font-size: var(--type-label); }
 .table__data { border-collapse: collapse; width: max-content; min-width: 100%; font: inherit; }

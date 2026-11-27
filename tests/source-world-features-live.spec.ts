@@ -5,6 +5,8 @@ import { test, expect, type Page } from "@playwright/test";
 import { serveSource } from "./source-serve";
 import { UPSTREAM, prepared } from "./chinook-serve";
 import { canvasPoint, canvasRest, canvasState, closeCanvasDocks, sourceList as list, sourceReader as reader, sourceTable as tables, openSourceReferences } from "./canvas-parity";
+// Precise lookup is hidden in the interface for now (SourceFind); these tests keep it working.
+test.beforeEach(({ page }) => page.addInitScript(() => localStorage.setItem("ki.source.preciseLookup", "on")));
 
 const records = (p: Page) => list(p).locator("[data-field-record]");
 const connections = (p: Page) => list(p).locator("[data-field-reference]");
@@ -508,7 +510,7 @@ test("O11 the table filter ignores case by default, and precise lookup can match
     await filter.locator("summary", { hasText: "precise lookup" }).click();
     await filter.getByRole("checkbox", { name: "match case" }).check();
     await expect(filter.locator(".source-filter-options small")).toHaveText("matches case");
-    await filter.getByRole("button", { name: "filter", exact: true }).click();
+    await filter.getByRole("searchbox").press("Enter");
     await expect(tables(page).locator("tbody tr")).toHaveCount(0);
     const searches = requests.filter((u) => u.pathname.endsWith("/search"));
     expect(searches.map((u) => u.searchParams.get("case"))).toEqual([null, "match"]);

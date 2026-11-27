@@ -399,12 +399,14 @@ function Workspace({ context }: { context: SourceContext }) {
     setBrowse((current) => ({ ...current, window: current.window + 1 }));
     setRow(null);
   };
-  const showCatalogue = () => { cancelPlacement(); setCatalogueVisible(true); openTables(); };
+  // Opening the catalogue from a table is a move: Back returns to that table,
+  // with its filter, sort and page.
+  const showCatalogue = () => { cancelPlacement(); if (relation && !catalogueVisible) remember(); setCatalogueVisible(true); openTables(); };
   // The workspace as it stands, read at the moment of the move: a follow that
   // waited for a read remembers what was open when it was asked for.
-  // The catalogue is a way to choose a table, not a place to come back to:
-  // Back returns to the table behind it, or to the catalogue only before any.
-  const snapshot = (): WorkspaceStep => ({ browse, draft: findDraft, search, sort, searchPage, incoming, catalogueVisible: !relation,
+  // The catalogue is a step like any other: Back after choosing a table in it
+  // returns to the catalogue, and Back from there to the table behind it.
+  const snapshot = (): WorkspaceStep => ({ browse, draft: findDraft, search, sort, searchPage, incoming, catalogueVisible: catalogueVisible || !relation,
     row, placed: placedSubject, observation: observationSubject, readerOpen, primary });
   const snapshotRef = useRef(snapshot);
   snapshotRef.current = snapshot;
@@ -427,6 +429,10 @@ function Workspace({ context }: { context: SourceContext }) {
   const choose = (item: Relation, keyboard = false) => {
     setCatalogueVisible(false);
     if (relation?.name === item.name) {
+      // Choosing the table the catalogue was opened from returns to it: the step
+      // the catalogue recorded is used up, so Back does not repeat it.
+      const top = history.at(-1);
+      if (top && !top.catalogueVisible && top.browse.relation?.name === item.name) setHistory((steps) => steps.slice(0, -1));
       if (keyboard) setFocusRequest([FOCUS_TARGETS.table]);
       return;
     }
@@ -1194,12 +1200,14 @@ function Workspace({ context }: { context: SourceContext }) {
         <OverlayPanel id="source-tables" title="tables" open={layout.tables.open} onToggle={(open) => open ? openTables() : setTablesOpen(false)} handleWhen="closed" width={layout.tables.width} onWidthChange={(size) => { setTablesWidth(size); setPrimary("tables"); storePanelSize("ki.source.tables.width", size); }} minWidth={SOURCE_DOCK_MIN} maxWidth={layout.tables.maxWidth} reserve={layout.right} flush surface="panel">
           <div className="table source-dock"><div className="source-table-slot"><Swap id={tableSubject} className="motion-swap--fill">
             {catalogueVisible ? <div className="source-table-view">
-              <TableHeader className="source-catalogue-heading" title="tables" heading onClose={() => setTablesOpen(false)} actions={relation && <TableAction onClick={(event) => { setCatalogueVisible(false); if (event.detail === 0) setFocusRequest([FOCUS_TARGETS.table]); }}>resume {relation.name}</TableAction>} />
+              <TableHeader className="source-catalogue-heading" title="tables" heading onClose={() => setTablesOpen(false)}
+                meta={counts ? `${counts.tables} tables · ${counts.views} views${counts.unsupported_virtual_or_shadow ? ` · ${counts.unsupported_virtual_or_shadow} unsupported objects` : ""}` : undefined}
+                subjects={history.length > 0 && <nav className="table__subjects" aria-label="table navigation"><PanelBack onBack={(event) => goBack(event.detail === 0)} /></nav>} />
+              {/* The search stands where a table's filter stands: moving from the catalogue to a table keeps the panel's structure. */}
+              <TableSearch value={catalogueQuery} onChange={setCatalogueQuery} label="Search tables" clearLabel="clear" />
               <div className="table__scroll table__scroll--flow source-catalogue" {...catalogueViewport}>
-                <p>{counts ? `${counts.tables} tables · ${counts.views} views${counts.unsupported_virtual_or_shadow ? ` · ${counts.unsupported_virtual_or_shadow} unsupported objects` : ""}` : "source catalogue"}</p>
                 {declarationNote && <p className="source-limitation" data-declared-note>{declarationNote}</p>}
                 {overview?.error && <Problem error={overview.error} onRetry={overview.retry} />}
-                <TableSearch value={catalogueQuery} onChange={setCatalogueQuery} label="Search tables" />
                 <div className="table__filters source-placement-filter"><label>Canvas placement <select aria-label="Canvas placement" value={placementFilter}
                   onChange={(event) => setPlacementFilter(event.target.value as typeof placementFilter)}>
                   <option value="all">All tables</option>

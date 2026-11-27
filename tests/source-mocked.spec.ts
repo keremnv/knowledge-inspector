@@ -647,6 +647,8 @@ for (const motion of ["reduce", "no-preference"] as const) {
         } else await route.fulfill({ json: { context, data: searchRows(url) } });
         return true;
       });
+      // Precise lookup is hidden in the interface for now (SourceFind); this case keeps it working.
+      if (change === "column") await page.addInitScript(() => localStorage.setItem("ki.source.preciseLookup", "on"));
       await page.goto("/source"); await choose(page, "Alpha");
       const input = tables(page).getByRole("searchbox", { name: "filter Alpha", exact: true });
       await input.fill("first"); await input.press("Enter"); await started.promise;
@@ -681,7 +683,7 @@ for (const failure of ["session", "generation", "capture_digest", "source_namesp
     await page.goto("/source"); await choose(page, "Alpha");
     const bootstraps = requests.filter((url) => url.pathname.endsWith("/session")).length;
     await tables(page).getByRole("searchbox").fill("test");
-    await tables(page).getByRole("button", { name: "filter", exact: true }).click();
+    await tables(page).locator(".source-find input[type=search]").press("Enter");
     if (failure === "budget") {
       await expect(tables(page)).toContainText("filter incomplete");
       await expect(tables(page)).not.toContainText("no matches");
@@ -711,7 +713,7 @@ test("a pending exact Reader reply cannot survive editing Find", async ({ page }
   });
   await page.goto("/source"); await choose(page, "Alpha");
   await tables(page).getByRole("searchbox").fill("test");
-  await tables(page).getByRole("button", { name: "filter", exact: true }).click();
+  await tables(page).locator(".source-find input[type=search]").press("Enter");
   await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
   await started.promise;
   await tables(page).getByRole("searchbox").fill("new draft");
@@ -733,7 +735,7 @@ for (const motion of ["reduce", "no-preference"] as const) {
     await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).press("Enter");
     await expect(reader(page).locator("h2")).toBeFocused();
     await input.focus(); await input.press("Backspace");
-    await expect(tables(page)).toContainText("press enter to filter");
+    // The edited filter runs after the pause; the Reader returns to the table.
     await expect(reader(page).locator("h2")).toHaveAccessibleName(/^Alpha\s*, table$/);
     await expect(page.locator(".motion-swap__was")).toHaveCount(0);
     await expect(input).toBeFocused();
@@ -756,7 +758,6 @@ test("resuming a table preserves its draft and outgoing table stays inert", asyn
   await tables(page).getByRole("searchbox").fill("previous query");
   await choose(page, "Alpha");
   await expect(tables(page).getByRole("searchbox")).toHaveValue("previous query");
-  await expect(tables(page)).toContainText("press enter to filter");
   await tables(page).getByRole("searchbox").fill("retained draft");
   await tables(page).locator('[data-catalogue]').click();
   const outgoing = tables(page).locator('.source-table-slot > .motion-swap > .motion-swap__was');
