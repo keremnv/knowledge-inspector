@@ -68,7 +68,9 @@ the Reader, a choice among rows opens in Tables, and Back restores the workspace
    Find, sort and window, the selection, and which panels were open. Back restores all of it. A record opened from
    an address is the first restorable state. **whole table** stays its own action, a request to widen the current
    set; Back after it recovers the narrowed set. Filtering, sorting and paging refine the set in place and are not
-   steps.
+   steps. *Amended 2026-11-27:* opening the table list from a table is a step too. The list shows the same Back,
+   which returns to that table with its filter, sort and page; choosing a table in the list and pressing Back
+   returns to the list. This replaces "resume ‹table›", a second way back with its own word.
 4. **Nonempty relationships first; exceptions in place.** The Reader lists the incoming declarations that have rows,
    and those whose count is unknown, labelled as such ("count unavailable"). Declarations with an exact zero, and
    the complete list in both directions, are under details. Declaration pages are read one after another; usable
@@ -99,3 +101,23 @@ connections, and a Back trail to the starting finding. Walk A takes 14 clicks (1
 to identify the three referring rows (three before): the counts say there is one of each but do not identify them.
 
 **Status.** Decided. Applied in the traversal change.
+
+## 2026-11-27 · One hover per kind of control; the same search in the same place
+
+**Hover.** A control says it can be pressed the same way everywhere, in every theme:
+- a bordered chip (tables, table info, Back, close, keep all, the pager): its label and border go to ink; a
+  disabled chip fades and does not answer;
+- a borderless control (a row, a list item, the Reader's action bar, a dotted value): a tint of ink laid over
+  whatever surface it is on, never a fixed theme colour, which vanished where the panel and canvas colours are
+  nearly or exactly equal (dark theme, the schema view). A selected row keeps a stronger tint;
+- a text control ("show all", a disclosure label, a sortable column): muted to ink.
+
+**Search.** The table list and a table share the panel's structure: header, then one search box directly under it,
+then the rows. The list's count ("25 tables · 9 views") is the header's caption, not a paragraph. A table's filter
+is a search box like the list's: it runs when typing pauses (Enter runs it at once), with no separate "filter"
+button and no "press enter to filter" state hiding the rows.
+
+**Precise lookup hidden.** Column, match case and exact primary key lookup are hidden from the interface for now.
+The code and the server contract stay; the tests that keep them working turn them on with a local flag.
+
+**Status.** Decided. Applied in the chrome consistency change.

@@ -124,11 +124,11 @@
 }
 
 .gm__list button:hover {
-  background: color-mix(in srgb, var(--ink) 5%, var(--panel));
+  background: color-mix(in srgb, var(--ink) 7%, transparent);
 }
 
 .gm__list button.is-selected {
-  background: color-mix(in srgb, var(--ink) 8%, var(--panel));
+  background: color-mix(in srgb, var(--ink) 12%, transparent);
   box-shadow: inset 2px 0 0 var(--ink, #1c1c1c);
 }
 

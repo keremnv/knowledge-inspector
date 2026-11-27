@@ -64,7 +64,7 @@ async function steady(page: Page) {
 }
 async function findTrack(page: Page, text: string) {
   await tables(page).getByRole("searchbox", { name: "filter Track", exact: true }).fill(text);
-  await tables(page).getByRole("button", { name: "filter", exact: true }).click();
+  await tables(page).locator(".source-find input[type=search]").press("Enter");
 }
 async function shot(page: Page, name: string) {
   if (!process.env.KI_SOURCE_SHOTS) return;

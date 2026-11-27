@@ -80,10 +80,13 @@ for (const motion of ["reduce", "no-preference"] as const) {
         await reader(page).getByRole('button', { name: 'Back', exact: true }).press('Enter');
         await expect(reader(page).locator('h2')).toHaveAccessibleName(/^Track\s*, TrackId=10$/);
         await tables(page).locator('[data-catalogue]').press('Enter');
-        await expect(tables(page).getByRole('button', { name: 'resume Track' })).toBeVisible();
+        // The catalogue is a step: its Back returns to Track as it was.
+        await expect(tables(page).getByRole('button', { name: 'Back', exact: true })).toBeVisible();
         await expect(reader(page).locator('h2')).toHaveAccessibleName(/^Track\s*, TrackId=10$/);
         await tables(page).getByRole('button', { name: 'Album table', exact: true }).press('Enter');
         await expect(tables(page).locator('h2')).toHaveText('Album');
+        await tables(page).getByRole('button', { name: 'Back', exact: true }).press('Enter');
+        await expect(tables(page).locator('h2')).toHaveText('tables');
         await tables(page).getByRole('button', { name: 'Back', exact: true }).press('Enter');
         await expect(input).toHaveValue('Evil Walks');
         await expect(tables(page).getByRole('button', { name: 'Inspect row 1', exact: true })).toHaveAttribute('aria-pressed', 'true');
@@ -131,6 +134,9 @@ CREATE TABLE Dangling(id INTEGER PRIMARY KEY,p REFERENCES Parent(id)); INSERT IN
           if (table === 'Keyless') {
             await tables(page).locator('[data-table-info]').click();
             await chooseSourceTable(page, 'Nullable');
+            // Nullable was chosen in the table list: Back returns to the list, then to Keyless.
+            await tables(page).getByRole('button', { name: 'Back', exact: true }).click();
+            await expect(tables(page).locator('h2')).toHaveText('tables');
             await tables(page).getByRole('button', { name: 'Back', exact: true }).click();
             await expect(tables(page).locator('h2')).toHaveText('Keyless');
             await expect(reader(page).locator('.source-cells')).toHaveCount(0);
@@ -155,7 +161,7 @@ CREATE TABLE Dangling(id INTEGER PRIMARY KEY,p REFERENCES Parent(id)); INSERT IN
 
 // Below the desktop widths, keyboard travel must reveal the destination dock.
 for (const motion of ["reduce", "no-preference"] as const) {
-  test(`compact catalogue travel and resume keep live focus (${motion})`, async ({ page }) => {
+  test(`compact catalogue travel and Back keep live focus (${motion})`, async ({ page }) => {
     test.skip(!prepared(), "Prepare pinned Chinook first");
     await page.setViewportSize({ width: 760, height: 1000 });
     await page.emulateMedia({ reducedMotion: motion });
@@ -167,7 +173,7 @@ for (const motion of ["reduce", "no-preference"] as const) {
       await page.keyboard.press('Escape');
       await expect(tables(page).locator('h2')).toBeFocused();
       await tables(page).locator('[data-catalogue]').press('Enter');
-      await tables(page).getByRole('button', { name: 'resume Track' }).press('Enter');
+      await tables(page).getByRole('button', { name: 'Back', exact: true }).press('Enter');
       await expect(tables(page).locator('h2')).toBeFocused();
       await tables(page).locator('[data-catalogue]').press('Enter');
       await tables(page).getByRole('button', { name: 'Track table', exact: true }).press('Enter');
@@ -181,6 +187,8 @@ for (const motion of ["reduce", "no-preference"] as const) {
       await tables(page).getByRole('button', { name: 'Album table', exact: true }).press('Enter');
       await expect(reader(page).locator('h2')).toBeFocused();
       await page.keyboard.press('Escape');
+      await tables(page).getByRole('button', { name: 'Back', exact: true }).press('Enter');
+      await expect(tables(page).locator('h2')).toHaveText('tables');
       await tables(page).getByRole('button', { name: 'Back', exact: true }).press('Enter');
       await expect(tables(page).locator('h2')).toHaveText('Track');
       await expect(tables(page).locator('h2')).toBeFocused();

@@ -14,6 +14,8 @@ import { serveSource } from "./source-serve";
 import { UPSTREAM, prepared } from "./chinook-serve";
 import { canvasRest, closeCanvasDocks, sourceList as list, sourceReader as reader, sourceTable as tables } from "./canvas-parity";
 import { chooseSourceTable as choose } from "./source-navigation";
+// Precise lookup is hidden in the interface for now (SourceFind); these tests keep it working.
+test.beforeEach(({ page }) => page.addInitScript(() => localStorage.setItem("ki.source.preciseLookup", "on")));
 
 const BIRD = process.env.KI_BIRD_DEV_DATABASES ?? join(homedir(), ".cache/ki-demo-databases/bird-mini-dev/minidev/MINIDEV/dev_databases");
 const STACK_EXCHANGE = join(BIRD, "codebase_community/codebase_community.sqlite");
@@ -42,7 +44,7 @@ async function exactKey(p: Page, table: string, column: string, value: string) {
   if (await details.getAttribute("open") === null) await details.locator("summary").click();
   await tables(p).getByRole("combobox", { name: "lookup mode" }).selectOption("primary_key");
   await tables(p).getByRole("textbox", { name: `exact ${column}`, exact: true }).fill(value);
-  await tables(p).getByRole("button", { name: "filter", exact: true }).click();
+  await tables(p).getByRole("button", { name: "look up", exact: true }).click();
   await tables(p).getByRole("button", { name: "Inspect row 1", exact: true }).click();
   await expect(reader(p).locator("h2")).toHaveAccessibleName(new RegExp(`${column}=${value}$`));
 }

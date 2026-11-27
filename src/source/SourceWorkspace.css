@@ -9,7 +9,7 @@
    press and the wash belong to the cell, not to the glyphs of "1". */
 .source-reach { display: block; width: 100%; min-width: 0; overflow-wrap: anywhere; text-align: left; border: 0; background: none; padding: 0; font: inherit; color: inherit; cursor: pointer;
   text-decoration: underline dotted; text-decoration-color: var(--ink-muted); text-underline-offset: 0.18em; }
-.source-reach:hover, .source-reach:focus-visible { background: color-mix(in srgb, var(--ink) 5%, var(--panel)); }
+.source-reach:hover, .source-reach:focus-visible { background: color-mix(in srgb, var(--ink) 7%, transparent); }
 .source-reach:focus-visible { outline: 2px solid var(--ink); outline-offset: 1px; }
 /* Find, focused: one frame, the cell's own, rather than the input's border and
    an outline standing inside the cell beside it. */
@@ -125,7 +125,7 @@
    selected row and the open table are a tint instead, so the rule keeps one
    meaning. (World's native-table rules draw the rule for selection.) */
 .source-row-table.table__data tbody tr.is-selected,
-.source-table-list .table__row[aria-pressed="true"] { box-shadow: none; background: color-mix(in srgb, var(--ink) 8%, var(--panel)); }
+.source-table-list .table__row[aria-pressed="true"] { box-shadow: none; background: color-mix(in srgb, var(--ink) 12%, transparent); }
 .source-row-table.table__data tbody tr[data-present],
 .source-table-list .table__row[data-present] { box-shadow: inset 3px 0 0 var(--ink); }
 /* The row control: no number, the key beside it says which row it is. Still
@@ -200,7 +200,7 @@
 .source-json__members > li { margin: 0; padding: 0; }
 .source-json__toggle { border: 0; background: none; padding: 0 .15rem; font: inherit; color: inherit; cursor: pointer; }
 .source-json__toggle small { display: inline; margin-left: .45rem; color: var(--ink-muted); font-family: var(--font-sans); }
-.source-json__toggle:hover, .source-json__toggle:focus-visible { background: color-mix(in srgb, var(--ink) 5%, var(--panel)); }
+.source-json__toggle:hover, .source-json__toggle:focus-visible { background: color-mix(in srgb, var(--ink) 7%, transparent); }
 .source-json__toggle:focus-visible, .source-json__more:focus-visible { outline: 2px solid var(--ink); outline-offset: 1px; }
 .source-json__key, .source-json__index, .source-json__literal { color: var(--ink-muted); }
 .source-json__more { display: block; margin: .15rem 0 .15rem 1.1rem; border: 0; background: none; padding: 0; font: inherit; color: var(--ink-muted); text-decoration: underline; cursor: pointer; }
@@ -229,3 +229,7 @@
 .source-window-bar .source-window-size { padding: 0; border: 0; }
 .source-bulk__actions { display: flex; align-items: center; gap: 6px; margin-left: auto; color: var(--ink-muted); font-size: var(--type-label); }
 .source-bulk:empty { display: none; }
+
+/* Text controls answer hover as chips do: muted to ink. */
+.source-text__more:hover, .source-json__more:hover, .source-row-table .source-sort:hover,
+.source-workspace .reader-disclosure > summary:hover { color: var(--ink); }
