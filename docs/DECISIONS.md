@@ -121,3 +121,28 @@ button and no "press enter to filter" state hiding the rows.
 The code and the server contract stay; the tests that keep them working turn them on with a local flag.
 
 **Status.** Decided. Applied in the chrome consistency change.
+
+## 2026-11-27 · A table's order is said above its rows
+
+**The problem.** Sorting showed only as an arrow on the sorted column and an "unsort" chip in the header bar. In a
+table wider than the panel the sorted column could be scrolled out of view (`span` sorted by `start_offset`), so
+nothing visible said the rows were sorted. The chip sat far from the column it undid, and with "name by" and
+"table info" beside it, it squeezed the table name to one letter. The third press of a header (back to unsorted)
+was nowhere to be seen.
+
+**Decided.**
+- **The order is a line above the rows:** "sorted by start_offset, ascending", with "unsort" beside it. It is seen
+  whichever columns are in view. A view's unbroken ties are said on the same line ("ties keep no fixed order ·
+  positions apply to this page only") instead of a line of their own.
+- **A header says what its next press does,** on hover: "sort by start_offset, ascending", then "…, descending",
+  then "stop sorting by start_offset". A hovered unsorted header shows the ascending arrow faintly. The arrow's
+  place is kept when a column is unsorted, so sorting never moves the columns. The arrow is not spoken; the
+  header's sort state is.
+- **Unsort from the keyboard** returns focus to the header that was sorted, once the rows have reloaded.
+- **The table name never gives way to the header's buttons:** past its least width, the buttons wrap to a second
+  line.
+- **Columns beyond the panel's edge:** the edge that has more columns beyond it darkens, with a tint of ink so it
+  reads in both themes.
+- **One clear per search box:** the labelled "clear", not also the browser's own ×.
+
+**Status.** Decided. Applied in the table header change.

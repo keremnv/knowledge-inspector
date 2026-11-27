@@ -1234,7 +1234,7 @@ function Workspace({ context }: { context: SourceContext }) {
               <TableHeader className="source-table-heading" title={relation.name} heading onClose={() => setTablesOpen(false)} subjects={<nav className="table__subjects" aria-label="table navigation">
                 <TableAction data-catalogue onClick={showCatalogue}>tables</TableAction>
                 {history.length > 0 && <PanelBack onBack={(event) => goBack(event.detail === 0)} />}
-              </nav>} actions={<>{sort && <TableAction data-unsort onClick={() => reorder(null)}>unsort</TableAction>}
+              </nav>} actions={<>
                 {canAddAll && (() => {
                   // O17: the person names this table's records by one of its columns, or by key.
                   const chosen = naming[relation.name] ?? "", columns = windowRows?.columns ?? relation.columns ?? [];
@@ -1265,7 +1265,7 @@ function Workspace({ context }: { context: SourceContext }) {
                   if (event.detail === 0) setFocusRequest(['#source-tables .source-table-slot .motion-swap__is .source-find input[type="search"]', FOCUS_TARGETS.table]);
                 }}>whole table</TableAction></div>}
               {relation.read_status === "available" && !referencing && <SourceFind draft={findDraft} onDraft={setFindDraft} name={relation.name} columns={relation.columns ?? []} onEdit={() => changeSearch(null)} onSubmit={changeSearch} onClear={() => changeSearch(undefined)} />}
-              {relation.read_status === "available" ? search === null ? <p className="source-find-prompt" role="status">press enter to filter</p> : <SourceRowsView searching={search !== undefined} named={naming[relation.name]} name={relation.name} rows={windowRows} error={windowResult?.error} onRetry={windowResult?.retry} selected={row} placed={placedHandles} onTakeOff={takeOffRecord} order={sort} onOrder={cycleSort} offset={offset} limit={limit} onPage={page} onSelect={select} scroll={tableScroll}
+              {relation.read_status === "available" ? search === null ? <p className="source-find-prompt" role="status">press enter to filter</p> : <SourceRowsView searching={search !== undefined} named={naming[relation.name]} name={relation.name} rows={windowRows} error={windowResult?.error} onRetry={windowResult?.retry} selected={row} placed={placedHandles} onTakeOff={takeOffRecord} order={sort} onOrder={cycleSort} onUnsort={() => reorder(null)} offset={offset} limit={limit} onPage={page} onSelect={select} scroll={tableScroll}
                 actions={(canAddAll || setShown || bulk?.key === setKey || blockedCause) && <span className="source-bulk__actions">
                   {/* Where rows cannot be placed there is nothing to keep: no button, and no sentence about one.
                       The cause is said once in this panel: above the rows when the row window already names it

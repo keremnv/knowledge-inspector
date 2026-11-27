@@ -170,7 +170,7 @@ test("O8.2 separate pushes apart only what overlaps, and undo puts it back until
   });
 });
 
-test("O8.6 headers sort by the database, cycle ascending, descending, off, and unsort resets", async ({ page }) => {
+test("O8.6 headers sort by the database, cycle ascending, descending, off; the order is named above the rows, and unsort beside it resets", async ({ page }) => {
   test.skip(!prepared(), "Prepare pinned Chinook");
   await serveSource(UPSTREAM, async ({ origin, requests }) => {
     await page.goto(`${origin}/source`); await choose(page, "Genre");
@@ -184,9 +184,33 @@ test("O8.6 headers sort by the database, cycle ascending, descending, off, and u
     await expect(header).toHaveAttribute("aria-sort", "descending");
     await expect(firstName()).toHaveText("World");
     expect(requests.some((u) => u.pathname.endsWith("/rows") && u.searchParams.get("order") === "Name" && u.searchParams.get("desc") === "1")).toBe(true);
-    await tables(page).getByRole("button", { name: "unsort", exact: true }).click();
+    // Named above the rows, whichever columns are in view; the arrow is not spoken.
+    await expect(tables(page).locator("[data-sorted-by]")).toContainText("sorted by Name, descending");
+    await expect(header.getByRole("button")).toHaveAccessibleName("Name");
+    await expect(header.getByRole("button")).toHaveAttribute("title", "stop sorting by Name");
+    // Unsort sits with the words, not in the header bar; from the keyboard, focus returns to the header.
+    await expect(tables(page).locator(".table__bar [data-unsort]")).toHaveCount(0);
+    await tables(page).getByRole("button", { name: "unsort", exact: true }).focus();
+    await page.keyboard.press("Enter");
     await expect(header).not.toHaveAttribute("aria-sort");
     await expect(firstName()).toHaveText("Rock");
+    await expect(tables(page).locator("[data-sorted-by]")).toHaveCount(0);
+    await expect(header.getByRole("button")).toBeFocused();
+    await expect(header.getByRole("button")).toHaveAttribute("title", "sort by Name, ascending");
+  });
+});
+
+test("a table wider than the panel darkens the edge that has more columns beyond it", async ({ page }) => {
+  test.skip(!prepared(), "Prepare pinned Chinook");
+  await serveSource(UPSTREAM, async ({ origin }) => {
+    await page.goto(`${origin}/source`); await choose(page, "Track");
+    const frame = tables(page).locator(".source-row-frame");
+    await expect(tables(page).locator("tbody tr").first()).toBeVisible();
+    await expect(frame).toHaveAttribute("data-more-right", "");
+    await expect(frame).not.toHaveAttribute("data-more-left", "");
+    await tables(page).locator(".source-row-scroll").evaluate((element) => { element.scrollLeft = element.scrollWidth; });
+    await expect(frame).toHaveAttribute("data-more-left", "");
+    await expect(frame).not.toHaveAttribute("data-more-right", "");
   });
 });
 
