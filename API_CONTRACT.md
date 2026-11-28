@@ -300,7 +300,7 @@ detail?: string}` and do not substitute an empty successful result.
 | `/source/v1/overview` | `limit`, `offset` | SourceCatalogue: paged relation summaries, total object count, table/view/unsupported counts and identity/read states |
 | `/source/v1/schema` | `limit`, `offset` | SourceCatalogue with visible column metadata, ordered `primary_key`, grouped `foreign_keys`, recorded view SQL and lineage qualification where accessible |
 | `/source/v1/rows` | required `table` (exact recorded name); optional `order` (one column) and `desc=1`; `limit`, `offset` | SourceRows: typed row window, optional verified handles, complete column metadata, identity state, returned count, has_more/next_offset and ordering qualification |
-| `/source/v1/search` | required `table`; `mode=literal` with `text` and optional `column`, `mode=primary_key` with typed `key`, or `mode=reference` with `record` and `fk`; optional `order` and `desc=1`; `limit`, `offset` | SourceSearch: typed row window with matched columns and explicit completion; see table-scoped discovery and incoming references below |
+| `/source/v1/search` | required `table`; `mode=literal` with `text` and optional `column`, `mode=primary_key` with typed `key`, `mode=reference` with `record` and `fk`, or `mode=filter` with `conditions` and/or `text`; optional `order` and `desc=1`; `limit`, `offset` | SourceSearch: typed row window with matched columns and explicit completion; see table-scoped discovery and incoming references below |
 | `/source/v1/record` | required `id` | SourceRecord: exact registered handle/key/cells, columns, generation-scoped stored-row grounding and supported reference actions |
 | `/source/v1/references` | required `record`; `direction=outgoing` (default) or `incoming`; `limit`, `offset` | Outgoing: SourceReferences, observations of this record's declared outgoing constraints; total is number of constraints, not number of possible relationships. Incoming: SourceIncomingReferences, one group per declaration naming this record's table, each with its own count (see incoming references below) |
 | `/source/v1/reference` | required `record` and `fk` (declaration ID) | One recomputed SourceFKObservation, whether or not it has ever been drawn |
@@ -850,7 +850,7 @@ recorded spelling). The response retains the complete `{context,data}` envelope.
 `limit` defaults to 50 (1–100); `offset` defaults to 0 (0–1,000,000). No total match
 count is computed. Parameters may occur only once; unknown parameters fail.
 
-Three operations are accepted:
+Four operations are accepted:
 
 - `mode=literal` (default), required `text`, optional `column` (exact recorded
   column name), optional `case` (`ignore`, the default, or `match`; any other
@@ -869,6 +869,10 @@ Three operations are accepted:
 - `mode=reference`, required `record` and `fk`: rows of `table` whose declared FK
   `fk` resolves to the verified record `record`. See incoming references above.
   It is not a literal filter and accepts no `text`, `column` or `key`.
+- `mode=filter`: `conditions` (a JSON array), optional `text`, optional `case`;
+  at least one condition or a text. See column filter below. It accepts no
+  `column`, `key`, `record` or `fk`, and `conditions` is refused in every other
+  mode and on `/records` without a mode.
 
 Literal TEXT is a substring test under a versioned text comparison, named in the
 response as `text_comparison:{policy, unicode_version}` (owner decision O11, the
@@ -929,3 +933,62 @@ source refresh or World-generation coupling is introduced.
 
 See record discovery decision
 for the product authority and future indexing reconsideration criteria.
+
+### Column filter: `mode=filter`
+
+Additive (decision of 2026-11-28, "What a person filters in the interface, and
+what they ask an agent", `docs/DECISIONS.md`). A filter is conditions that must
+all hold, plus optionally the literal text anywhere in the row (exactly
+`mode=literal` over every column, as the search box). There is no OR across
+columns and no grouping: a question that needs them is for SQL or an agent.
+
+`conditions` is a JSON array (at most 8 conditions; at most 64 KiB) of objects
+with exactly `{column, op, values}`: `column` an exact recorded column name,
+`values` a list of strings of at most 1024 UTF-8 bytes each. Operators:
+
+| `op` | values | keeps a row when the cell… |
+|---|---|---|
+| `contains` | 1 | is TEXT containing the value |
+| `not_contains` | 1 | is NULL, or TEXT not containing the value |
+| `is` | 1 | equals the value (below) |
+| `is_not` | 1 | is NULL, or is compared and does not equal the value |
+| `any_of` | 1–32 | equals any of the values |
+| `lt` `le` `gt` `ge` | 1 | orders before/after the value (below) |
+| `empty` | 0 | is NULL or the empty TEXT |
+| `not_empty` | 0 | is neither |
+
+**Values are typed by each cell and never converted.** TEXT cells compare as
+text under the request's `case` (`casefold_v1` by default, `exact_v1` with
+`case=match`, as the literal search; equality and containment, not LIKE). A
+value that names a number (a canonical 64-bit integer, else a finite decimal
+read as binary64) also compares INTEGER and REAL cells numerically; a value that
+names none does not compare them. `lt`/`le`/`gt`/`ge` compare numbers only when
+the value names a number, and otherwise TEXT only, by code point (so ISO dates
+stored as TEXT order as dates do). BLOB cells are compared only by `empty` and
+`not_empty`. "`is_not`" and "`not_contains`" keep NULL cells, as a reader
+expects "outcome is not met" to keep a row with no outcome.
+
+**What is not compared is said, never dropped silently.** The response adds
+`filter:{count, not_compared}`:
+- `count`: how many rows match, `{status, value, reason}` with `status`
+  `exact`, `at_least` (more than 10,000 matched; `value` 10,000), `unavailable`
+  (the count did not finish; `reason` names why) or `not_checked`.
+- `not_compared`: one entry per condition, in order: how many rows meeting every
+  *other* condition (and the text) hold a non-NULL value this condition does not
+  compare (a TEXT `'3'` under `gt 1`, a BLOB under `contains`), in the same
+  shape, or `null` where every cell is compared (`empty`, `not_empty`).
+
+The window itself is read under the ordinary search budget, as `mode=literal`;
+all counts then share one more ordinary budget, are capped at 10,000, and a
+count that runs out says so rather than 0. The window's own `completion` keeps
+its meaning. `search` echoes `mode`, `text`, `case` and the checked
+`conditions`; `text_comparison` is present; `matched_columns` lists the columns
+the conditions name, then those where the text was found;
+`excluded_storage_classes` is `["null","blob"]` with a text and `[]` without.
+`/records` with `mode=filter` reads the same window as verified records and
+counts nothing.
+
+Refusals: an unknown `op`, the wrong number of values, a non-string value, an
+extra key, more than 8 conditions or malformed JSON is `400 invalid_filter`; an
+unknown column is `400 invalid_search_column`; neither conditions nor text is
+`400 invalid_filter`; an empty `text` is `400 invalid_search_text`.

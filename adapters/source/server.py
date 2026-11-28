@@ -170,7 +170,7 @@ def dispatch(manager, path, query):
         return manager.descriptor(manager.initial_session)
     allowed = {"session", "generation", "limit", "offset"}
     if path in {"/source/v1/search", "/source/v1/records"}:
-        allowed |= {"table", "mode", "text", "column", "key", "record", "fk", "order", "desc", "case"}
+        allowed |= {"table", "mode", "text", "column", "key", "record", "fk", "order", "desc", "case", "conditions"}
     elif path == "/source/v1/rows":
         allowed |= {"table", "order", "desc"}
     elif path == "/source/v1/record":
@@ -207,25 +207,35 @@ def dispatch(manager, path, query):
                     return query[key][0]
                 # Records without a mode is the plain table window, as `rows`.
                 if path == "/source/v1/records" and "mode" not in query:
-                    if {"text", "column", "key", "record", "fk", "case"} & set(query):
+                    if {"text", "column", "key", "record", "fk", "case", "conditions"} & set(query):
                         raise SourceError("invalid_search_parameters")
                     data = reader.record_window(db, parameter(query, "table"), limit=limit, offset=offset, order_by=order_by, desc=desc)
                     return {"context": context, "data": data}
                 mode = parameter(query, "mode", "literal")
                 if ((mode == "literal" and "key" in query) or (mode == "primary_key" and ({"text", "column"} & set(query)))
                         or (mode == "reference" and ({"text", "column", "key"} & set(query)))
-                        or (mode != "reference" and ({"record", "fk"} & set(query)))):
+                        or (mode != "reference" and ({"record", "fk"} & set(query)))
+                        or (mode == "filter" and ({"column", "key"} & set(query)))
+                        or (mode != "filter" and "conditions" in query)):
                     raise SourceError("invalid_search_parameters")
                 raw_key = optional("key")
                 try:
                     key = json.loads(raw_key) if raw_key is not None else None
                 except (ValueError, RecursionError) as failure:
                     raise SourceError("invalid_search_key") from failure
+                raw_conditions = optional("conditions")
+                if raw_conditions is not None and len(raw_conditions.encode("utf-8")) > 64 * 1024:
+                    raise SourceError("invalid_filter", detail="conditions")
+                try:
+                    conditions = json.loads(raw_conditions) if raw_conditions is not None else None
+                except (ValueError, RecursionError) as failure:
+                    raise SourceError("invalid_filter", detail="conditions") from failure
                 read = reader.record_window if path == "/source/v1/records" else reader.search
                 data = read(db, parameter(query, "table"),
                             mode=mode,
                             text=optional("text"), column=optional("column"), key=key,
                             record=optional("record"), fk=optional("fk"), case=optional("case"),
+                            **({"conditions": conditions} if conditions is not None else {}),
                             limit=limit, offset=offset, order_by=order_by, desc=desc)
             elif path == "/source/v1/find":
                 data = reader.find(db, parameter(query, "text"), limit=limit,

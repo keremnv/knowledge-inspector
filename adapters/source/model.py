@@ -31,6 +31,74 @@ def casefold(value):
     return value.casefold() if type(value) is str else None
 MAX_CELL_BYTES = 1024 * 1024
 MAX_RESPONSE_BYTES = 2 * 1024 * 1024
+# Column filtering (decision of 2026-11-28, docs/DECISIONS.md): a flat list of
+# conditions that must all hold; OR only within one column, as any_of.
+FILTER_OPERATORS = {"contains", "not_contains", "is", "is_not", "any_of",
+                    "lt", "le", "gt", "ge", "empty", "not_empty"}
+MAX_CONDITIONS = 8
+MAX_ANY_OF = 32
+# Counts stop here and say "at least": a count is a bounded read, not a census.
+COUNT_CAP = 10_000
+INTEGER_TEXT = re.compile(r"-?(?:0|[1-9][0-9]*)")
+DECIMAL_TEXT = re.compile(r"[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?")
+
+
+def number(text):
+    """The number a typed value names, or None: a canonical integer in SQLite's
+    64-bit range, else a finite decimal (binary64). Never a conversion of a cell."""
+    if INTEGER_TEXT.fullmatch(text) and -(2**63) <= int(text) < 2**63:
+        return int(text)
+    if DECIMAL_TEXT.fullmatch(text):
+        value = float(text)
+        if math.isfinite(value):
+            return value
+    return None
+
+
+def filter_condition(column, op, values, case):
+    """One condition's SQL: (predicate, params, uncompared storage classes).
+
+    Values are typed by each cell, never converted: a TEXT cell is compared as
+    text (casefolded under case=ignore, code points under case=match); INTEGER
+    and REAL cells only with a value that names a number; BLOB cells never. A
+    non-empty cell whose storage class is not compared is reported, not quietly
+    treated as a non-match. "is not" and "does not contain" keep empty (NULL)
+    cells; "is empty" is NULL or the empty TEXT. Order on text is by code point.
+    """
+    q = quote(column)
+    folded = (lambda v: v.casefold()) if case == "ignore" else (lambda v: v)
+    cell = f"ki_casefold({q})" if case == "ignore" else f"{q} COLLATE BINARY"
+    numeric = f"typeof({q}) IN ('integer','real')"
+    if op == "empty":
+        return f"({q} IS NULL OR (typeof({q})='text' AND {q}=''))", [], []
+    if op == "not_empty":
+        return f"({q} IS NOT NULL AND NOT (typeof({q})='text' AND {q}=''))", [], []
+    if op in {"contains", "not_contains"}:
+        found = f"instr({cell}, ?) > 0"
+        if op == "contains":
+            return f"(typeof({q})='text' AND {found})", [folded(values[0])], ["integer", "real", "blob"]
+        return f"({q} IS NULL OR (typeof({q})='text' AND NOT {found}))", [folded(values[0])], ["integer", "real", "blob"]
+    if op in {"lt", "le", "gt", "ge"}:
+        sign = {"lt": "<", "le": "<=", "gt": ">", "ge": ">="}[op]
+        named = number(values[0])
+        if named is not None:
+            return f"({numeric} AND {q} {sign} ?)", [named], ["text", "blob"]
+        return f"(typeof({q})='text' AND {q} COLLATE BINARY {sign} ?)", [values[0]], ["integer", "real", "blob"]
+    # is, is_not, any_of: text always; numbers only for a value that names one.
+    parts, params, numbers = [], [], [number(v) for v in values]
+    for value, named in zip(values, numbers):
+        parts.append(f"(typeof({q})='text' AND {cell} = ?)")
+        params.append(folded(value))
+        if named is not None:
+            parts.append(f"({numeric} AND {q} = ?)")
+            params.append(named)
+    uncompared = ["blob"] if any(n is not None for n in numbers) else ["integer", "real", "blob"]
+    matched = "(" + " OR ".join(parts) + ")"
+    if op == "is_not":
+        # Kept: empty cells, and compared cells that are not the value.
+        compared = f"(typeof({q})='text'" + (f" OR {numeric}" if numbers[0] is not None else "") + ")"
+        return f"({q} IS NULL OR ({compared} AND NOT {matched}))", params, uncompared
+    return matched, params, uncompared
 
 
 class SourceError(Exception):
@@ -557,7 +625,8 @@ class SourceReader:
                 "lineage": "not_recorded" if obj["kind"] == "view" else None}
 
     def search(self, db, name, *, mode="literal", text=None, column=None,
-               key=None, record=None, fk=None, limit=50, offset=0, order_by=None, desc=False, case=None):
+               key=None, record=None, fk=None, limit=50, offset=0, order_by=None, desc=False, case=None,
+               conditions=None, counts=True):
         """Bounded literal discovery; identity still comes only from verification."""
         obj = self.object(name)
         columns = self.columns(db, name)
@@ -570,7 +639,9 @@ class SourceReader:
             raise SourceError("invalid_search_column")
         if mode != "reference" and (record is not None or fk is not None):
             raise SourceError("invalid_search_parameters")
-        if case is not None and (mode != "literal" or case not in TEXT_COMPARISON):
+        if mode != "filter" and conditions is not None:
+            raise SourceError("invalid_search_parameters")
+        if case is not None and (mode not in {"literal", "filter"} or case not in TEXT_COMPARISON):
             raise SourceError("invalid_search_parameters", detail="case")
         case = case or "ignore"
         predicates, params = [], []
@@ -594,29 +665,27 @@ class SourceReader:
         elif mode == "literal":
             if type(text) is not str or len(text.encode("utf-8")) > 1024 or key is not None:
                 raise SourceError("invalid_search_text")
-            if re.fullmatch(r"-?(?:0|[1-9][0-9]*)", text):
-                candidate = int(text)
-                if -(2**63) <= candidate < 2**63:
-                    integer = candidate
-            if re.fullmatch(r"[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?", text):
-                candidate = float(text)
-                if math.isfinite(candidate):
-                    real = candidate
             searched = [column] if column is not None else names
-            folded = text.casefold() if case == "ignore" else text
-            for field in searched:
-                q = quote(field)
-                cell = f"ki_casefold({q})" if case == "ignore" else q
-                parts = [f"(typeof({q})='text' AND instr({cell}, ?) > 0)"]
-                params.append(folded)
-                if integer is not None:
-                    parts.append(f"(typeof({q})='integer' AND {q}=?)")
-                    params.append(integer)
-                if real is not None:
-                    parts.append(f"(typeof({q})='real' AND {q}=?)")
-                    params.append(real)
-                predicates.append("(" + " OR ".join(parts) + ")")
-            where = " OR ".join(predicates)
+            where, params, integer, real = self._literal(searched, text, case)
+        elif mode == "filter":
+            # Conditions that must all hold, and the search box's text, anywhere.
+            if column is not None or key is not None:
+                raise SourceError("invalid_search_parameters")
+            if text is not None and (type(text) is not str or not text or len(text.encode("utf-8")) > 1024):
+                raise SourceError("invalid_search_text")
+            conditions = self._conditions(conditions, names)
+            if not conditions and text is None:
+                raise SourceError("invalid_filter", detail="a condition or text is required")
+            # (predicate, params, uncompared storage classes, column): the text first, if any.
+            clauses = []
+            if text is not None:
+                literal, literal_params, integer, real = self._literal(names, text, case)
+                clauses.append((f"({literal})", literal_params, [], None))
+            for condition in conditions:
+                clauses.append((*filter_condition(condition["column"], condition["op"], condition["values"], case), condition["column"]))
+            where = " AND ".join(clause[0] for clause in clauses)
+            params = [value for clause in clauses for value in clause[1]]
+            searched = list(dict.fromkeys([c["column"] for c in conditions]))
         elif mode == "primary_key":
             if text is not None or column is not None:
                 raise SourceError("invalid_search_parameters")
@@ -680,26 +749,39 @@ class SourceReader:
         rows = []
         for row in found:
             encoded = self.encode_row(db, name, row, state)
-            encoded["matched_columns"] = searched if mode in {"primary_key", "reference"} else [
-                field for field in searched if
+            # The columns a condition names, then those where the text was found.
+            texted = [] if text is None else names if mode == "filter" else searched
+            encoded["matched_columns"] = searched if mode in {"primary_key", "reference"} else list(dict.fromkeys(
+                (searched if mode == "filter" else []) + [
+                field for field in texted if
                 (row[field][1] == "text" and (text.casefold() in row[field][0].casefold() if case == "ignore" else text in row[field][0])) or
                 (row[field][1] == "integer" and integer is not None and row[field][0] == integer) or
-                (row[field][1] == "real" and real is not None and row[field][0] == real)]
+                (row[field][1] == "real" and real is not None and row[field][0] == real)]))
             if mode == "reference":
                 # An unverified child has no handle, so no observation identity.
                 encoded["observation_id"] = observation_id(encoded["record_id"], fk) if encoded["record_id"] else None
             rows.append(encoded)
+        filtered = None
+        if mode == "filter":
+            filtered = {"count": None, "not_compared": [None] * len(conditions)}
+            if counts:
+                filtered.update(self._filter_counts(db, name, clauses))
         result = {"name": name, "kind": obj["kind"], "columns": columns,
                   "identity": state, "rows": rows, "offset": offset, "returned": len(rows),
                   "has_more": more, "next_offset": offset + len(rows) if more else None,
                   "ordering": ordering, "order": sorted_by,
                   "lineage": "not_recorded" if obj["kind"] == "view" else None,
                   "search": {"mode": mode, "text": text, "column": column, "key": key,
-                             **({"case": case} if mode == "literal" else {})},
+                             **({"case": case} if mode in {"literal", "filter"} else {}),
+                             **({"conditions": conditions} if mode == "filter" else {})},
                   "completion": "window" if more else "complete",
                   "searched_columns": searched, "excluded_storage_classes": ["null", "blob"]}
-        if mode == "literal":
+        if mode in {"literal", "filter"}:
             result["text_comparison"] = {"policy": TEXT_COMPARISON[case], "unicode_version": unicodedata.unidata_version}
+        if mode == "filter":
+            result["filter"] = filtered
+            # NULL and BLOB are excluded from the text anywhere; conditions say what they compare.
+            result["excluded_storage_classes"] = ["null", "blob"] if text is not None else []
         if mode == "reference":
             result["search"].update(record=record, fk=fk)
             result["excluded_storage_classes"] = ["null"]
@@ -710,6 +792,92 @@ class SourceReader:
         if len(json.dumps(result, ensure_ascii=True).encode("utf-8")) > MAX_RESPONSE_BYTES:
             raise SourceError("source_response_budget_exceeded", 413)
         return result
+
+    @staticmethod
+    def _literal(searched, text, case):
+        """The literal search's predicate over `searched`: TEXT by the text
+        comparison, INTEGER and REAL cells by equality when the text names one."""
+        integer = int(text) if INTEGER_TEXT.fullmatch(text) and -(2**63) <= int(text) < 2**63 else None
+        real = None
+        if DECIMAL_TEXT.fullmatch(text):
+            candidate = float(text)
+            real = candidate if math.isfinite(candidate) else None
+        folded = text.casefold() if case == "ignore" else text
+        predicates, params = [], []
+        for field in searched:
+            q = quote(field)
+            cell = f"ki_casefold({q})" if case == "ignore" else q
+            parts = [f"(typeof({q})='text' AND instr({cell}, ?) > 0)"]
+            params.append(folded)
+            if integer is not None:
+                parts.append(f"(typeof({q})='integer' AND {q}=?)")
+                params.append(integer)
+            if real is not None:
+                parts.append(f"(typeof({q})='real' AND {q}=?)")
+                params.append(real)
+            predicates.append("(" + " OR ".join(parts) + ")")
+        return " OR ".join(predicates), params, integer, real
+
+    @staticmethod
+    def _conditions(conditions, names):
+        """Checked conditions, exactly as submitted; anything else is refused."""
+        if conditions is None:
+            return []
+        if type(conditions) is not list or len(conditions) > MAX_CONDITIONS:
+            raise SourceError("invalid_filter", detail="conditions")
+        checked = []
+        for condition in conditions:
+            if type(condition) is not dict or set(condition) != {"column", "op", "values"}:
+                raise SourceError("invalid_filter", detail="condition")
+            column, op, values = condition["column"], condition["op"], condition["values"]
+            if type(column) is not str or column not in names:
+                raise SourceError("invalid_search_column")
+            if op not in FILTER_OPERATORS:
+                raise SourceError("invalid_filter", detail="op")
+            if type(values) is not list or any(type(v) is not str or len(v.encode("utf-8")) > 1024 for v in values):
+                raise SourceError("invalid_filter", detail="values")
+            wanted = 0 if op in {"empty", "not_empty"} else None if op == "any_of" else 1
+            if (wanted is not None and len(values) != wanted) or (wanted is None and not 1 <= len(values) <= MAX_ANY_OF):
+                raise SourceError("invalid_filter", detail="values")
+            checked.append({"column": column, "op": op, "values": list(values)})
+        return checked
+
+    def _filter_counts(self, db, name, clauses):
+        """How many rows match, and per condition how many otherwise-matching
+        rows hold a value it does not compare. Each is capped at COUNT_CAP
+        ("at_least") and all share one ordinary budget: a count that does not
+        finish is "unavailable", one not started is "not_checked", never 0."""
+        def count(where, params):
+            if cap["deadline"] <= time.monotonic() or cap["steps"] <= 0:
+                return {"status": "not_checked", "value": None, "reason": "filter_count_budget_exceeded"}
+            usage = self.reset_budget(db)
+            try:
+                value = db.execute(f"SELECT count(*) FROM (SELECT 1 FROM {quote(name)} WHERE {where} LIMIT ?)",
+                                   [*params, COUNT_CAP + 1]).fetchone()[0]
+            except sqlite3.Error as failure:
+                code = getattr(failure, "sqlite_errorcode", 0) & 0xff
+                if code in {sqlite3.SQLITE_IOERR, sqlite3.SQLITE_CORRUPT, sqlite3.SQLITE_NOTADB, sqlite3.SQLITE_CANTOPEN}:
+                    raise
+                return {"status": "unavailable", "value": None,
+                        "reason": "source_query_budget_exceeded" if code == sqlite3.SQLITE_INTERRUPT else "unsupported_source_operation"}
+            finally:
+                db.set_progress_handler(None, 0)
+            return ({"status": "at_least", "value": COUNT_CAP, "reason": None} if value > COUNT_CAP
+                    else {"status": "exact", "value": value, "reason": None})
+        with self._capped(self.query_seconds, self.vm_steps) as cap:
+            total = count(" AND ".join(c[0] for c in clauses), [v for c in clauses for v in c[1]])
+            skipped = []
+            for index, (_, _, uncompared, column) in enumerate(clauses):
+                if column is None:
+                    continue  # the text anywhere, not a condition
+                if not uncompared:
+                    skipped.append(None)
+                    continue
+                others = [c for i, c in enumerate(clauses) if i != index]
+                kinds = ",".join(f"'{kind}'" for kind in uncompared)
+                where = " AND ".join([c[0] for c in others] + [f"typeof({quote(column)}) IN ({kinds})"])
+                skipped.append(count(where, [v for c in others for v in c[1]]))
+        return {"count": total, "not_compared": skipped}
 
     def record(self, db, handle):
         with self._lock:
@@ -735,7 +903,9 @@ class SourceReader:
         observation, so the browser places nothing it has not been handed
         whole. A row without a handle is counted in `skipped`, never placed.
         """
-        page = (self.search(db, name, mode=mode, limit=limit, offset=offset, order_by=order_by, desc=desc, **criteria)
+        # Placing a window counts nothing: the filter's counts were said when it was shown.
+        page = (self.search(db, name, mode=mode, limit=limit, offset=offset, order_by=order_by, desc=desc,
+                            **({"counts": False} if mode == "filter" else {}), **criteria)
                 if mode else self.rows(db, name, limit, offset, order_by=order_by, desc=desc))
         fk = criteria.get("fk") if mode == "reference" else None
         entries, skipped = [], 0

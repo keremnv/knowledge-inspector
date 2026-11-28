@@ -229,11 +229,16 @@ an agent's result is a step. Back restores the whole sentence.
 **Server.** One new search mode taking a flat list of conditions and the search text, under today's budgets,
 completion rules and refusals. The hidden precise lookup interface goes ("the exact key" is "ref is …").
 
-**Still open:**
-- **Types:** compare only values stored as the same type (a number condition skips rows that store the column
-  as text, and the chip says how many), with no conversion, as the contract already requires? Proposed; not decided.
-- **Count:** show how many rows match, with a cap ("312", "10,000+")? Proposed; not decided.
-- **Related sets with conditions:** later; for now a related set's or a query's chip stands alone.
+**Types.** Values are compared only with values of the same kind, never converted: text with text, numbers
+with numbers. "position is 3" finds a TEXT `'3'` and an INTEGER 3 alike, each by its own comparison; "position >
+1" compares numbers only, so a TEXT `'3'` is not compared, and the chip says how many rows were not ("position > 1 ·
+1 not compared"). A value that names no number orders text by code point, so ISO dates stored as text order as dates.
+BLOBs are compared only by "is empty" and "is not empty". "is empty" means NULL or the empty text.
 
-**Status.** Principle and structure decided; the open items above are not.
+**Count.** The footer says how many rows match, up to 10,000 ("312", "10,000+"); a count that does not finish is
+said to be unavailable, never 0.
+
+**Related sets with conditions:** later; for now a related set's or a query's chip stands alone.
+
+**Status.** Decided (types and the count on 2026-11-28). The server mode is in `API_CONTRACT.md`, "Column filter".
 

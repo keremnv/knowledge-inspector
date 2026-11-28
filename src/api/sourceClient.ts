@@ -109,6 +109,8 @@ export function sourceClient(context: SourceContext) {
     ? { mode: request.mode, text: request.text, ...(request.column !== undefined ? { column: request.column } : {}),
         ...(request.case ? { case: request.case } : {}) }
     : request.mode === "primary_key" ? { mode: request.mode, key: JSON.stringify(request.key) }
+    : request.mode === "filter" ? { mode: request.mode, conditions: JSON.stringify(request.conditions),
+        ...(request.text !== undefined ? { text: request.text } : {}), ...(request.case ? { case: request.case } : {}) }
     : { mode: request.mode, record: request.record, fk: request.fk };
   return {
     overview: (limit = 50, offset = 0, signal?: AbortSignal) => get<SourceCatalogue>("overview", window(limit, offset), signal),
@@ -124,6 +126,13 @@ export function sourceClient(context: SourceContext) {
             ? actual.text !== request.text || actual.column !== (request.column ?? null) || actual.key !== null ||
               actual.case !== (request.case ?? "ignore") ||
               result.text_comparison?.policy !== (request.case === "match" ? "exact_v1" : "casefold_v1")
+            : request.mode === "filter"
+            // The conditions as sent, in order; the text and case as sent.
+            ? actual.text !== (request.text ?? null) || actual.column !== null || actual.key !== null ||
+              actual.case !== (request.case ?? "ignore") || !Array.isArray(actual.conditions) || actual.conditions.length !== request.conditions.length ||
+              actual.conditions.some((condition, i) => condition.column !== request.conditions[i].column || condition.op !== request.conditions[i].op ||
+                condition.values.length !== request.conditions[i].values.length || condition.values.some((value, j) => value !== request.conditions[i].values[j])) ||
+              result.filter?.not_compared.length !== request.conditions.length
             : request.mode === "primary_key"
             ? actual.text !== null || actual.column !== null || !Array.isArray(actual.key) ||
               actual.key.length !== request.key.length || actual.key.some((part, i) =>
