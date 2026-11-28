@@ -203,12 +203,22 @@ export type SourceSearchRequest =
   | { mode: "literal"; text: string; column?: string; case?: "match" }
   | { mode: "primary_key"; key: SourceSearchKey[] }
   /** Child rows referencing one parent record through one declaration. */
-  | { mode: "reference"; record: string; fk: string };
+  | { mode: "reference"; record: string; fk: string }
+  /** Column filtering: conditions that must all hold, and the text anywhere (decision of 2026-11-28). */
+  | { mode: "filter"; conditions: SourceCondition[]; text?: string; case?: "match" };
+export type SourceConditionOp = "contains" | "not_contains" | "is" | "is_not" | "any_of"
+  | "lt" | "le" | "gt" | "ge" | "empty" | "not_empty";
+/** Values are strings: each cell compares them by its own storage class, never converted. */
+export type SourceCondition = { column: string; op: SourceConditionOp; values: string[] };
+/** A bounded count: `at_least` past the cap; `unavailable` and `not_checked` are never zero. */
+export type SourceCount = { status: "exact" | "at_least" | "unavailable" | "not_checked"; value: number | null; reason: string | null };
 export type SourceSearch = SourceRows & {
   /** `observation_id` is present in reference mode, null without a child handle. */
   rows: (SourceRow & { matched_columns: string[]; observation_id?: string | null })[];
-  search: { mode: "literal" | "primary_key" | "reference"; text: string | null; column: string | null;
-    key: SourceSearchKey[] | null; record?: string; fk?: string; case?: "ignore" | "match" };
+  search: { mode: "literal" | "primary_key" | "reference" | "filter"; text: string | null; column: string | null;
+    key: SourceSearchKey[] | null; record?: string; fk?: string; case?: "ignore" | "match"; conditions?: SourceCondition[] };
+  /** Filter mode: how many rows match, and per condition how many it could not compare (null: it compares every cell). */
+  filter?: { count: SourceCount | null; not_compared: (SourceCount | null)[] };
   /** Literal mode: the text rule applied, versioned (O11). */
   text_comparison?: SourceTextComparison;
   completion: "complete" | "window";

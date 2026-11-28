@@ -226,3 +226,129 @@ class TestSearch(Fixture):
         # Nonfinite input does not pretend it searched nonfinite numeric cells.
         for text in ['inf', '-inf', '1e999']:
             self.assertEqual(self.search(m, 'r', text=text)['returned'], 0)
+
+
+class TestFilter(Fixture):
+    """Column filtering (decision of 2026-11-28): conditions that must all hold,
+    typed by each cell and never converted, with capped counts."""
+
+    def seed(self):
+        self.build('''CREATE TABLE finding(ref TEXT PRIMARY KEY, outcome, position, note);''', [(
+            'INSERT INTO finding VALUES(?,?,?,?)', [
+                ('F1', 'met', 0, 'cites s6'), ('F2', 'met', 1, None), ('F3', 'not_met', 2, ''),
+                ('F4', None, '3', 'x'), ('F5', 'MET', 4.5, 'cites s0'), ('F6', 'not_met', b'\x01', None)])])
+        return self.manager()
+
+    def filter(self, manager, conditions, table='finding', **parameters):
+        return self.query(manager, 'search', table=table, mode='filter', conditions=json.dumps(conditions), **parameters)
+
+    @staticmethod
+    def refs(result):
+        return [row['key'][0]['exact'] for row in result['rows']]
+
+    @staticmethod
+    def c(column, op, *values):
+        return {'column': column, 'op': op, 'values': list(values)}
+
+    def test_is_follows_the_text_comparison_and_is_not_keeps_empty_cells(self):
+        m = self.seed()
+        self.assertEqual(self.refs(self.filter(m, [self.c('outcome', 'is', 'met')])), ['F1', 'F2', 'F5'])
+        self.assertEqual(self.refs(self.filter(m, [self.c('outcome', 'is', 'met')], case='match')), ['F1', 'F2'])
+        result = self.filter(m, [self.c('outcome', 'is_not', 'met')])
+        # F4's outcome is NULL: "is not met" keeps it.
+        self.assertEqual(self.refs(result), ['F3', 'F4', 'F6'])
+        self.assertEqual(result['filter']['count'], {'status': 'exact', 'value': 3, 'reason': None})
+        self.assertEqual(self.refs(self.filter(m, [self.c('outcome', 'any_of', 'met', 'not_met')])), ['F1', 'F2', 'F3', 'F5', 'F6'])
+
+    def test_numbers_compare_only_numbers_and_the_rest_is_counted_not_dropped(self):
+        m = self.seed()
+        result = self.filter(m, [self.c('position', 'gt', '1')])
+        self.assertEqual(self.refs(result), ['F3', 'F5'])
+        # F4 stores '3' as TEXT and F6 a BLOB: neither is compared with a number, and both are said.
+        self.assertEqual(result['filter']['not_compared'], [{'status': 'exact', 'value': 2, 'reason': None}])
+        # "is" compares TEXT as text and numbers as numbers, converting neither: '3' finds F4's
+        # TEXT '3'; 4.5 finds F5's REAL; 2 finds F3's INTEGER. Only the BLOB is not compared.
+        self.assertEqual(self.refs(self.filter(m, [self.c('position', 'is', '3')])), ['F4'])
+        self.assertEqual(self.refs(self.filter(m, [self.c('position', 'is', '4.5')])), ['F5'])
+        two = self.filter(m, [self.c('position', 'is', '2')])
+        self.assertEqual(self.refs(two), ['F3'])
+        self.assertEqual(two['filter']['not_compared'], [{'status': 'exact', 'value': 1, 'reason': None}])
+        # A value that names no number orders text by code point: 'MET' and 'met' sort before 'n'.
+        text = self.filter(m, [self.c('outcome', 'lt', 'n')])
+        self.assertEqual(self.refs(text), ['F1', 'F2', 'F5'])
+        self.assertEqual(text['filter']['not_compared'], [{'status': 'exact', 'value': 0, 'reason': None}])
+
+    def test_empty_is_null_or_empty_text_and_contains_keeps_its_negation_honest(self):
+        m = self.seed()
+        self.assertEqual(self.refs(self.filter(m, [self.c('note', 'empty')])), ['F2', 'F3', 'F6'])
+        self.assertEqual(self.refs(self.filter(m, [self.c('note', 'not_empty')])), ['F1', 'F4', 'F5'])
+        self.assertEqual(self.refs(self.filter(m, [self.c('note', 'contains', 'CITES')])), ['F1', 'F5'])
+        self.assertEqual(self.refs(self.filter(m, [self.c('note', 'not_contains', 'cites')])), ['F2', 'F3', 'F4', 'F6'])
+        # Emptiness compares every cell: nothing is reported as not compared.
+        self.assertEqual(self.filter(m, [self.c('note', 'empty')])['filter']['not_compared'], [None])
+
+    def test_conditions_and_text_must_all_hold(self):
+        m = self.seed()
+        both = self.filter(m, [self.c('outcome', 'is', 'met'), self.c('position', 'gt', '0')])
+        self.assertEqual(self.refs(both), ['F2', 'F5'])
+        with_text = self.filter(m, [self.c('outcome', 'is', 'met'), self.c('position', 'gt', '0')], text='s0')
+        self.assertEqual(self.refs(with_text), ['F5'])
+        self.assertEqual(with_text['rows'][0]['matched_columns'], ['outcome', 'position', 'note'])
+        self.assertEqual(with_text['search']['conditions'][0], self.c('outcome', 'is', 'met'))
+        self.assertEqual(with_text['text_comparison']['policy'], 'casefold_v1')
+        # Text alone is the search box as one more condition.
+        self.assertEqual(self.refs(self.query(m, 'search', table='finding', mode='filter', text='cites')), ['F1', 'F5'])
+
+    def test_counts_are_capped_and_a_count_not_made_is_never_zero(self):
+        m = self.seed()
+        with patch('adapters.source.model.COUNT_CAP', 2):
+            result = self.filter(m, [self.c('outcome', 'is_not', 'met')])
+        self.assertEqual(result['filter']['count'], {'status': 'at_least', 'value': 2, 'reason': None})
+        self.assertEqual(self.refs(result), ['F3', 'F4', 'F6'])
+        from contextlib import contextmanager
+        @contextmanager
+        def spent(self, seconds, steps):
+            yield {'deadline': 0, 'steps': 0}
+        with patch('adapters.source.model.SourceReader._capped', spent):
+            result = self.filter(m, [self.c('position', 'gt', '1')])
+        self.assertEqual(self.refs(result), ['F3', 'F5'])
+        self.assertEqual(result['filter']['count']['status'], 'not_checked')
+        self.assertIsNone(result['filter']['count']['value'])
+        self.assertEqual(result['filter']['not_compared'][0]['status'], 'not_checked')
+
+    def test_a_filter_window_places_its_records_without_counting(self):
+        m = self.seed()
+        window = self.query(m, 'records', table='finding', mode='filter',
+                            conditions=json.dumps([self.c('outcome', 'is', 'met')]), limit=2)
+        self.assertEqual([entry['record']['key'][0]['exact'] for entry in window['records']], ['F1', 'F2'])
+        self.assertTrue(window['has_more'])
+        self.assertEqual(window['search']['mode'], 'filter')
+
+    def test_validation(self):
+        m = self.seed()
+        refused = [
+            ({'conditions': json.dumps([self.c('outcome', 'like', 'm%')])}, 'invalid_filter'),
+            ({'conditions': json.dumps([self.c('outcome', 'is')])}, 'invalid_filter'),
+            ({'conditions': json.dumps([self.c('outcome', 'is', 'a', 'b')])}, 'invalid_filter'),
+            ({'conditions': json.dumps([self.c('outcome', 'empty', 'x')])}, 'invalid_filter'),
+            ({'conditions': json.dumps([self.c('outcome', 'any_of', *map(str, range(33)))])}, 'invalid_filter'),
+            ({'conditions': json.dumps([self.c('outcome', 'is', 'met')] * 9)}, 'invalid_filter'),
+            ({'conditions': json.dumps([self.c('absent', 'is', 'x')])}, 'invalid_search_column'),
+            ({'conditions': json.dumps([{'column': 'outcome', 'op': 'is', 'values': [1]}])}, 'invalid_filter'),
+            ({'conditions': json.dumps([{'column': 'outcome', 'op': 'is', 'values': ['x'], 'or': True}])}, 'invalid_filter'),
+            ({'conditions': '[{'}, 'invalid_filter'),
+            ({'conditions': json.dumps({'column': 'outcome'})}, 'invalid_filter'),
+            ({'conditions': '[]'}, 'invalid_filter'),
+            ({'text': ''}, 'invalid_search_text'),
+            ({'text': 'x', 'column': 'note'}, 'invalid_search_parameters'),
+        ]
+        for parameters, code in refused:
+            with self.subTest(parameters=parameters), self.assertRaises(SourceError) as failure:
+                self.query(m, 'search', table='finding', mode='filter', **parameters)
+            self.assertEqual(failure.exception.code, code)
+        # Conditions belong to the filter mode only.
+        with self.assertRaises(SourceError) as failure:
+            self.query(m, 'search', table='finding', text='x', conditions='[]')
+        self.assertEqual(failure.exception.code, 'invalid_search_parameters')
+        with self.assertRaises(SourceError):
+            self.query(m, 'records', table='finding', conditions='[]')
