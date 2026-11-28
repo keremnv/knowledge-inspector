@@ -84,11 +84,11 @@ for (const motion of ["reduce", "no-preference"] as const) {
       });
       await page.goto("/source?placement=explicit");
       await choose(page, "Alpha");
-      await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+      await tables(page).locator('[data-row-position="1"]').click();
       await started.promise;
       await expect(reader(page)).toContainText("loading…");
       await expect(show(page)).toHaveCount(0);
-      await tables(page).getByRole("button", { name: "Inspect row 2", exact: true }).click();
+      await tables(page).locator('[data-row-position="2"]').click();
       await expect(reader(page).locator(".source-cells code")).toHaveText("9007199254740993");
       await show(page).click();
       await expect.poll(() => field(page)).toEqual([["record-1", "Alpha 9007199254740993"]]);
@@ -103,7 +103,7 @@ for (const motion of ["reduce", "no-preference"] as const) {
       await page.goto("/source?placement=explicit");
       await choose(page, "Alpha");
       for (const row of [2, 3, 2, 3]) {
-        await tables(page).getByRole("button", { name: `Inspect row ${row}`, exact: true }).click();
+        await tables(page).locator(`[data-row-position="${row}"]`).click();
         await show(page).click();
       }
       await expect.poll(() => field(page)).toEqual([["record-1", "Alpha 9007199254740993"], ["record-2", "Alpha 9007199254740993"]]);
@@ -120,7 +120,7 @@ for (const motion of ["reduce", "no-preference"] as const) {
       await mock(page);
       await page.goto("/source?placement=explicit");
       await choose(page, "Alpha");
-      await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).focus();
+      await tables(page).locator('[data-row-position="1"]').focus();
       await page.keyboard.press("Enter");
       await expect(reader(page).locator("h2")).toBeFocused();
       // Heading focus precedes the reference read. Check final Tab order only
@@ -173,7 +173,7 @@ for (const motion of ["reduce", "no-preference"] as const) {
         try {
           await page.goto("/source?placement=explicit");
           await choose(page, "Alpha");
-          await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).press("Enter");
+          await tables(page).locator('[data-row-position="1"]').press("Enter");
           await started.promise;
           const heading = reader(page).locator("h2");
           await expect(heading).toBeFocused();
@@ -196,9 +196,9 @@ for (const motion of ["reduce", "no-preference"] as const) {
             await page.keyboard.press("Shift+Tab");
             await expect(reader(page).getByRole("button", { name: "close" })).toBeFocused();
           } else if (destination === "tables") {
-            await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).focus();
+            await tables(page).locator('[data-row-position="1"]').focus();
             await page.keyboard.press("Tab");
-            await expect(tables(page).getByRole("button", { name: "Inspect row 2", exact: true })).toBeFocused();
+            await expect(tables(page).locator('[data-row-position="2"]')).toBeFocused();
           }
           release.resolve();
           await expect(reader(page).locator(".source-outgoing [role=status]")).toHaveCount(0);
@@ -208,9 +208,9 @@ for (const motion of ["reduce", "no-preference"] as const) {
             await page.keyboard.press("Tab");
             await expect(summary).toBeFocused();
           } else if (destination === "tables") {
-            await expect(tables(page).getByRole("button", { name: "Inspect row 2", exact: true })).toBeFocused();
+            await expect(tables(page).locator('[data-row-position="2"]')).toBeFocused();
             await page.keyboard.press("Tab");
-            await expect(tables(page).getByRole("button", { name: "Inspect row 3", exact: true })).toBeFocused();
+            await expect(tables(page).locator('[data-row-position="3"]')).toBeFocused();
           } else {
             await expect(reader(page).getByText("value details", { exact: true })).toBeFocused();
             await page.keyboard.press("Tab");
@@ -224,14 +224,14 @@ for (const motion of ["reduce", "no-preference"] as const) {
       await mock(page);
       await page.goto("/source?placement=explicit");
       await choose(page, "Alpha");
-      await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+      await tables(page).locator('[data-row-position="1"]').click();
       await expect(show(page)).toBeVisible();
       for (let cycle = 0; cycle < 4; cycle += 1) {
         await show(page).click();
         await reader(page).getByRole("button", { name: "remove" }).click();
       }
       await show(page).click();
-      await tables(page).getByRole("button", { name: "Inspect row 2", exact: true }).click();
+      await tables(page).locator('[data-row-position="2"]').click();
       await show(page).click();
       await fieldList(page).locator("[data-field-record]").first().press("Enter");
       await fieldList(page).getByRole("button", { name: /^remove .*9007199254740993/ }).press("Enter");
@@ -244,7 +244,7 @@ for (const motion of ["reduce", "no-preference"] as const) {
       await page.goto("/source?placement=explicit");
       for (const [name, kind, text] of [["Bare", "table", "no primary key"], ["Shown", "view", "computed view output"]] as const) {
         await choose(page, name, kind);
-        await tables(page).getByRole("button", { name: "Inspect row 3", exact: true }).click();
+        await tables(page).locator('[data-row-position="3"]').click();
         await expect(reader(page)).toContainText(text);
         await expect(show(page)).toHaveCount(0);
       }
@@ -260,7 +260,7 @@ test("a record grounded in another generation stops reads and is never placeable
   });
   await page.goto("/source?placement=explicit");
   await choose(page, "Alpha");
-  await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+  await tables(page).locator('[data-row-position="1"]').click();
   await expect(page.getByRole("heading", { name: "source reads stopped" })).toBeVisible();
   await expect(page.getByRole("alert").first()).toContainText("source_context_mismatch");
   await expect(page.locator("[data-placement]")).toHaveCount(0);
@@ -277,11 +277,11 @@ for (const status of [410, 409, 503] as const) {
     });
     await page.goto("/source?placement=explicit");
     await choose(page, "Alpha");
-    await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+    await tables(page).locator('[data-row-position="1"]').click();
     await show(page).click();
     await expect.poll(async () => (await drawn(page)).filter((mark) => mark.at).length).toBe(1);
     failing = true;
-    await tables(page).getByRole("button", { name: "Inspect row 2", exact: true }).click();
+    await tables(page).locator('[data-row-position="2"]').click();
     await expect(page.getByRole("heading", { name: "source reads stopped" })).toBeVisible();
     // Unmounted in the same commit as the stop: nothing old fades as if current.
     await expect(page.locator(".source-canvas > .source-layer:not(.source-schema) canvas")).toHaveCount(0);
@@ -295,7 +295,7 @@ test("narrowing into the compact arrangement keeps the dock and control that hol
   await mock(page);
   await page.goto("/source?placement=explicit");
   await choose(page, "Alpha");
-  const row = tables(page).getByRole("button", { name: "Inspect row 1", exact: true });
+  const row = tables(page).locator('[data-row-position="1"]');
   await row.focus();
   await expect(page.locator(".ov.is-open")).toHaveCount(2);
   await page.setViewportSize({ width: 760, height: 800 });
@@ -309,5 +309,5 @@ test("narrowing into the compact arrangement keeps the dock and control that hol
   await page.keyboard.press("Escape");
   await expect(page.locator('[data-overlay="source-tables"]')).toHaveClass(/is-open/);
   await expect(page.locator('[data-overlay="source-reader"]')).not.toHaveClass(/is-open/);
-  await expect(tables(page).getByRole("button", { name: "Inspect row 1", exact: true })).toBeFocused();
+  await expect(tables(page).locator('[data-row-position="1"]')).toBeFocused();
 });

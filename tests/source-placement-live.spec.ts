@@ -104,7 +104,7 @@ for (const motion of ["reduce", "no-preference"] as const) {
       await expect(page.locator(".source-canvas > .source-layer:not(.source-schema) canvas")).toHaveCount(0);
       await choose(page, "Track");
       await findTrack(page, "Evil Walks");
-      await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+      await tables(page).locator('[data-row-position="1"]').click();
       await expect(reader(page).locator("h2")).toHaveAccessibleName(/^Track\s*, TrackId=10$/);
       await expect(page.locator(".source-canvas > .source-layer:not(.source-schema) canvas")).toHaveCount(0);
       await reader(page).locator('[data-placement="show"]').click();
@@ -148,7 +148,7 @@ for (const motion of ["reduce", "no-preference"] as const) {
     await serveSource(UPSTREAM, async ({ origin }) => {
       await page.goto(`${origin}/source`);
       await choose(page, "Track");
-      await tables(page).getByRole("button", { name: "Inspect row 10", exact: true }).click();
+      await tables(page).locator('[data-row-position="10"]').click();
       await reader(page).locator('[data-placement="show"]').click();
       const [ten] = await settled(page, 1);
       // Drag Track 10 by hand; the drop is where it stays.
@@ -163,7 +163,7 @@ for (const motion of ["reduce", "no-preference"] as const) {
       await reader(page).locator('[data-placement="show"]').click();
       await settled(page, 1);
       expect((await marks(page))[0]).toMatchObject({ x: dragged.x, y: dragged.y });
-      await tables(page).getByRole("button", { name: "Inspect row 11", exact: true }).click();
+      await tables(page).locator('[data-row-position="11"]').click();
       await expect(reader(page).locator("h2")).toHaveAccessibleName(/TrackId=11$/);
       await reader(page).locator('[data-placement="show"]').click();
       const both = await settled(page, 2);
@@ -236,7 +236,7 @@ test("J1-C: keyless, invalid-key, budget-exceeded and view rows stay inspectable
         ["computed", "view", "computed view output"],
       ] as const) {
         await choose(page, name, kind);
-        await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+        await tables(page).locator('[data-row-position="1"]').click();
         await expect(reader(page)).toContainText(qualification);
         await expect(reader(page).locator('[data-placement="show"]')).toHaveCount(0);
       }
@@ -244,7 +244,7 @@ test("J1-C: keyless, invalid-key, budget-exceeded and view rows stay inspectable
       await expect(tables(page)).toContainText("key verification incomplete");
       // Positive control under the same budget: a verified record is placeable.
       await choose(page, "small");
-      await tables(page).getByRole("button", { name: "Inspect row 2", exact: true }).click();
+      await tables(page).locator('[data-row-position="2"]').click();
       await reader(page).locator('[data-placement="show"]').click();
       const [mark] = await settled(page, 1);
       expect(mark.label).toBe("small 2");
@@ -261,7 +261,7 @@ for (const width of [1440, 1000, 900] as const) {
       await serveSource(UPSTREAM, async ({ origin }) => {
         await page.goto(`${origin}/source`);
         await choose(page, "Track");
-        await tables(page).getByRole("button", { name: "Inspect row 10", exact: true }).click();
+        await tables(page).locator('[data-row-position="10"]').click();
         await reader(page).locator('[data-placement="show"]').click();
         const [mark] = await settled(page, 1);
         await expect(page.locator(".ov.is-open")).toHaveCount(2);
@@ -291,7 +291,7 @@ test("J1-D: viewport transitions, keyboard space and the compact single-dock arr
   await serveSource(UPSTREAM, async ({ origin }) => {
     await page.goto(`${origin}/source`);
     await choose(page, "Track");
-    await tables(page).getByRole("button", { name: "Inspect row 10", exact: true }).click();
+    await tables(page).locator('[data-row-position="10"]').click();
     await reader(page).locator('[data-placement="show"]').click();
     const [placed] = await settled(page, 1);
     for (const width of [900, 1000, 1440]) {
@@ -357,12 +357,12 @@ test("J1-F: an expired capture clears the field and the producer is untouched", 
   await serveSource(UPSTREAM, async ({ origin, commands, requests }) => {
     await page.goto(`${origin}/source`);
     await choose(page, "Track");
-    await tables(page).getByRole("button", { name: "Inspect row 10", exact: true }).click();
+    await tables(page).locator('[data-row-position="10"]').click();
     await reader(page).locator('[data-placement="show"]').click();
     await settled(page, 1);
     const sessions = requests.filter((url) => url.pathname.endsWith("/session")).length;
     await commands("retire");
-    await tables(page).getByRole("button", { name: "Inspect row 11", exact: true }).click();
+    await tables(page).locator('[data-row-position="11"]').click();
     await expect(page.getByRole("heading", { name: "source reads stopped" })).toBeVisible();
     await expect(page.locator(".source-canvas > .source-layer:not(.source-schema) canvas")).toHaveCount(0);
     await expect(fieldList(page)).toHaveCount(0);
@@ -380,7 +380,7 @@ test("J1: ordinary and reduced motion come to rest in the same field and camera"
       await page.goto(`${origin}/source`);
       await choose(page, "Track");
       for (const row of [10, 11]) {
-        await tables(page).getByRole("button", { name: `Inspect row ${row}`, exact: true }).click();
+        await tables(page).locator(`[data-row-position="${row}"]`).click();
         await reader(page).locator('[data-placement="show"]').click();
         await settled(page, row === 10 ? 1 : 2);
       }

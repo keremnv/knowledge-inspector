@@ -29,7 +29,7 @@ for (const width of [1440, 900]) for (const colorScheme of ["light", "dark"] as 
           // As World below leaves its vocabulary by placing a referent, Source
           // leaves its schema room (the empty canvas, O12) by placing a record.
           await source.goto(`${origin}/source`); await choose(source, "Genre");
-          await source.locator("#source-tables").getByRole("button", { name: "Inspect row 1", exact: true }).click();
+          await source.locator("#source-tables").locator('[data-row-position="1"]').click();
           await expect(source.locator("[data-field-record]")).toHaveCount(1);
           await expect(source.locator(".source-workspace")).not.toHaveClass(/is-schema/);
           await choose(source, "Artist"); await settled(source);
@@ -102,7 +102,7 @@ for (const width of [1440, 900]) for (const colorScheme of ["light", "dark"] as 
           expect(await summary.evaluate((el) => getComputedStyle(el).cursor)).toBe("pointer");
 
           await choose(page, "Track");
-          await tables(page).getByRole("button", { name: "Inspect row 10", exact: true }).press("Enter");
+          await tables(page).locator('[data-row-position="10"]').press("Enter");
           await expect(reader(page).locator(".source-cells")).toContainText('Evil Walks');
           await reader(page).locator('[data-placement="show"]').click();
           const identity = disclosure(page, "identity details");
@@ -132,8 +132,8 @@ for (const width of [1440, 900]) for (const colorScheme of ["light", "dark"] as 
           await expect(disclosure(page, "source details")).toHaveAttribute("open", "");
           expect(Math.abs(await reader(page).locator(".source-reader-body").evaluate((el) => el.scrollTop) - scroll)).toBeLessThan(2);
           await reader(page).getByRole("button", { name: "close", exact: true }).press("Enter");
-          await expect(tables(page).getByRole("button", { name: "Inspect row 10", exact: true })).toBeFocused();
-          await tables(page).getByRole("button", { name: "Inspect row 10", exact: true }).press("Enter");
+          await expect(tables(page).locator('[data-row-position="10"]')).toBeFocused();
+          await tables(page).locator('[data-row-position="10"]').press("Enter");
           await expect(reader(page).locator("h2")).toBeFocused();
           await expect(identity).toHaveAttribute("open", "");
         });

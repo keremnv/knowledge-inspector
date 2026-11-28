@@ -24,7 +24,7 @@ test("Source removes only its obsolete exploration entries at this origin, and k
     for (const key of obsolete) expect(local[key]).toBeUndefined();
     for (const key of retained) expect(local[key]).toBe("keep-unless-obsolete");
     await page.locator("#source-tables").getByRole("button", { name: "Track table", exact: true }).click();
-    await page.locator("#source-tables").getByRole("button", { name: "Inspect row 1", exact: true }).click();
+    await page.locator("#source-tables").locator('[data-row-position="1"]').click();
     await expect(page.locator("[data-field-record]")).toHaveCount(1);
     await expect.poll(() => page.evaluate(() => Object.keys(sessionStorage).filter((key) => key.startsWith("ki.source.field:")).length)).toBe(1);
     expect(await page.evaluate(() => Object.keys(localStorage).filter((key) => /^ki\.source\.(field|naming|show):/.test(key)))).toEqual([]);

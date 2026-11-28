@@ -30,7 +30,7 @@ test("plates drawn in a fallback face are measured again when the web font arriv
   await serveSource(UPSTREAM, async ({ origin }) => {
     await page.goto(`${origin}/source?placement=explicit`, { waitUntil: "domcontentloaded" });
     await choose(page, "Track");
-    await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+    await tables(page).locator('[data-row-position="1"]').click();
     await reader(page).getByRole("button", { name: "show on canvas", exact: true }).click();
     await openSourceReferences(page); await reader(page).locator(".source-outgoing article").filter({ hasText: "→ Album" }).getByRole("button", { name: /inspect FK/ }).click();
     await reader(page).getByRole("button", { name: "show connection", exact: true }).click();

@@ -25,7 +25,7 @@ for (const width of [1440, 1000, 900]) for (const theme of ['light', 'dark'] as 
           await expect(st.locator('[data-row]').first()).toBeVisible();
           const find = world.getByRole('combobox', { name: 'Find a referent or field occurrence' });
           await find.fill('track:10'); await world.getByRole('option').first().waitFor(); await find.press('Enter');
-          await st.getByRole('button', { name: 'Inspect row 10', exact: true }).press('Enter');
+          await st.locator('[data-row-position="10"]').press('Enter');
           await expect(wr.locator('h2')).toHaveText('Evil Walks'); await expect(sr.locator('h2')).toHaveAccessibleName('Track, TrackId=10');
           await Promise.all([world.evaluate(() => document.fonts.ready), source.evaluate(() => document.fonts.ready)]);
           const worldClose = wt.getByRole('button', { name: 'close', exact: true }), sourceClose = st.getByRole('button', { name: 'close', exact: true });
@@ -72,12 +72,12 @@ for (const width of [1440, 1000, 900]) for (const theme of ['light', 'dark'] as 
 
           const filter = st.getByRole('searchbox');
           await filter.fill('Evil Walks'); await filter.press('Enter'); await expect(st.locator('tbody tr')).toHaveCount(1);
-          await st.getByRole('button', { name: 'Inspect row 1', exact: true }).press('Enter');
+          await st.locator('[data-row-position="1"]').press('Enter');
           await expect(sr.locator('h2')).toHaveAccessibleName('Track, TrackId=10');
           await filter.focus();
           await filter.press('Escape'); await expect(filter).toHaveValue(''); await expect(filter).toBeFocused();
           await expect(source.locator('[data-overlay="source-reader"]')).toHaveClass(/is-open/);
-          await expect(st.getByRole('button', { name: 'Inspect row 10', exact: true })).toBeVisible();
+          await expect(st.locator('[data-row-position="10"]')).toBeVisible();
           await expect(source.locator('.source-quiet')).toHaveCount(0);
         } finally { await world.close(); await source.close(); }
       });
@@ -93,7 +93,7 @@ for (const motion of ['reduce', 'no-preference'] as const) test(`instrument rece
     const st = page.locator('#source-tables .source-table-slot > .motion-swap > .motion-swap__is');
     const sr = page.locator('#source-reader > .motion-swap > .motion-swap__is');
     await st.getByRole('button', { name: 'Track table', exact: true }).press('Enter');
-    await st.getByRole('button', { name: 'Inspect row 10', exact: true }).press('Enter');
+    await st.locator('[data-row-position="10"]').press('Enter');
     await sr.getByRole('button', { name: 'show on canvas', exact: true }).press('Enter');
     const chooser = page.getByRole('region', { name: 'Records on canvas' });
     await expect(chooser.locator('[data-field-record]')).toHaveCount(1);

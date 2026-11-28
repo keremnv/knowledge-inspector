@@ -89,15 +89,15 @@ test("bin/ki open: one loopback origin, refresh restores within a launch, a new 
     await expect(page.locator(".source-schema canvas").first()).toBeVisible();
     expect(Object.entries(await exploration()).find(([key]) => key.endsWith(":schema:1"))).toEqual(schemaCamera);
     await page.locator("#source-tables").getByRole("button", { name: "Track table", exact: true }).click();
-    await page.locator("#source-tables").getByRole("button", { name: "Inspect row 1", exact: true }).click();
+    await page.locator("#source-tables").locator('[data-row-position="1"]').click();
     await expect(page.locator("[data-field-record]")).toHaveCount(1);
     await page.locator("#source-tables").getByRole("combobox", { name: "name Track records by" }).selectOption("Name");
     const reader = page.locator("#source-reader .motion-swap__is");
     await reader.getByText("source details", { exact: true }).click();
     await expect(reader.locator("dt").filter({ hasText: /^idle expiry$/ }).locator("+ dd")).toHaveText("none");
-    await page.getByRole("region", { name: "Source canvas", exact: true }).getByRole("button", { name: "filter", exact: true }).click();
-    await page.getByRole("group", { name: "Filter" }).getByRole("button", { name: "connections", exact: true }).click();
-    await page.getByRole("region", { name: "Source canvas", exact: true }).getByRole("button", { name: "filter", exact: true }).click();
+    await page.getByRole("region", { name: "Source canvas", exact: true }).getByRole("button", { name: "show", exact: true }).click();
+    await page.getByRole("group", { name: "Show" }).getByRole("button", { name: "connections", exact: true }).click();
+    await page.getByRole("region", { name: "Source canvas", exact: true }).getByRole("button", { name: "show", exact: true }).click();
     await page.waitForTimeout(500);
     await page.mouse.move(800, 200); await page.mouse.wheel(0, -240);
     await expect.poll(async () => {
@@ -123,8 +123,8 @@ test("bin/ki open: one loopback origin, refresh restores within a launch, a new 
         for (const coordinate of ["zoom", "cx", "cy"]) expect(after[coordinate]).toBeCloseTo(before[coordinate], 3);
       } else expect(restored[key]).toBe(value);
     }
-    await page.getByRole("region", { name: "Source canvas", exact: true }).getByRole("button", { name: "filter", exact: true }).click();
-    await expect(page.getByRole("group", { name: "Filter" }).getByRole("button", { name: "connections", exact: true })).toHaveAttribute("aria-pressed", "false");
+    await page.getByRole("region", { name: "Source canvas", exact: true }).getByRole("button", { name: "show", exact: true }).click();
+    await expect(page.getByRole("group", { name: "Show" }).getByRole("button", { name: "connections", exact: true })).toHaveAttribute("aria-pressed", "false");
     expect(new Set(served)).toEqual(new Set([`http://127.0.0.1:${port}`]));
     expect(await stop(first.child)).toBe(0);
     expect(first.output()).toContain("stopped; capture released");

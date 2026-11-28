@@ -148,8 +148,8 @@ export function SourceShowBand({ show, tables, onShow, schema = false }: {
       onClick={() => {
         if (!pinned) { setPinned(true); return; }
         setPinned(false); suppressHover.current = true; setHovered(false);
-      }}>filter</button></div>
-    <div className="world-filter__menu"><div className="instrument__group" role="group" aria-label="Filter">
+      }}>show</button></div>
+    <div className="world-filter__menu"><div className="instrument__group" role="group" aria-label="Show">
       {schema ? key("names", schemaNamed(show), schemaNamed(show) ? "Show names on focus only" : "Keep names visible",
         () => onShow((current) => ({ ...current, namedAtRest: !schemaNamed(current) })), "names") : <>
       {key("connections", show.connections, `${show.connections ? "Hide" : "Show"} connections on the canvas`,

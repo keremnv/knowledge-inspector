@@ -122,27 +122,51 @@ The code and the server contract stay; the tests that keep them working turn the
 
 **Status.** Decided. Applied in the chrome consistency change.
 
-## 2026-11-27 · A table's order is said above its rows
+## 2026-11-28 · One cause, one label, on what it belongs to
 
-**The problem.** Sorting showed only as an arrow on the sorted column and an "unsort" chip in the header bar. In a
-table wider than the panel the sorted column could be scrolled out of view (`span` sorted by `start_offset`), so
-nothing visible said the rows were sorted. The chip sat far from the column it undid, and with "name by" and
-"table info" beside it, it squeezed the table name to one letter. The third press of a header (back to unsorted)
-was nowhere to be seen.
+**The rule.** A cause is a reason something cannot be done: a view, no primary key, the session's record limit.
+Each cause gets one fixed short label, said once per panel, on the thing it describes, and one sentence under
+details that says what follows from it. What follows is never appended to the label.
 
-**Decided.**
-- **The order is a line above the rows:** "sorted by start_offset, ascending", with "unsort" beside it. It is seen
-  whichever columns are in view. A view's unbroken ties are said on the same line ("ties keep no fixed order ·
-  positions apply to this page only") instead of a line of their own.
-- **A header says what its next press does,** on hover: "sort by start_offset, ascending", then "…, descending",
-  then "stop sorting by start_offset". A hovered unsorted header shows the ascending arrow faintly. The arrow's
-  place is kept when a column is unsorted, so sorting never moves the columns. The arrow is not spoken; the
-  header's sort state is.
-- **Unsort from the keyboard** returns focus to the header that was sorted, once the rows have reloaded.
-- **The table name never gives way to the header's buttons:** past its least width, the buttons wrap to a second
-  line.
-- **Columns beyond the panel's edge:** the edge that has more columns beyond it darkens, with a tint of ink so it
-  reads in both themes.
-- **One clear per search box:** the labelled "clear", not also the browser's own ×.
+**Example.** A view (`link`) now says its cause three times in three wordings: above the rows ("computed view output
+· positions apply to this page only"), in table info ("computed view output · rows stay on this page", then a
+sentence), and in a row's identity details ("… Computed output; lineage not recorded."). Under the rule the label
+sits on the table, beside its name ("link · view"); the details sentence says once that a view's rows have no record
+identity, so they cannot be placed and a row's position holds only on its page. "positions apply to this page only"
+and "rows stay on this page" stop being suffixes and live only in that sentence.
+
+It narrows "Exceptions in labels, not sentences" (2026-11-26): that rule says where exceptions are spoken; this one
+says how often and in what words.
+
+**Status.** Decided. To be applied in the prose cleanup, with the copy inventory in `docs/TRAVERSAL_REVIEW.md`
+section 8.
+
+## 2026-11-28 · The table header and its words
+
+**Sorting.** Sorting showed only as an arrow on the sorted column and an "unsort" chip in the header bar. In a
+table wider than the panel the sorted column could be out of view (`span` sorted by `start_offset`), so nothing
+visible said the rows were sorted, and the chip squeezed the table name to one letter.
+- **The order is said in the footer,** with the rows it orders: "rows 1–50 · by start_offset ↑ · more available".
+- **No unsort chip.** A header's third press undoes the order. Each header says what its next press does, on
+  hover: "sort by start_offset, ascending", then "…, descending", then "stop sorting by start_offset". A hovered
+  unsorted header shows the ascending arrow faintly. The arrow keeps its place when a column is unsorted, so
+  sorting never moves the columns; it is not spoken (the header's sort state is).
+
+**The table name is never squeezed.** Past its least width, the header's buttons wrap to a second line.
+
+**Three words, one meaning each.** *Find* searches every table (the canvas's find). *Filter* narrows the list on
+show: "filter tables…" on the table list, "filter span…" in a table. *Show* chooses what the canvas draws: the
+canvas's show/hide control, which was called "filter", is now "show" (Source only; World's canvas is unchanged).
+
+**Name by** moves from the header bar to the bottom bar, between rows per page and keep all: a setting of the rows
+on show, where rows are placed.
+
+**A row's button is named by its record,** as the canvas names it ("span note:trec-2022-1@trec2022#s0", or the
+"name by" value), not "Inspect row 1". A row without a verified key is named by its position ("row 3").
+
+**One clear per search box:** the labelled "clear", not also the browser's own ×.
+
+**Tried and taken back:** a line above the rows naming the order, with "unsort" beside it; and a darkened edge on
+the side of the row table that had more columns beyond it.
 
 **Status.** Decided. Applied in the table header change.

@@ -86,7 +86,7 @@ export async function sourceRecord(page: Page, origin: string, table: string, ro
   await forgetSourceCanvas(page, origin);
   await page.goto(`${origin}/source${query}`);
   await chooseSourceTable(page, table);
-  await sourceTable(page).getByRole('button', { name: `Inspect row ${row}`, exact: true }).press('Enter');
+  await sourceTable(page).locator(`[data-row-position="${row}"]`).press('Enter');
   await sourceReader(page).locator('[data-placement="show"]').click();
   await canvasRest(page, 'source', 1);
 }

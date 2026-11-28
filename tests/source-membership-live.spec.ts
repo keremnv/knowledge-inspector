@@ -39,18 +39,18 @@ for (const motion of ["reduce", "no-preference"] as const) {
     await serveSource(UPSTREAM, async ({ origin, requests, captureFingerprint }) => {
       const capture = await captureFingerprint();
       await page.goto(`${origin}/source?placement=explicit`); await choose(page, "Album");
-      await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+      await tables(page).locator('[data-row-position="1"]').click();
       await reader(page).getByRole("button", { name: "show on canvas", exact: true }).click();
       await canvasRest(page, "source", 1);
       const [[, album]] = await marks(page);
       const visited = (await at(page)).get(album);
       // Through referenced by: the Tracks of Album 1, two of them connected back.
       await incoming(page).getByRole("button", { name: /^Track · AlbumId, 10 rows/ }).click();
-      await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+      await tables(page).locator('[data-row-position="1"]').click();
       await connect(page, "Album");
       await reader(page).getByRole("button", { name: "Back", exact: true }).click();
       await connect(page, "Genre");
-      await tables(page).getByRole("button", { name: "Inspect row 2", exact: true }).click();
+      await tables(page).locator('[data-row-position="2"]').click();
       await connect(page, "Album");
       await canvasRest(page, "source", 4);
       expect(await marks(page)).toEqual([["Album 1", album], ["Track 1", "record-2"],
@@ -107,7 +107,7 @@ test("direct placement trial: a reselected row and a reopened endpoint are never
   test.skip(!prepared(), "Prepare pinned Chinook");
   await serveSource(UPSTREAM, async ({ origin }) => {
     await page.goto(`${origin}/source?placement=direct`); await choose(page, "Track");
-    await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+    await tables(page).locator('[data-row-position="1"]').click();
     await canvasRest(page, "source", 1);
     await openSourceReferences(page); await reader(page).locator(".source-outgoing article").filter({ hasText: "→ Album" }).getByRole("button", { name: /inspect FK/ }).click();
     // Inspecting audits and leaves the canvas alone (decision 4); showing draws.
@@ -120,7 +120,7 @@ test("direct placement trial: a reselected row and a reopened endpoint are never
     await expect(list(page).locator("[data-field-reference]")).toHaveCount(0);
     await reader(page).getByRole("button", { name: /, the record this references$/ }).click();
     await expect(reader(page).locator('[data-placement="show"]')).toHaveText("reveal");
-    await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+    await tables(page).locator('[data-row-position="1"]').click();
     await canvasRest(page, "source", 2);
     expect((await marks(page)).map(([name]) => name)).toEqual(["Track 1", "Album 1"]);
     expect(await at(page)).toEqual(before);

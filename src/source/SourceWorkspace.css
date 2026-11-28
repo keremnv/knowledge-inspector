@@ -21,7 +21,7 @@
 .source-workspace .instrument__group:has(.source-global-find .nodefind__input:focus) { border-color: var(--ink); }
 /* O17: the table header's naming choice, a cell of the header's own row. */
 .source-naming { display: inline-flex; align-items: center; gap: .4rem; color: var(--ink-muted); font-size: var(--type-label); }
-.source-naming select { font: inherit; color: var(--ink); background: var(--panel); border: 1px solid var(--rule); padding: 1px 4px; }
+.source-naming select { font: inherit; color: var(--ink); background: var(--panel); border: 1px solid var(--rule); padding: 4px 6px; }
 .source-named { margin-left: .35rem; color: var(--ink-muted); font-size: var(--type-label); }
 /* The closed Reader's tab stands flush to the right edge, as the Tables tab does
    to the left; World floats a right-hand tab `--ov-float` clear of the frame. */
@@ -141,21 +141,6 @@
 .source-row-table .source-sort__mark { display: inline-block; width: 1.1em; text-align: right; visibility: hidden; }
 .source-row-table .source-sort[data-sorted] .source-sort__mark { visibility: visible; }
 .source-row-table .source-sort:not([data-sorted]):is(:hover, :focus-visible) .source-sort__mark { visibility: visible; opacity: .45; }
-/* The order, named above the rows, with its undo beside it. */
-.source-sorted { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; color: var(--ink-muted); }
-.source-sorted b { color: var(--ink); font-weight: var(--weight-regular); }
-
-/* Columns beyond the panel's edge: the edge darkens on the side that has more.
-   A tint of ink rather than a fade to the ground, so it reads in both themes. */
-.source-row-frame { position: relative; display: flex; flex-direction: column; flex: 1; min-height: 0; }
-.source-row-frame::before, .source-row-frame::after {
-  content: ""; position: absolute; top: 0; z-index: 2; width: 24px; height: var(--side-cue-height, 100%);
-  pointer-events: none; visibility: hidden;
-}
-.source-row-frame::before { left: 0; background: linear-gradient(to right, color-mix(in srgb, var(--ink) 14%, transparent), transparent); }
-.source-row-frame::after { right: var(--side-cue-right, 0px); background: linear-gradient(to left, color-mix(in srgb, var(--ink) 14%, transparent), transparent); }
-.source-row-frame[data-more-left]::before, .source-row-frame[data-more-right]::after { visibility: visible; }
-
 /* The table name never gives way to the buttons beside it: past its least
    width, the buttons move to a line of their own. */
 .source-table-heading { flex-wrap: wrap; row-gap: 6px; }

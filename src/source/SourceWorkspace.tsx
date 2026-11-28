@@ -1204,7 +1204,7 @@ function Workspace({ context }: { context: SourceContext }) {
                 meta={counts ? `${counts.tables} tables · ${counts.views} views${counts.unsupported_virtual_or_shadow ? ` · ${counts.unsupported_virtual_or_shadow} unsupported objects` : ""}` : undefined}
                 subjects={history.length > 0 && <nav className="table__subjects" aria-label="table navigation"><PanelBack onBack={(event) => goBack(event.detail === 0)} /></nav>} />
               {/* The search stands where a table's filter stands: moving from the catalogue to a table keeps the panel's structure. */}
-              <TableSearch value={catalogueQuery} onChange={setCatalogueQuery} label="Search tables" clearLabel="clear" />
+              <TableSearch value={catalogueQuery} onChange={setCatalogueQuery} label="filter tables" placeholder="filter tables…" clearLabel="clear" />
               <div className="table__scroll table__scroll--flow source-catalogue" {...catalogueViewport}>
                 {declarationNote && <p className="source-limitation" data-declared-note>{declarationNote}</p>}
                 {overview?.error && <Problem error={overview.error} onRetry={overview.retry} />}
@@ -1235,20 +1235,6 @@ function Workspace({ context }: { context: SourceContext }) {
                 <TableAction data-catalogue onClick={showCatalogue}>tables</TableAction>
                 {history.length > 0 && <PanelBack onBack={(event) => goBack(event.detail === 0)} />}
               </nav>} actions={<>
-                {canAddAll && (() => {
-                  // O17: the person names this table's records by one of its columns, or by key.
-                  const chosen = naming[relation.name] ?? "", columns = windowRows?.columns ?? relation.columns ?? [];
-                  return <label className="source-naming" title={chosen ? `${relation.name} records are named by ${chosen} on the canvas: your choice, in this tab` : `${relation.name} records are named by their key`}>
-                    <span>name by</span>
-                    <select aria-label={`name ${relation.name} records by`} value={chosen} onChange={(event) => {
-                      const column = event.target.value, table = relation.name;
-                      setNaming((current) => { const next = { ...current }; if (column) next[table] = column; else delete next[table]; return next; });
-                    }}>
-                      <option value="">key</option>
-                      {columns.map((column) => <option key={column.name} value={column.name}>{column.name}</option>)}
-                    </select>
-                  </label>;
-                })()}
                 <TableAction data-table-info onClick={() => {
                 if (readerRecordSubject || observationSubject) remember();
                 leaveSubject(); setRow(null); setPlacedSubject(null); openReader();
@@ -1265,7 +1251,21 @@ function Workspace({ context }: { context: SourceContext }) {
                   if (event.detail === 0) setFocusRequest(['#source-tables .source-table-slot .motion-swap__is .source-find input[type="search"]', FOCUS_TARGETS.table]);
                 }}>whole table</TableAction></div>}
               {relation.read_status === "available" && !referencing && <SourceFind draft={findDraft} onDraft={setFindDraft} name={relation.name} columns={relation.columns ?? []} onEdit={() => changeSearch(null)} onSubmit={changeSearch} onClear={() => changeSearch(undefined)} />}
-              {relation.read_status === "available" ? search === null ? <p className="source-find-prompt" role="status">press enter to filter</p> : <SourceRowsView searching={search !== undefined} named={naming[relation.name]} name={relation.name} rows={windowRows} error={windowResult?.error} onRetry={windowResult?.retry} selected={row} placed={placedHandles} onTakeOff={takeOffRecord} order={sort} onOrder={cycleSort} onUnsort={() => reorder(null)} offset={offset} limit={limit} onPage={page} onSelect={select} scroll={tableScroll}
+              {relation.read_status === "available" ? search === null ? <p className="source-find-prompt" role="status">press enter to filter</p> : <SourceRowsView searching={search !== undefined} named={naming[relation.name]} name={relation.name} rows={windowRows} error={windowResult?.error} onRetry={windowResult?.retry} selected={row} placed={placedHandles} onTakeOff={takeOffRecord} order={sort} onOrder={cycleSort} naming={canAddAll && (() => {
+                  // O17: the person names this table's records by one of its columns, or by key.
+                  const chosen = naming[relation.name] ?? "", columns = windowRows?.columns ?? relation.columns ?? [];
+                  return <label className="source-naming" title={chosen ? `${relation.name} records are named by ${chosen} on the canvas: your choice, in this tab` : `${relation.name} records are named by their key`}>
+                    <span>name by</span>
+                    <select aria-label={`name ${relation.name} records by`} value={chosen} onChange={(event) => {
+                      const column = event.target.value, table = relation.name;
+                      setNaming((current) => { const next = { ...current }; if (column) next[table] = column; else delete next[table]; return next; });
+                    }}>
+                      <option value="">key</option>
+                      {columns.map((column) => <option key={column.name} value={column.name}>{column.name}</option>)}
+                    </select>
+                  </label>;
+                })()}
+                rowName={(item) => item.record_id ? nameOf(relation.name, item.key, item.record_id, item.cells) : null} offset={offset} limit={limit} onPage={page} onSelect={select} scroll={tableScroll}
                 actions={(canAddAll || setShown || bulk?.key === setKey || blockedCause) && <span className="source-bulk__actions">
                   {/* Where rows cannot be placed there is nothing to keep: no button, and no sentence about one.
                       The cause is said once in this panel: above the rows when the row window already names it
