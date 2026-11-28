@@ -170,3 +170,70 @@ on show, where rows are placed.
 the side of the row table that had more columns beyond it.
 
 **Status.** Decided. Applied in the table header change.
+
+## 2026-11-28 · What a person filters in the interface, and what they ask an agent
+
+**The principle.** The interface answers questions a person asks by pointing; an agent answers questions they have
+to phrase. The line follows how a question is asked, not how hard the query behind it is: "what connects these two
+records" is a hard query asked by selecting two records, so it belongs in the interface; "outcome is met or position
+is over 3" is easy SQL that has to be phrased, so it belongs to an agent. KI is casual and relationship-first, and
+most people in 2026 will put a phrased question to an agent; anyone can still write SQL against the file themselves.
+KI hosts no query box.
+
+**A filter belongs in the interface when all four hold:**
+1. it is built by pointing or choosing (a column, an operator, a value in view, a record), with no syntax;
+2. it reads back as a short sentence of chips, one condition each, so the set on show is always legible;
+3. it narrows the set in view: one table, or one related set, at most one declared step away;
+4. its answer can say how complete it is (complete, a page of more, unavailable), never a silent "none".
+
+That covers column conditions (below) and the relationship filters in `ROADMAP.md`. It leaves to an agent: OR
+across columns and nested groups; aggregation; paths longer than one step and comparisons between tables; computed
+values and date arithmetic. Facets (counts of each value in a column) are set aside: they would need their own space
+and a query per column.
+
+**What KI owes the agent side.** A way to hand results back: an agent's answer opens as a set, like a filtered
+table ("from a query · 12 rows"), with the query under details; KI verifies each row, gives it a record identity
+and reports rows it could not find. And something an agent can read to understand the store (tables, declared
+references, later the declaration layer). Both are in `ROADMAP.md`.
+
+### Column filtering
+
+**The set is one sentence.** A chip row under the search box states the set on show. Its first chip says where
+the set comes from (none for a whole table; "referencing F1 through holder" for a related set, whose × does what
+"whole table" did; "from a query · 12 rows" for an agent's result). The next chips are column conditions. The search
+box is one more condition: contains, anywhere in the row. Sorting, paging and keep all act on the set; the footer
+says its size.
+
+**Conditions.** A condition is a column, an operator and a value. All conditions must hold. OR exists only within
+one column, as "is any of". Operators: contains, does not contain, is, is not, is any of, < ≤ > ≥, is empty, is not
+empty. There are no groups: anything more is an agent's question. At most 8 conditions.
+
+**"is not" includes empty values.** "outcome is not met" keeps rows where `outcome` is empty (NULL), as a casual
+reader expects; the chip says so ("is not met, or empty"). "does not contain" likewise.
+
+**Building a condition.** "+ filter" lists the columns; choosing one makes a chip and opens a popover with the
+operators that fit and a value field ("is any of" takes several values; "is empty" none). Enter or clicking away
+applies it, after the same pause as the search box; Esc cancels a new chip; pressing a chip edits it. The column
+menu's "filter by this column" starts from that column. Value suggestions are left out with facets.
+
+**The column menu** replaces the header's hidden sort cycle and the "name by" dropdown: sort ascending, sort
+descending, stop sorting, filter by this column, name records by this, hide column. With "name by" gone from the
+bar under the rows, the pager and that bar become one footer.
+
+**Limitations on what they belong to.** A condition that could not compare some rows says so on its chip; a capped
+count says so in the footer; a filter over its budget says "narrow it", never "no matches".
+
+**Back.** Adding, editing or removing a chip refines the set in place and is not a step. Opening a related set or
+an agent's result is a step. Back restores the whole sentence.
+
+**Server.** One new search mode taking a flat list of conditions and the search text, under today's budgets,
+completion rules and refusals. The hidden precise lookup interface goes ("the exact key" is "ref is …").
+
+**Still open:**
+- **Types:** compare only values stored as the same type (a number condition skips rows that store the column
+  as text, and the chip says how many), with no conversion, as the contract already requires? Proposed; not decided.
+- **Count:** show how many rows match, with a cap ("312", "10,000+")? Proposed; not decided.
+- **Related sets with conditions:** later; for now a related set's or a query's chip stands alone.
+
+**Status.** Principle and structure decided; the open items above are not.
+

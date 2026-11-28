@@ -10,6 +10,8 @@ The canvas serves as a spatial working set. Records opened individually remain a
 
 The motivation is to support people in developing their own understanding through direct exploration. Knowledge Inspector complements SQL and other inspection tools. It does not automate interpretation, and the record canvas is not an exhaustive database diagram.
 
+It is meant to be casual. Questions you can ask by pointing (a column, a value, a record) are answered in the interface; questions you would have to phrase, such as combinations across columns, totals or long paths, are for SQL or, more often, an agent working alongside it. Knowledge Inspector has no query box.
+
 > **Work in progress.** This is an early, functional application under active development. Relationship discovery, expansion limits, large-table coverage and platform compatibility are still being refined. See [Current limitations](#current-limitations).
 
 ![Five Chinook records on the canvas: Evil Walks and Inject The Venom share an album and the Rock genre, with the album connected to AC/DC. Five followed references are visible.](docs/images/readme/canvas.png)
