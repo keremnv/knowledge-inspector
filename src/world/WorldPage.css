@@ -1667,6 +1667,8 @@ button.change__row:hover .change__name {
   color: var(--ink);
   font: inherit;
 }
+/* One clear per search box: the labelled one beside it, not also the browser's own ×. */
+.table__search input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; display: none; }
 .table__filters select, .table__filters input {
   font: inherit;
   color: var(--ink);

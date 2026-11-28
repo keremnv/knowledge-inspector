@@ -18,7 +18,7 @@ async function connect(p: Page, parent: string) {
 }
 async function trackWithAlbumAndGenre(p: Page, origin: string) {
   await p.goto(`${origin}/source?placement=explicit`); await choose(p, "Track");
-  await tables(p).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+  await tables(p).locator('[data-row-position="1"]').click();
   await reader(p).getByRole("button", { name: "show on canvas", exact: true }).click();
   await connect(p, "Album"); await connect(p, "Genre");
   await expect(records(p)).toHaveText(["Track 1", "Album 1", "Genre 1"]);
@@ -48,7 +48,7 @@ test("O8.3 clear takes everything off and ids keep counting", async ({ page }) =
     await page.goto(`${origin}/source?placement=explicit`);
     await expect(tables(page).getByRole("button", { name: "clear", exact: true })).toBeDisabled();
     await choose(page, "Track");
-    await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+    await tables(page).locator('[data-row-position="1"]').click();
     await reader(page).getByRole("button", { name: "show on canvas", exact: true }).click();
     await connect(page, "Album");
     const last = await records(page).last().getAttribute("data-field-record");
@@ -57,7 +57,7 @@ test("O8.3 clear takes everything off and ids keep counting", async ({ page }) =
     await expect(list(page)).toHaveCount(0);
     expect(await page.evaluate(() => (window as any).__sourceFieldGraph.getNodeData().length)).toBe(0);
     await page.getByRole("button", { name: "Genre table", exact: true }).click();
-    await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+    await tables(page).locator('[data-row-position="1"]').click();
     await reader(page).getByRole("button", { name: "show on canvas", exact: true }).click();
     const next = await records(page).first().getAttribute("data-field-record");
     expect(Number(next!.split("-")[1])).toBeGreaterThan(Number(last!.split("-")[1]));
@@ -68,7 +68,7 @@ test("O8.4 right-click takes a marked row, or every row of a table, off the canv
   test.skip(!prepared(), "Prepare pinned Chinook");
   await serveSource(UPSTREAM, async ({ origin }) => {
     await page.goto(`${origin}/source?placement=direct`); await choose(page, "MediaType");
-    for (const n of [1, 2, 3]) await tables(page).getByRole("button", { name: `Inspect row ${n}`, exact: true }).click();
+    for (const n of [1, 2, 3]) await tables(page).locator(`[data-row-position="${n}"]`).click();
     await expect(records(page)).toHaveCount(3);
     const second = tables(page).locator("tbody tr").nth(1);
     await second.click({ button: "right" });
@@ -97,7 +97,7 @@ test("O14 a foreign-key value reaches its record, World's dotted value; the refe
   test.skip(!prepared(), "Prepare pinned Chinook");
   await serveSource(UPSTREAM, async ({ origin }) => {
     await page.goto(`${origin}/source`); await choose(page, "Track");
-    await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+    await tables(page).locator('[data-row-position="1"]').click();
     const cells = reader(page).locator(".source-cells");
     // Three resolved references, three dotted values; other values stay text.
     await expect(cells.locator("button.source-reach")).toHaveCount(3);
@@ -137,7 +137,7 @@ test("O8.2 separate pushes apart only what overlaps, and undo puts it back until
   test.skip(!prepared(), "Prepare pinned Chinook");
   await serveSource(UPSTREAM, async ({ origin }) => {
     await page.goto(`${origin}/source?placement=direct`); await choose(page, "Genre");
-    for (const n of [1, 2, 3]) await tables(page).getByRole("button", { name: `Inspect row ${n}`, exact: true }).click();
+    for (const n of [1, 2, 3]) await tables(page).locator(`[data-row-position="${n}"]`).click();
     await closeCanvasDocks(page); await canvasRest(page, "source", 3);
     const ids = await records(page).evaluateAll((buttons) => buttons.map((b) => b.getAttribute("data-field-record")!));
     // Drop the second record onto the first.
@@ -170,7 +170,7 @@ test("O8.2 separate pushes apart only what overlaps, and undo puts it back until
   });
 });
 
-test("O8.6 headers sort by the database, cycle ascending, descending, off, and unsort resets", async ({ page }) => {
+test("O8.6 headers sort by the database and cycle ascending, descending, off; the footer names the order", async ({ page }) => {
   test.skip(!prepared(), "Prepare pinned Chinook");
   await serveSource(UPSTREAM, async ({ origin, requests }) => {
     await page.goto(`${origin}/source`); await choose(page, "Genre");
@@ -184,9 +184,17 @@ test("O8.6 headers sort by the database, cycle ascending, descending, off, and u
     await expect(header).toHaveAttribute("aria-sort", "descending");
     await expect(firstName()).toHaveText("World");
     expect(requests.some((u) => u.pathname.endsWith("/rows") && u.searchParams.get("order") === "Name" && u.searchParams.get("desc") === "1")).toBe(true);
-    await tables(page).getByRole("button", { name: "unsort", exact: true }).click();
+    // Named in the footer with the rows it orders, whichever columns are in view; the header's arrow is not spoken.
+    await expect(tables(page).locator(".source-pager [role=status]")).toHaveText("rows 1–25 · by Name ↓descending · end");
+    await expect(header.getByRole("button")).toHaveAccessibleName("Name");
+    await expect(header.getByRole("button")).toHaveAttribute("title", "stop sorting by Name");
+    await expect(tables(page).getByRole("button", { name: "unsort" })).toHaveCount(0);
+    // The third press undoes it.
+    await header.getByRole("button").click();
     await expect(header).not.toHaveAttribute("aria-sort");
     await expect(firstName()).toHaveText("Rock");
+    await expect(tables(page).locator("[data-sorted-by]")).toHaveCount(0);
+    await expect(header.getByRole("button")).toHaveAttribute("title", "sort by Name, ascending");
   });
 });
 
@@ -229,7 +237,7 @@ test("decision 4 (was O8.9) keeping a referencing set draws its connections; rem
   test.skip(!prepared(), "Prepare pinned Chinook");
   await serveSource(UPSTREAM, async ({ origin }) => {
     await page.goto(`${origin}/source`); await choose(page, "Album");
-    await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+    await tables(page).locator('[data-row-position="1"]').click();
     await reader(page).locator(".source-incoming").getByRole("button", { name: /^Track · AlbumId, 10 rows$/ }).click();
     // One row per page: the whole group is still the unit.
     await tables(page).getByRole("combobox", { name: "rows per page" }).selectOption("1");
@@ -264,9 +272,9 @@ test("O8.6 the catalogue searches by name and filters by placement; keep all is 
       await page.goto(`${origin}/source`);
       const shown = () => page.locator("#source-tables .source-table-list .table__row > span:first-child");
       await expect(shown()).toHaveText(["keyed", "keyed_view", "keyless"]);
-      await page.getByRole("searchbox", { name: "Search tables" }).fill("KEYED");
+      await page.getByRole("searchbox", { name: "filter tables" }).fill("KEYED");
       await expect(shown()).toHaveText(["keyed", "keyed_view"]);
-      await page.getByRole("searchbox", { name: "Search tables" }).fill("");
+      await page.getByRole("searchbox", { name: "filter tables" }).fill("");
       await page.getByRole("combobox", { name: "Canvas placement" }).selectOption("placeable");
       await expect(shown()).toHaveText(["keyed"]);
       await page.getByRole("combobox", { name: "Canvas placement" }).selectOption("other");
@@ -369,8 +377,8 @@ test("O8.10 the filter hides connections or a table's records from the drawing o
     await closeCanvasDocks(page); await canvasRest(page, "source", 3);
     const drawn = async () => { const s = await canvasState(page); return [s.nodes.length, s.edges.filter((e: any) => !e.id.startsWith("source-")).length]; };
     expect(await drawn()).toEqual([3, 2]);
-    await page.getByRole("button", { name: "filter", exact: true }).click();
-    const filter = page.getByRole("group", { name: "Filter" });
+    await page.getByRole("button", { name: "show", exact: true }).click();
+    const filter = page.getByRole("group", { name: "Show" });
     await filter.getByRole("button", { name: "connections", exact: true }).click();
     await expect.poll(drawn).toEqual([3, 0]);
     await filter.getByRole("button", { name: "Genre", exact: true }).click();
@@ -382,12 +390,12 @@ test("O8.10 the filter hides connections or a table's records from the drawing o
     await expect(page.locator(".source-restore")).toContainText("restored 3 records");
     await canvasRest(page, "source", 2);
     expect(await drawn()).toEqual([2, 0]);
-    await page.getByRole("button", { name: "filter", exact: true }).click();
-    await page.getByRole("group", { name: "Filter" }).getByRole("button", { name: "connections", exact: true }).click();
-    await page.getByRole("group", { name: "Filter" }).getByRole("button", { name: "Genre", exact: true }).click();
+    await page.getByRole("button", { name: "show", exact: true }).click();
+    await page.getByRole("group", { name: "Show" }).getByRole("button", { name: "connections", exact: true }).click();
+    await page.getByRole("group", { name: "Show" }).getByRole("button", { name: "Genre", exact: true }).click();
     await expect.poll(drawn).toEqual([3, 2]);
     // The summary closes what it pinned, though the pointer is still on it.
-    const summary = page.getByRole("button", { name: "filter", exact: true });
+    const summary = page.getByRole("button", { name: "show", exact: true });
     await summary.click();
     await expect(summary).toHaveAttribute("aria-expanded", "false");
   });
@@ -416,7 +424,7 @@ test("O8.12 the schema is the empty canvas's screen, as World's vocabulary: ever
     await page.keyboard.press("Delete");
     expect(await page.evaluate(() => (window as any).__sourceSchemaGraph.getNodeData().length)).toBe(11);
     // The first record placed takes the canvas; the schema waits behind its button.
-    await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+    await tables(page).locator('[data-row-position="1"]').click();
     await expect(records(page)).toHaveCount(1);
     await expect(schema).toHaveClass(/is-parked/);
     await expect(page.locator(".product-shell__top")).toBeVisible();
@@ -473,8 +481,8 @@ test("O12 the schema looks like World's: a fixed alphabetical ring, fitted, inve
     // Names are on by default (the owner, 2026-10-25); World's toggle turns them off, and that is kept.
     const named = () => page.evaluate(() => (window as any).__sourceSchemaGraph.getEdgeData().filter((e: any) => e.id.startsWith("declaration:") && e.style.labelOpacity === 1).length);
     await expect.poll(named).toBeGreaterThanOrEqual(10);
-    await page.getByRole("button", { name: "filter", exact: true }).click();
-    const names = page.getByRole("group", { name: "Filter" }).getByRole("button", { name: "names", exact: true });
+    await page.getByRole("button", { name: "show", exact: true }).click();
+    const names = page.getByRole("group", { name: "Show" }).getByRole("button", { name: "names", exact: true });
     await expect(names).toHaveAttribute("aria-pressed", "true");
     await names.click();
     await expect(names).toHaveAttribute("aria-pressed", "false");
@@ -491,7 +499,7 @@ test("O12 the schema looks like World's: a fixed alphabetical ring, fitted, inve
     expect(await named()).toBe(0);
     // A placed record takes the canvas, and the field its own palette back.
     await choose(page, "Genre");
-    await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+    await tables(page).locator('[data-row-position="1"]').click();
     await expect(records(page)).toHaveCount(1);
     await expect.poll(async () => (await tokens())[1]).toBe("");
   });
@@ -521,7 +529,7 @@ test("O17 a record is named by the column its table's header names it by, or by 
   test.skip(!prepared(), "Prepare pinned Chinook");
   await serveSource(UPSTREAM, async ({ origin, requests }) => {
     await page.goto(`${origin}/source`); await choose(page, "Track");
-    await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+    await tables(page).locator('[data-row-position="1"]').click();
     await canvasRest(page, "source", 1);
     const discs = async () => (await canvasState(page)).nodes.map((n: any) => n.style.labelText.replace(/\s+/g, " "));
     expect(await discs()).toEqual(["Track 1"]);
@@ -541,7 +549,7 @@ test("O17 a record is named by the column its table's header names it by, or by 
     await expect(reader(page).locator("h2")).toHaveAccessibleName(/^Track\s*, TrackId=1$/);
     // An empty value falls back to the key: Track 2 has no Composer.
     await picker.selectOption("Composer");
-    await tables(page).getByRole("button", { name: "Inspect row 2", exact: true }).click();
+    await tables(page).locator('[data-row-position="2"]').click();
     await expect(records(page)).toHaveText(["Angus Young, Malcolm Young, Brian Johnson", "Track 2"]);
     // Find calls a record by the same name.
     await picker.selectOption("Name");
@@ -551,7 +559,7 @@ test("O17 a record is named by the column its table's header names it by, or by 
     await finder.fill("");
     // A composite key keeps its column names.
     await choose(page, "PlaylistTrack");
-    await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+    await tables(page).locator('[data-row-position="1"]').click();
     await expect(records(page).last()).toHaveText(/^PlaylistTrack PlaylistId=\d+; TrackId=\d+$/);
     // The choice is kept for this capture.
     await page.waitForTimeout(400);

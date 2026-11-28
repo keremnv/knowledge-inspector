@@ -39,7 +39,7 @@ for (const motion of ["reduce", "no-preference"] as const) {
         await shot(page, `${width}-schema-${motion}`);
         const input = tables(page).getByRole('searchbox');
         await input.fill('Evil Walks'); await input.press('Enter');
-        await tables(page).getByRole('button', { name: 'Inspect row 1', exact: true }).press('Enter');
+        await tables(page).locator('[data-row-position="1"]').press('Enter');
         await expect(reader(page).locator('h2')).toHaveAccessibleName(/^Track\s*, TrackId=10$/);
         await expect(reader(page).locator('h2')).toBeFocused();
         await expect(reader(page).locator('.source-cells')).toContainText('Evil Walks');
@@ -89,7 +89,7 @@ for (const motion of ["reduce", "no-preference"] as const) {
         await expect(tables(page).locator('h2')).toHaveText('tables');
         await tables(page).getByRole('button', { name: 'Back', exact: true }).press('Enter');
         await expect(input).toHaveValue('Evil Walks');
-        await expect(tables(page).getByRole('button', { name: 'Inspect row 1', exact: true })).toHaveAttribute('aria-pressed', 'true');
+        await expect(tables(page).locator('[data-row-position="1"]')).toHaveAttribute('aria-pressed', 'true');
         await expect(reader(page).locator('h2')).toHaveAccessibleName(/^Track\s*, TrackId=10$/);
         await expect(field(page).locator('[data-field-record]')).toHaveCount(2);
         await shot(page, `${width}-back-${motion}`);
@@ -125,7 +125,7 @@ CREATE TABLE Dangling(id INTEGER PRIMARY KEY,p REFERENCES Parent(id)); INSERT IN
         await page.goto(`${origin}/source?placement=explicit`);
         for (const [table, limitation] of [['Keyless','no primary key'],['Nullable','primary key contains NULL'],['BlobKey','key type unsupported']]) {
           await chooseSourceTable(page, table);
-          await tables(page).getByRole('button', { name: 'Inspect row 1', exact: true }).press('Enter');
+          await tables(page).locator('[data-row-position="1"]').press('Enter');
           await expect(reader(page).locator('.source-placement--unavailable')).toContainText(limitation);
           await expect(reader(page).locator('[data-placement="show"]')).toHaveCount(0);
           await expect(reader(page).locator('.source-cells')).toBeVisible();
@@ -146,7 +146,7 @@ CREATE TABLE Dangling(id INTEGER PRIMARY KEY,p REFERENCES Parent(id)); INSERT IN
         }
         expect(requests.some((url) => url.pathname.endsWith('/record'))).toBe(false);
         await chooseSourceTable(page, 'Dangling');
-        await tables(page).getByRole('button', { name: 'Inspect row 1', exact: true }).press('Enter');
+        await tables(page).locator('[data-row-position="1"]').press('Enter');
         await openSourceReferences(page); await reader(page).getByRole('button', { name: 'inspect FK 0 reference' }).press('Enter');
         await expect(reader(page).locator('[data-reference-status]')).toHaveText('no matching record in this capture');
         await expect(reader(page).getByRole('button', { name: /, the record this references$/ })).toHaveCount(0);
@@ -178,11 +178,11 @@ for (const motion of ["reduce", "no-preference"] as const) {
       await tables(page).locator('[data-catalogue]').press('Enter');
       await tables(page).getByRole('button', { name: 'Track table', exact: true }).press('Enter');
       await expect(tables(page).locator('h2')).toBeFocused();
-      await tables(page).getByRole('button', { name: 'Inspect row 10', exact: true }).press('Enter');
+      await tables(page).locator('[data-row-position="10"]').press('Enter');
       await expect(reader(page).locator('h2')).toHaveAccessibleName(/^Track\s*, TrackId=10$/);
       await expect(reader(page).locator('h2')).toBeFocused();
       await page.keyboard.press('Escape');
-      await expect(tables(page).getByRole('button', { name: 'Inspect row 10', exact: true })).toBeFocused();
+      await expect(tables(page).locator('[data-row-position="10"]')).toBeFocused();
       await tables(page).locator('[data-catalogue]').press('Enter');
       await tables(page).getByRole('button', { name: 'Album table', exact: true }).press('Enter');
       await expect(reader(page).locator('h2')).toBeFocused();
@@ -192,7 +192,7 @@ for (const motion of ["reduce", "no-preference"] as const) {
       await tables(page).getByRole('button', { name: 'Back', exact: true }).press('Enter');
       await expect(tables(page).locator('h2')).toHaveText('Track');
       await expect(tables(page).locator('h2')).toBeFocused();
-      await expect(tables(page).getByRole('button', { name: 'Inspect row 10', exact: true })).toHaveAttribute('aria-pressed', 'true');
+      await expect(tables(page).locator('[data-row-position="10"]')).toHaveAttribute('aria-pressed', 'true');
     });
   });
 }

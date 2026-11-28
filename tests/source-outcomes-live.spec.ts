@@ -37,7 +37,7 @@ async function fixture(sql: string, use: (db: string) => Promise<void>, items = 
 async function openParent(page: Page, origin: string, row = 1) {
   await page.goto(`${origin}/source`);
   await choose(page, "parent");
-  await tables(page).getByRole("button", { name: `Inspect row ${row}`, exact: true }).click();
+  await tables(page).locator(`[data-row-position="${row}"]`).click();
   await expect(reader(page).locator("h2")).toHaveAccessibleName(new RegExp(`id=${row}$`));
 }
 
@@ -110,9 +110,9 @@ test("keeping a set whose records are already on the canvas says so", async ({ p
   await fixture(SQL, async (db) => serveSource(db, async ({ origin }) => {
     await openParent(page, origin);
     await choose(page, "note");
-    for (const row of [1, 2]) await tables(page).getByRole("button", { name: `Inspect row ${row}`, exact: true }).click();
+    for (const row of [1, 2]) await tables(page).locator(`[data-row-position="${row}"]`).click();
     await choose(page, "parent");
-    await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+    await tables(page).locator('[data-row-position="1"]').click();
     await openSet(page, /^note · parent_id, 3 rows$/);
     await keep(page).click();
     await expect(outcomeOf(page)).toHaveText("kept 1 · 2 already on the canvas");
@@ -146,7 +146,7 @@ test("an invalid declaration is explained in plain words where it is listed", as
     INSERT INTO stat VALUES (1, 1, 7);`, async (db) => serveSource(db, async ({ origin }) => {
     await page.goto(`${origin}/source`);
     await choose(page, "team");
-    await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+    await tables(page).locator('[data-row-position="1"]').click();
     const limit = reader(page).locator(".source-incoming [data-declaration-limit]");
     await expect(limit).toContainText("This foreign key references columns that do not uniquely identify a parent record.");
     await expect(limit).toContainText("parent_key_not_eligible_unique_constraint");

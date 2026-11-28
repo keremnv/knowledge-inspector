@@ -87,7 +87,7 @@ test("a row chosen from a set draws its connection to the set's parent, even aft
     await incoming(page).getByRole("button", { name: /^evidence · finding, 2 rows$/ }).click();
     await expect(tables(page).locator("[data-incoming-subject]")).toContainText("2 rows referencing");
     await expect(reader(page).locator("h2")).toHaveText("finding");
-    await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+    await tables(page).locator('[data-row-position="1"]').click();
     await expect(reader(page).locator("h2")).toHaveText("evidence");
     await expect(connections(page)).toHaveCount(1);
     // Wander off in the Reader: follow the holder to another finding.
@@ -95,7 +95,7 @@ test("a row chosen from a set draws its connection to the set's parent, even aft
     await expect(reader(page).locator("h2")).toHaveText("finding");
     const before = await connections(page).count();
     // The set is still on the left: its next row is drawn to F1, not to the finding on show.
-    await tables(page).getByRole("button", { name: "Inspect row 2", exact: true }).click();
+    await tables(page).locator('[data-row-position="2"]').click();
     await expect(connections(page)).toHaveCount(before + 1);
     const names = await connections(page).allTextContents();
     expect(names.filter((name) => /F3/.test(name) && /F1/.test(name))).toHaveLength(1);

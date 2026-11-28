@@ -45,11 +45,11 @@ for (const motion of ["reduce", "no-preference"] as const) {
       for (const text of ["MediaTypeId → MediaType.MediaTypeId", "GenreId → Genre.GenreId", "AlbumId → Album.AlbumId"]) {
         await expect(reader(page).getByText(text, { exact: true })).toBeVisible();
       }
-      await expect(tables(page).getByRole("button", { name: "Inspect row 10", exact: true })).toBeVisible();
+      await expect(tables(page).locator('[data-row-position="10"]')).toBeVisible();
       if (process.env.KI_SOURCE_SHOTS && motion === "reduce") await captureSettledSource(page, "track-schema.png");
-      const row = tables(page).getByRole("row").filter({ has: page.getByRole("button", { name: "Inspect row 10", exact: true }) });
+      const row = tables(page).getByRole("row").filter({ has: page.locator('[data-row-position="10"]') });
       await expect(row).toContainText("Evil Walks");
-      await tables(page).getByRole("button", { name: "Inspect row 10", exact: true }).focus();
+      await tables(page).locator('[data-row-position="10"]').focus();
       await page.keyboard.press("Enter");
       await expect(reader(page).locator("h2")).toBeFocused();
       await expect(reader(page).locator(".source-cells").getByText("Evil Walks", { exact: true })).toBeVisible();
@@ -75,22 +75,22 @@ for (const motion of ["reduce", "no-preference"] as const) {
       await expect(tables(page).getByRole("row").first()).toContainText("AlbumId");
       await choose(page, "Track");
       await expect(reader(page)).not.toContainText("Evil Walks");
-      await expect(tables(page).getByRole("button", { name: "Inspect row 10", exact: true })).toHaveAttribute("aria-pressed", "false");
-      await tables(page).getByRole("button", { name: "Inspect row 10", exact: true }).click();
+      await expect(tables(page).locator('[data-row-position="10"]')).toHaveAttribute("aria-pressed", "false");
+      await tables(page).locator('[data-row-position="10"]').click();
       await expect(reader(page)).toContainText("Evil Walks");
       await choose(page, "PlaylistTrack");
       await expect(reader(page).getByText("key · PlaylistId + TrackId", { exact: true })).toBeVisible();
-      await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+      await tables(page).locator('[data-row-position="1"]').click();
       await expect(reader(page).locator(".source-cells dt")).toHaveText(["PlaylistIdkey", "TrackIdkey"]);
       await expect(reader(page).locator(".world-reader__heading > p")).toHaveText("PlaylistId=1; TrackId=1");
       // Closing the reader from the keyboard returns to the selected row.
       await reader(page).getByRole("button", { name: "close", exact: true }).focus();
       await page.keyboard.press("Enter");
-      await expect(tables(page).getByRole("button", { name: "Inspect row 1", exact: true })).toBeFocused();
-      await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).press("Enter");
+      await expect(tables(page).locator('[data-row-position="1"]')).toBeFocused();
+      await tables(page).locator('[data-row-position="1"]').press("Enter");
       await expect(reader(page).locator("h2")).toBeFocused();
       await page.keyboard.press("Escape");
-      await expect(tables(page).getByRole("button", { name: "Inspect row 1", exact: true })).toBeFocused();
+      await expect(tables(page).locator('[data-row-position="1"]')).toBeFocused();
       const reads = requests.filter((url) => !url.pathname.endsWith("/session"));
       expect(reads.length).toBeGreaterThan(10);
       const session = reads[0].searchParams.get("session");
@@ -108,7 +108,7 @@ for (const motion of ["reduce", "no-preference"] as const) {
       if (process.env.KI_SOURCE_SHOTS) {
         await mkdir(process.env.KI_SOURCE_SHOTS, { recursive: true });
         await choose(page, "Track");
-        await tables(page).getByRole("button", { name: "Inspect row 10", exact: true }).click();
+        await tables(page).locator('[data-row-position="10"]').click();
         await expect(reader(page)).toContainText("Evil Walks");
         await captureSettledSource(page, `j0-${motion}.png`);
       }
@@ -148,23 +148,23 @@ test("real fixture: empty, keyless, mixed values, generated columns, invalid and
     // TEXT is shown as its characters: the empty TEXT is marked "empty", and the TEXT "NULL" is told from NULL by its storage class.
     for (const [index, text, storage] of [[1, "NULL", "null"], [2, "empty", "text"], [3, "NULL", "text"], [4, "9223372036854775807", "integer"],
       [5, "0.1", "real"], [6, "BLOB · 2 bytes · preview only", "blob"]] as const) {
-      await tables(page).getByRole("button", { name: `Inspect row ${index}`, exact: true }).click();
+      await tables(page).locator(`[data-row-position="${index}"]`).click();
       await expect(reader(page).locator(".source-cells code").first()).toHaveText(text);
       await expect(reader(page).locator(".source-cells .source-value").first()).toHaveClass(new RegExp(`source-value--${storage}(\\s|$)`));
       await expect(reader(page)).toContainText("No registered source handle");
     }
     await expect(reader(page)).toContainText("not a complete recoverable value");
     expect(requests.filter((url) => url.pathname.endsWith("/record"))).toHaveLength(0);
-    await tables(page).getByRole("button", { name: "Inspect row 5", exact: true }).click();
+    await tables(page).locator('[data-row-position="5"]').click();
     await expect(reader(page)).toContainText("3fb999999999999a");
     await choose(page, "Generated");
     await expect(reader(page)).toContainText("generated VIRTUAL");
     await expect(reader(page)).toContainText("generated STORED");
-    await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+    await tables(page).locator('[data-row-position="1"]').click();
     await expect(reader(page)).toContainText('"item-1"');
     await choose(page, "BlobKey");
     await expect(tables(page)).toContainText("key type unsupported");
-    await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+    await tables(page).locator('[data-row-position="1"]').click();
     await expect(reader(page)).toContainText("No registered source handle");
     await choose(page, "Nullable");
     await expect(tables(page)).toContainText("primary key contains NULL");
@@ -182,7 +182,7 @@ test("real fixture: empty, keyless, mixed values, generated columns, invalid and
     await expect(reader(page)).toContainText("computed view output");
     await reader(page).getByText("schema details", { exact: true }).click();
     await expect(reader(page).locator("pre")).toContainText("CREATE VIEW Computed AS SELECT v FROM Keyless");
-    await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+    await tables(page).locator('[data-row-position="1"]').click();
     await expect(reader(page)).toContainText("this page only");
   }));
 });
@@ -192,7 +192,7 @@ test("real fixture: verification budget preserves readable table-window rows", a
     await page.goto(`${origin}/source`);
     await choose(page, "Paged");
     await expect(tables(page)).toContainText("key verification incomplete");
-    await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+    await tables(page).locator('[data-row-position="1"]').click();
     await expect(reader(page)).toContainText("No registered source handle");
   }, { verify_rows: 1 }));
 });
@@ -220,7 +220,7 @@ test("real Chinook view copy stays computed and table-only", async ({ page }) =>
     await page.goto(`${origin}/source`);
     await tables(page).getByRole("button", { name: "InvoiceLineCustomer view", exact: true }).click();
     await expect(tables(page)).toContainText("computed view output");
-    await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+    await tables(page).locator('[data-row-position="1"]').click();
     await expect(reader(page)).toContainText("this page only");
   });
 });
@@ -231,7 +231,7 @@ test("source docks remain usable on a narrow dark desktop", async ({ page }) => 
   await fixture(async (db) => serveSource(db, async ({ origin }) => {
     await page.goto(`${origin}/source`);
     await choose(page, "Generated");
-    await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+    await tables(page).locator('[data-row-position="1"]').click();
     await expect(reader(page)).toContainText('"item-1"');
     await settleSourceDocks(page);
     const boxes = await page.locator(".ov.is-open .ov__body").evaluateAll((nodes) => nodes.map((node) => {
@@ -244,7 +244,7 @@ test("source docks remain usable on a narrow dark desktop", async ({ page }) => 
     await expect(page.locator("main.source-workspace")).toHaveClass(/is-dark/);
     await reader(page).getByRole("button", { name: "close", exact: true }).focus();
     await page.keyboard.press("Enter");
-    await expect(tables(page).getByRole("button", { name: "Inspect row 1", exact: true })).toBeFocused();
+    await expect(tables(page).locator('[data-row-position="1"]')).toBeFocused();
   }));
 });
 
@@ -255,7 +255,7 @@ for (const motion of ["reduce", "no-preference"] as const) {
       await page.goto(`${origin}/source`);
       for (const table of ["Generated", "Paged", "Generated"]) {
         await choose(page, table);
-        await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+        await tables(page).locator('[data-row-position="1"]').click();
         await expect(reader(page).locator(".world-reader__heading > p")).toHaveText("id=1");
         await expect(reader(page).locator(".source-cells code").first()).toHaveText("1");
         await expect(page.locator(".motion-swap__was")).toHaveCount(0);

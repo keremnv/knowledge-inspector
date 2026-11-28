@@ -27,7 +27,7 @@ async function fixture(use: (db: string) => Promise<void>) {
 }
 async function openParent(p: Page, origin: string) {
   await p.goto(`${origin}/source?placement=explicit`); await choose(p, "parent");
-  await tables(p).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+  await tables(p).locator('[data-row-position="1"]').click();
   await expect(incoming(p).locator("h3")).toHaveText("referenced by");
 }
 
@@ -49,7 +49,7 @@ test("a spent page budget is named per group, never zero, and every group stays 
     await expect(incoming(page).locator("[data-discovery]")).toHaveCount(0);
     await incoming(page).locator(".gm__list li button").nth(5).click();
     await expect(tables(page).locator("[data-incoming-subject]")).toHaveText("rows referencing parent 1 through c · count not checked · page limit reached");
-    await expect(tables(page).getByRole("button", { name: "Inspect row 50", exact: true })).toBeVisible();
+    await expect(tables(page).locator('[data-row-position="50"]')).toBeVisible();
     expect(await captureFingerprint()).toEqual(capture);
   }));
 });
@@ -84,7 +84,7 @@ test("admission overload is a recoverable busy refusal: the field stays and try 
     const otherRows = () => requests.filter((url) => url.pathname.endsWith("/rows") && url.searchParams.get("table") === "other").length;
     expect(otherRows()).toBe(1);
     await tables(page).getByRole("button", { name: "try again", exact: true }).click();
-    await expect(tables(page).getByRole("button", { name: "Inspect row 1", exact: true })).toBeVisible();
+    await expect(tables(page).locator('[data-row-position="1"]')).toBeVisible();
     expect(otherRows()).toBe(2);
     await expect(list(page).locator("[data-field-record]")).toHaveText(["parent 1"]);
   }, { vm_steps: 1e12 }));

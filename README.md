@@ -18,7 +18,7 @@ The motivation is to support people in developing their own understanding throug
 
 ## How it works
 
-With [Chinook open](#installation-and-quickstart), the initial view shows its schema and table catalogue. In each table’s header, choose `name by`: use `Name` for Track, Artist and Genre, and `Title` for Album. These choices affect labels; verified keys remain the identities.
+With [Chinook open](#installation-and-quickstart), the initial view shows its schema and table catalogue. In the bar under each table’s rows, choose `name by`: use `Name` for Track, Artist and Genre, and `Title` for Album. These choices affect labels; verified keys remain the identities.
 
 Then build a small investigation:
 

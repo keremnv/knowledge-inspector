@@ -27,7 +27,7 @@ async function holdNext(page: Page, endpoint: string) {
 async function track(page: Page, origin: string) {
   await page.goto(`${origin}/source?placement=explicit`);
   await chooseSourceTable(page, "Track");
-  await page.locator('#source-tables .motion-swap__is').getByRole("button", { name: "Inspect row 10", exact: true }).press("Enter");
+  await page.locator('#source-tables .motion-swap__is').locator('[data-row-position="10"]').press("Enter");
   await expect(reader(page).locator(".source-outgoing")).toContainText("→ Album");
   await expect(page.locator(".motion-swap__was")).toHaveCount(0);
   await settleSourceDocks(page);
@@ -54,7 +54,7 @@ for (const reducedMotion of ["reduce", "no-preference"] as const) {
         await page.goto(`${origin}/source`);
         await chooseSourceTable(page, "Track");
         const references = await holdNext(page, "references"); release = references.release;
-        await page.getByRole("button", { name: "Inspect row 10", exact: true }).press("Enter");
+        await page.locator('[data-row-position="10"]').press("Enter");
         await references.received;
         const anchor = details(page, "identity details").locator("summary");
         await anchor.press("Enter");

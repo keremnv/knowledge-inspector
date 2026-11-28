@@ -45,7 +45,7 @@ async function exactKey(p: Page, table: string, column: string, value: string) {
   await tables(p).getByRole("combobox", { name: "lookup mode" }).selectOption("primary_key");
   await tables(p).getByRole("textbox", { name: `exact ${column}`, exact: true }).fill(value);
   await tables(p).getByRole("button", { name: "look up", exact: true }).click();
-  await tables(p).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+  await tables(p).locator('[data-row-position="1"]').click();
   await expect(reader(p).locator("h2")).toHaveAccessibleName(new RegExp(`${column}=${value}$`));
 }
 /** Every disc and every drawn line, by label, in canvas units. */
@@ -83,7 +83,7 @@ test("I2: a line passing beneath an unrelated answer is drawn through it, and it
     await tables(page).getByRole("combobox", { name: "search columns" }).selectOption('"Title"');
     await tables(page).getByRole("searchbox", { name: "filter posts", exact: true }).fill("lasso vs ridge");
     await tables(page).getByRole("searchbox", { name: "filter posts", exact: true }).press("Enter");
-    await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+    await tables(page).locator('[data-row-position="1"]').click();
     await expect(records(page)).toHaveCount(1);
     await expand(page, /^posts · ParentId, 3 rows, place on the canvas$/);
     await expect(records(page)).toHaveCount(4);
@@ -195,7 +195,7 @@ test("Chinook: placing, following and hiding are unchanged; a connection is name
   await serveSource(UPSTREAM, async ({ origin }) => {
     await page.goto(`${origin}/source`);
     await choose(page, "Track");
-    await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+    await tables(page).locator('[data-row-position="1"]').click();
     await follow(page, "AlbumId", "Album");
     await openMark(page, "Track 1");
     await follow(page, "GenreId", "Genre");

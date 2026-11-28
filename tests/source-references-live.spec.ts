@@ -43,7 +43,7 @@ for (const motion of ["reduce", "no-preference"] as const) {
       await page.goto(`${origin}/source?placement=explicit`); await choose(page, "Track");
       await tables(page).getByRole("searchbox").fill("Evil Walks");
       await tables(page).getByRole("searchbox").press("Enter");
-      await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).press("Enter");
+      await tables(page).locator('[data-row-position="1"]').press("Enter");
       await expect(reader(page).locator("h2")).toHaveAccessibleName(/TrackId=10$/);
       await expect(reader(page).locator("details.source-references > summary")).toHaveText("references");
       await expect(reader(page).locator(".source-outgoing article")).toHaveCount(3);
@@ -55,7 +55,7 @@ for (const motion of ["reduce", "no-preference"] as const) {
       await expect(reader(page).locator("h2")).toHaveAccessibleName(/AlbumId=1$/);
       await expect(reader(page).locator(".source-cells")).toContainText("For Those About To Rock");
       await expect(tables(page).getByRole("searchbox")).toHaveValue("Evil Walks");
-      await expect(tables(page).getByRole("button", { name: "Inspect row 1", exact: true })).toHaveAttribute("aria-pressed", "true");
+      await expect(tables(page).locator('[data-row-position="1"]')).toHaveAttribute("aria-pressed", "true");
       await expect(tables(page).locator("h2")).toHaveText("Track");
       await expect(page.locator(".source-canvas > .source-layer:not(.source-schema) canvas")).toHaveCount(0);
       await reader(page).getByRole("button", { name: "Back", exact: true }).press("Enter");
@@ -78,7 +78,7 @@ for (const motion of ["reduce", "no-preference"] as const) {
       await shot(page, `multiple-${motion}.png`);
       // A selectable filament exposes the exact observation, also from keyboard controls.
       await list(page).locator("[data-field-reference]").filter({ hasText: "→ Album" }).press("Enter");
-      await expect(tables(page).getByRole("button", { name: "Inspect row 1", exact: true })).toHaveAttribute("aria-pressed", "true");
+      await expect(tables(page).locator('[data-row-position="1"]')).toHaveAttribute("aria-pressed", "true");
       await expect(reader(page)).toContainText("so1:");
       await expect(reader(page)).toContainText("sf1:");
       await shot(page, `selected-evidence-${motion}.png`);
@@ -136,7 +136,7 @@ for (const motion of ["reduce", "no-preference"] as const) {
     await page.emulateMedia({ reducedMotion: motion });
     await serveSource(UPSTREAM, async ({ origin }) => {
       await page.goto(`${origin}/source`); await choose(page, "PlaylistTrack");
-      await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+      await tables(page).locator('[data-row-position="1"]').click();
       await inspect(page, "Playlist"); await reader(page).getByRole("button", { name: /^(show|reveal) connection$/ }).click();
       await reader(page).getByRole("button", { name: "Back", exact: true }).click();
       await inspect(page, "Track"); await reader(page).getByRole("button", { name: /^(show|reveal) connection$/ }).click();
@@ -174,7 +174,7 @@ test(`J2-D real HTTP shared parent and parallel observations hide independently,
   await page.emulateMedia({ reducedMotion: motion });
   await fixture((db) => serveSource(db, async ({ origin }) => {
     await page.goto(`${origin}/source`); await choose(page, "Child");
-    await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+    await tables(page).locator('[data-row-position="1"]').click();
     for (const fk of [0, 1]) {
       await openSourceReferences(page); await reader(page).getByRole("button", { name: `inspect FK ${fk} reference` }).click();
       await reader(page).getByRole("button", { name: /^(show|reveal) connection$/ }).click();
@@ -183,7 +183,7 @@ test(`J2-D real HTTP shared parent and parallel observations hide independently,
     await settle(page, 2, 2);
     expect((await drawn(page)).edges.map((e: any) => e.type)).toEqual(["world-filament", "world-filament"]);
     await shot(page, `parallel-${motion}.png`);
-    await tables(page).getByRole("button", { name: "Inspect row 2", exact: true }).click();
+    await tables(page).locator('[data-row-position="2"]').click();
     await openSourceReferences(page); await reader(page).getByRole("button", { name: "inspect FK 1 reference" }).click();
     await reader(page).getByRole("button", { name: /^(show|reveal) connection$/ }).click();
     await settle(page, 3, 3);
@@ -201,7 +201,7 @@ test(`J2-D real HTTP shared parent and parallel observations hide independently,
     await settle(page, 3, 0);
     await expect(list(page).locator("[data-field-record]")).toHaveText(["Child 1", "Parent 10", "Child 2"]);
     await shot(page, `hidden-connections-records-stand-${motion}.png`);
-    await choose(page, "Self"); await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+    await choose(page, "Self"); await tables(page).locator('[data-row-position="1"]').click();
     await inspect(page, "Self"); await reader(page).getByRole("button", { name: /^(show|reveal) connection$/ }).click();
     await settle(page, 4, 1); const edge = (await drawn(page)).edges[0]; expect(edge.source).toBe(edge.target);
     await shot(page, `self-${motion}.png`);
@@ -219,7 +219,7 @@ test("J2-E real HTTP nullable composite, dangling, invalid, unsupported and unad
   await fixture((db) => serveSource(db, async ({ origin }) => {
     await page.goto(`${origin}/source?placement=explicit`);
     for (const [table, status] of [["Nullable", "null_reference"], ["Dangling", "dangling"], ["Invalid", "invalid_declaration"], ["Unsupported", "unsupported"], ["Unaddressable", "resolved_unaddressable"], ["CustomUnsupported", "unsupported"], ["Budget", "budget_exceeded"]]) {
-      await choose(page, table); await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+      await choose(page, table); await tables(page).locator('[data-row-position="1"]').click();
       await openSourceReferences(page); await reader(page).getByRole("button", { name: "inspect FK 0 reference" }).click();
       await expect(reader(page).locator("[data-reference-status]")).toHaveAttribute("data-reference-status", status);
       await expect(reader(page).getByRole("button", { name: /^(show|reveal) connection$/ })).toHaveCount(0);
@@ -227,7 +227,7 @@ test("J2-E real HTTP nullable composite, dangling, invalid, unsupported and unad
       if (table === "Nullable") { await expect(reader(page).locator("tbody tr")).toHaveCount(2); await expect(reader(page)).toContainText("SQLite NULL"); }
     }
     await expect(page.locator(".source-canvas > .source-layer:not(.source-schema) canvas")).toHaveCount(0);
-    await choose(page, "CompositeResolved"); await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+    await choose(page, "CompositeResolved"); await tables(page).locator('[data-row-position="1"]').click();
     await inspect(page, "Composite");
     await expect(reader(page).locator("tbody tr")).toHaveCount(2);
     await reader(page).getByRole("button", { name: /^(show|reveal) connection$/ }).click();

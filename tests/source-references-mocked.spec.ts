@@ -33,7 +33,7 @@ async function mock(p: Page, observations: SourceFKObservation[] = [observation(
 // placement becoming the default (owner decision O1).
 async function start(p: Page, search = "?placement=explicit") {
   await p.goto(`/source${search}`); await tables(p).getByRole("button", { name: "Child table", exact: true }).click();
-  await tables(p).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+  await tables(p).locator('[data-row-position="1"]').click();
   await openSourceReferences(p); await expect(reader(p).getByRole("button", { name: "inspect FK 0 reference", exact: true })).toBeVisible();
 }
 for (const motion of ["reduce", "no-preference"] as const) {
@@ -50,7 +50,7 @@ for (const motion of ["reduce", "no-preference"] as const) {
       await openSourceReferences(page); await reader(page).getByRole("button", { name: "inspect FK 11 reference" }).press("Enter");
       await reader(page).getByRole("button", { name: "Back", exact: true }).press("Enter");
       await expect(reader(page).locator(".source-outgoing article")).toHaveCount(12);
-      await tables(page).getByRole("button", { name: "Inspect row 2", exact: true }).click();
+      await tables(page).locator('[data-row-position="2"]').click();
       // No declared references: silent.
       await expect(reader(page).locator(".source-outgoing")).toBeAttached();
       await expect(reader(page).locator(".source-outgoing article")).toHaveCount(0);
@@ -86,11 +86,11 @@ for (const motion of ["reduce", "no-preference"] as const) {
           return true;
         });
         await page.goto("/source?placement=explicit"); await tables(page).getByRole("button", { name: "Child table", exact: true }).click();
-        await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+        await tables(page).locator('[data-row-position="1"]').click();
         if (operation !== "references") { await openSourceReferences(page); await reader(page).getByRole("button", { name: "inspect FK 0 reference" }).click(); }
         if (operation === "parent") await reader(page).getByRole("button", { name: /, the record this references$/ }).click();
         await started.promise;
-        await tables(page).getByRole("button", { name: "Inspect row 2", exact: true }).click();
+        await tables(page).locator('[data-row-position="2"]').click();
         await expect(reader(page).locator("h2")).toHaveAccessibleName("Child, id=2");
         release.resolve(); await complete.promise;
         await expect(reader(page).locator("h2")).toHaveAccessibleName("Child, id=2");
@@ -275,7 +275,7 @@ test.describe("individual canvas membership", () => {
     await mock(page, [observation(), observation(secondChild)]); await start(page);
     await openSourceReferences(page); await reader(page).getByRole("button", { name: "inspect FK 0 reference" }).click();
     await reader(page).getByRole("button", { name: "show connection" }).click();
-    await tables(page).getByRole("button", { name: "Inspect row 2", exact: true }).click();
+    await tables(page).locator('[data-row-position="2"]').click();
     await openSourceReferences(page); await reader(page).getByRole("button", { name: "inspect FK 0 reference" }).click();
     await reader(page).getByRole("button", { name: "show connection" }).click();
     await expect(names(page)).toHaveText(["Child 1", "Parent 10", "Child 2"]);
@@ -294,11 +294,11 @@ test.describe("individual canvas membership", () => {
 
   test("a previously visited endpoint keeps its mark, and closing the Reader removes nothing", async ({ page }) => {
     await mock(page); await page.goto("/source?placement=explicit"); await choose(page, "Parent");
-    await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+    await tables(page).locator('[data-row-position="1"]').click();
     await reader(page).getByRole("button", { name: "show on canvas", exact: true }).click();
     const visited = await names(page).getAttribute("data-field-record");
     await choose(page, "Child");
-    await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+    await tables(page).locator('[data-row-position="1"]').click();
     await openSourceReferences(page); await reader(page).getByRole("button", { name: "inspect FK 0 reference" }).click();
     await reader(page).getByRole("button", { name: "show connection" }).click();
     await expect(names(page)).toHaveText(["Parent 10", "Child 1"]);

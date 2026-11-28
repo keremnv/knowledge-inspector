@@ -15,7 +15,7 @@ test("a service that stops answering mid-session says so, changes nothing, and c
   let down = false;
   await mock(page, (route, url) => down && url.pathname.endsWith("/rows") ? route.abort("connectionrefused").then(() => true) : false);
   await open(page);
-  await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+  await tables(page).locator('[data-row-position="1"]').click();
   await reader(page).getByRole("button", { name: "show on canvas", exact: true }).click();
   await expect(field(page)).toHaveCount(1);
   down = true;
@@ -32,7 +32,7 @@ test("a service that stops answering mid-session says so, changes nothing, and c
   for (let i = 0; i < 30 && !(await retry.evaluate((el) => el === document.activeElement)); i++) await page.keyboard.press("Tab");
   await expect(retry).toBeFocused();
   await page.keyboard.press("Enter");
-  await expect(tables(page).getByRole("button", { name: "Inspect row 1", exact: true })).toBeVisible();
+  await expect(tables(page).locator('[data-row-position="1"]')).toBeVisible();
   await expect(tables(page).getByRole("alert")).toHaveCount(0);
 });
 
@@ -44,7 +44,7 @@ test("a server error offers try again; nothing is claimed about the capture", as
   await expect(page.getByRole("heading", { name: "source reads stopped" })).toHaveCount(0);
   fail = false;
   await tables(page).getByRole("button", { name: "try again", exact: true }).click();
-  await expect(tables(page).getByRole("button", { name: "Inspect row 1", exact: true })).toBeVisible();
+  await expect(tables(page).locator('[data-row-position="1"]')).toBeVisible();
 });
 
 test("a filter over its query budget says how to narrow it, offers no blind retry, and claims no absence", async ({ page }) => {
@@ -64,7 +64,7 @@ test("a lost context stops every read, clears the canvas, and says what to do by
   let lost = false;
   const requests = await mock(page, (route, url) => lost && url.pathname.endsWith("/rows") ? route.fulfill({ json: { context: { ...context, generation: "gen1_other" }, data: {} } }).then(() => true) : false);
   await open(page);
-  await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+  await tables(page).locator('[data-row-position="1"]').click();
   await reader(page).getByRole("button", { name: "show on canvas", exact: true }).click();
   const bootstraps = requests.filter((url) => url.pathname.endsWith("/session")).length;
   lost = true;
@@ -164,7 +164,7 @@ test("a reference followed from its value that cannot be placed says so where it
   await mock(page, (route, url) => busy && url.pathname.endsWith("/record") && url.searchParams.get("id") === parent.record_id
     ? refuse(429, "source_reader_busy")(route) : false);
   await open(page, "Child", "");
-  await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+  await tables(page).locator('[data-row-position="1"]').click();
   await expect(field(page)).toHaveCount(1);
   await reader(page).getByRole("button", { name: "go to Parent referenced by parent_id" }).click();
   const problem = reader(page).locator("[data-placement-problem]");
@@ -184,7 +184,7 @@ test("a canvas restore that could not read every record changes nothing, keeps w
   await mock(page, (route, url) => refuseParent && url.pathname.endsWith("/record") && url.searchParams.get("id") === parent.record_id
     ? refuse(429, "source_reader_busy")(route) : false);
   await open(page);
-  await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+  await tables(page).locator('[data-row-position="1"]').click();
   await reader(page).getByRole("button", { name: "show on canvas", exact: true }).click();
   await openSourceReferences(page); await reader(page).getByRole("button", { name: "inspect FK 0 reference", exact: true }).click();
   await reader(page).getByRole("button", { name: "show connection", exact: true }).click();
@@ -220,7 +220,7 @@ test("a read that fails while its panel is closed is there, with its recovery, w
     return refuse(429, "source_reader_busy")(route);
   });
   await open(page);
-  await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+  await tables(page).locator('[data-row-position="1"]').click();
   await reader(page).getByRole("button", { name: "close", exact: true }).first().click();
   await expect(page.locator('[data-overlay="source-reader"]')).not.toHaveClass(/is-open/);
   hold!();

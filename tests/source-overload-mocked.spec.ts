@@ -51,7 +51,7 @@ async function mock(p: Page) {
 }
 async function placeParent(p: Page) {
   await p.goto("/source?placement=explicit"); await choose(p, "Parent");
-  await tables(p).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+  await tables(p).locator('[data-row-position="1"]').click();
   await reader(p).getByRole("button", { name: "show on canvas", exact: true }).click();
   await expect(p.locator("[data-field-record]")).toHaveText(["Parent 10"]);
 }
@@ -73,7 +73,7 @@ for (const [status, error] of [[429, "source_server_busy"], [429, "source_reader
     // A refused record read: the Reader says so; nothing else changes.
     state.refuse = { route: "/record", status, error };
     await choose(page, "Child");
-    await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+    await tables(page).locator('[data-row-position="1"]').click();
     await expect(reader(page).getByRole("alert")).toContainText(`The source service is busy with another read. Nothing on the canvas changed; try again. details · ${error}`);
     await expect(page.getByRole("heading", { name: "source reads stopped" })).toHaveCount(0);
     await expect(page.locator("[data-field-record]")).toHaveText(["Parent 10"]);
@@ -110,5 +110,5 @@ test("count states are named, never zero, and every verified group stays browsab
   await expect(lines.nth(2)).toHaveAccessibleName("Child · parent_id, count not checked · page limit reached");
   await lines.nth(2).click();
   await expect(tables(page).locator("[data-incoming-subject]")).toHaveText(/^rows referencing Parent 10 through parent_id · count not checked · page limit reached$/);
-  await expect(tables(page).getByRole("button", { name: "Inspect row 1", exact: true })).toBeVisible();
+  await expect(tables(page).locator('[data-row-position="1"]')).toBeVisible();
 });

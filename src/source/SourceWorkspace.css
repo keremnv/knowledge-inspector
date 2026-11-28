@@ -21,7 +21,7 @@
 .source-workspace .instrument__group:has(.source-global-find .nodefind__input:focus) { border-color: var(--ink); }
 /* O17: the table header's naming choice, a cell of the header's own row. */
 .source-naming { display: inline-flex; align-items: center; gap: .4rem; color: var(--ink-muted); font-size: var(--type-label); }
-.source-naming select { font: inherit; color: var(--ink); background: var(--panel); border: 1px solid var(--rule); padding: 1px 4px; }
+.source-naming select { font: inherit; color: var(--ink); background: var(--panel); border: 1px solid var(--rule); padding: 4px 6px; }
 .source-named { margin-left: .35rem; color: var(--ink-muted); font-size: var(--type-label); }
 /* The closed Reader's tab stands flush to the right edge, as the Tables tab does
    to the left; World floats a right-hand tab `--ov-float` clear of the frame. */
@@ -136,6 +136,15 @@
 .source-row-table .source-sort { padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; white-space: nowrap; }
 .source-row-table .source-sort[data-sorted] { color: var(--ink); }
 .source-row-table .source-sort:focus-visible { outline: 1px solid var(--ink); outline-offset: 1px; }
+/* The arrow keeps its place when a column is unsorted, so sorting never moves
+   the columns; a hovered or focused unsorted header shows it faintly. */
+.source-row-table .source-sort__mark { display: inline-block; width: 1.1em; text-align: right; visibility: hidden; }
+.source-row-table .source-sort[data-sorted] .source-sort__mark { visibility: visible; }
+.source-row-table .source-sort:not([data-sorted]):is(:hover, :focus-visible) .source-sort__mark { visibility: visible; opacity: .45; }
+/* The table name never gives way to the buttons beside it: past its least
+   width, the buttons move to a line of their own. */
+.source-table-heading { flex-wrap: wrap; row-gap: 6px; }
+.source-table-heading .table__said { min-width: min(12ch, 100%); }
 
 /* What came back from the last visit (O8.8), until the canvas next changes. */
 /* What the file declares, when it decides what can be done (no keys, no references). */

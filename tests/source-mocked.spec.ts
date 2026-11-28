@@ -52,7 +52,7 @@ test("client encodes the fixed context and registered handles exactly once on ev
   const requests = await mock(page);
   await page.goto("/source");
   await choose(page, "Alpha");
-  await tables(page).getByRole("button", { name: "Inspect row 2", exact: true }).click();
+  await tables(page).locator('[data-row-position="2"]').click();
   await expect(reader(page).locator(".source-cells code")).toHaveText("9007199254740993");
   expect(requests.find((url) => url.pathname.endsWith("/record"))?.searchParams.get("id")).toBe("sr1:Alpha/9007199254740993 %Ω");
   // No declared references: silent (decision 1), no list and no sentence.
@@ -81,10 +81,10 @@ for (const operation of ["rows", "record"] as const) {
     });
     await page.goto("/source");
     await choose(page, "Alpha");
-    if (operation === "record") await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+    if (operation === "record") await tables(page).locator('[data-row-position="1"]').click();
     await started.promise;
     if (operation === "rows") await choose(page, "Beta");
-    else await tables(page).getByRole("button", { name: "Inspect row 2", exact: true }).click();
+    else await tables(page).locator('[data-row-position="2"]').click();
     await expect(reader(page).locator("h2")).toContainText(operation === "rows" ? "Beta" : "Alpha");
     if (operation === "record") await expect(reader(page).locator(".source-cells code")).toHaveText("9007199254740993");
     release.resolve(); await completed.promise;
@@ -104,7 +104,7 @@ test("switching table while an exact record is pending clears the previous reade
     return true;
   });
   await page.goto("/source"); await choose(page, "Alpha");
-  await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+  await tables(page).locator('[data-row-position="1"]').click();
   await started.promise; await choose(page, "Beta");
   release.resolve(); await completed.promise;
   await expect(reader(page).locator("h2")).toHaveAccessibleName(/^Beta\s*, table$/);
@@ -161,9 +161,9 @@ test("a failed exact-record read shows its error and never the prior record", as
     await route.fulfill({ status: 404, json: { error: "source_record_not_found_in_generation" } }); return true;
   });
   await page.goto("/source"); await choose(page, "Alpha");
-  await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+  await tables(page).locator('[data-row-position="1"]').click();
   await expect(reader(page).locator(".source-cells code")).toHaveText("9007199254740992");
-  await tables(page).getByRole("button", { name: "Inspect row 2", exact: true }).click();
+  await tables(page).locator('[data-row-position="2"]').click();
   await expect(reader(page).getByRole("alert")).toContainText("source_record_not_found_in_generation");
   await expect(reader(page).locator(".source-cells")).toHaveCount(0);
 });
@@ -217,7 +217,7 @@ test("an oversized window can be reduced without changing source context", async
   expect(initialWindows.length).toBeGreaterThan(0);
   for (const url of initialWindows) expect(url.searchParams.get("limit")).toBe("50");
   await tables(page).getByRole("combobox", { name: "rows per page" }).selectOption("1");
-  await expect(tables(page).getByRole("button", { name: "Inspect row 1", exact: true })).toBeVisible();
+  await expect(tables(page).locator('[data-row-position="1"]')).toBeVisible();
   await expect(tables(page).getByRole("alert")).toHaveCount(0);
   const windows = requests.filter((url) => url.pathname.endsWith("/rows"));
   expect(windows.slice(initialWindows.length).map((url) => url.searchParams.get("limit"))).toEqual(["1"]);
@@ -261,7 +261,7 @@ test("closing the Reader returns to a visible Tables target even before selectio
   await reader(page).getByRole("button", { name: "close", exact: true }).press("Enter");
   await expect(tables(page).getByRole("heading", { name: "tables", exact: true })).toBeFocused();
   await choose(page, "Alpha");
-  await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+  await tables(page).locator('[data-row-position="1"]').click();
   await expect(reader(page).locator(".source-cells code")).toHaveText("9007199254740992");
   await tables(page).getByRole("button", { name: "close", exact: true }).click();
   await reader(page).getByRole("button", { name: "close", exact: true }).focus();
@@ -276,7 +276,7 @@ test("an exact record payload from another table is refused even with a matching
     return true;
   });
   await page.goto("/source"); await choose(page, "Alpha");
-  await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+  await tables(page).locator('[data-row-position="1"]').click();
   await expect(page.getByRole("alert")).toContainText("source_context_mismatch");
   await expect(page.getByRole("heading", { name: "source reads stopped" })).toBeVisible();
 });
@@ -354,7 +354,7 @@ for (const motion of ["reduce", "no-preference"] as const) {
       await page.setViewportSize({ width: 1440, height: 700 });
       const requests = await mock(page);
       await page.goto("/source"); await choose(page, "Alpha");
-      await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+      await tables(page).locator('[data-row-position="1"]').click();
       await expect(reader(page).locator(".source-cells code")).toHaveText("9007199254740992");
       await reader(page).getByText("identity details", { exact: true }).click();
       await reader(page).getByText("source details", { exact: true }).click();
@@ -363,7 +363,7 @@ for (const motion of ["reduce", "no-preference"] as const) {
       await reader(page).locator(".source-reader-body").evaluate((node) => { node.scrollTop = node.scrollHeight; });
       await expect.poll(() => reader(page).locator(".source-reader-body").evaluate((node) => node.scrollTop)).toBeGreaterThan(0);
       await probeSourceMotion(page, "reader");
-      await tables(page).getByRole("button", { name: "Inspect row 2", exact: true }).click();
+      await tables(page).locator('[data-row-position="2"]').click();
       await expect(reader(page).locator(".source-cells code")).toHaveText("9007199254740993");
       const result = await finishSourceMotion(page);
       const departing = result.frames.flatMap((frame) => frame.outgoing);
@@ -391,7 +391,7 @@ for (const motion of ["reduce", "no-preference"] as const) {
     test("table replacement keeps outgoing controls inert and keyboard focus in the live subject", async ({ page }) => {
       const requests = await mock(page);
       await page.goto("/source"); await choose(page, "Alpha");
-      await expect(tables(page).getByRole("button", { name: "Inspect row 1", exact: true })).toBeVisible();
+      await expect(tables(page).locator('[data-row-position="1"]')).toBeVisible();
       await probeSourceMotion(page, "tables");
       await tables(page).locator("[data-catalogue]").press("Enter");
       await tables(page).getByRole("button", { name: "Beta table", exact: true }).focus();
@@ -421,9 +421,9 @@ for (const motion of ["reduce", "no-preference"] as const) {
         return true;
       });
       await page.goto("/source"); await choose(page, "Alpha");
-      await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+      await tables(page).locator('[data-row-position="1"]').click();
       await reached.promise;
-      await tables(page).getByRole("button", { name: "Inspect row 2", exact: true }).click();
+      await tables(page).locator('[data-row-position="2"]').click();
       await expect(reader(page).locator(".source-cells code")).toHaveText("9007199254740993");
       release.resolve(); await completed.promise;
       await expect(page.locator("#source-reader .motion-swap__was")).toHaveCount(0);
@@ -440,10 +440,10 @@ for (const motion of ["reduce", "no-preference"] as const) {
         await route.fulfill({ status: 410, json: { error: "source_session_missing_or_expired" } }); return true;
       });
       await page.goto("/source"); await choose(page, "Alpha");
-      await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+      await tables(page).locator('[data-row-position="1"]').click();
       await expect(reader(page).locator(".source-cells code")).toHaveText("9007199254740992");
       const bootstraps = requests.filter((url) => url.pathname.endsWith("/session")).length;
-      await tables(page).getByRole("button", { name: "Inspect row 2", exact: true }).click();
+      await tables(page).locator('[data-row-position="2"]').click();
       await reached.promise;
       if (motion === "no-preference") await expect(page.locator("#source-reader .motion-swap__was .source-cells")).toHaveCount(1);
       release.resolve();
@@ -461,13 +461,13 @@ for (const motion of ["reduce", "no-preference"] as const) {
         await route.fulfill({ json: { context, data: { ...rows("Alpha"), identity: { ...identity, status: "no_declared_key", key_columns: [], verified_rows: null }, rows: rows("Alpha").rows.map((row) => ({ ...row, record_id: null, key: [], cells: [{ column: "id", storage_class: "text", exact: "duplicate" }] })) } } }); return true;
       });
       await page.goto("/source"); await choose(page, "Alpha");
-      await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+      await tables(page).locator('[data-row-position="1"]').click();
       await expect(reader(page).locator(".world-reader__heading > p")).toHaveText("row 1 · this page only");
-      await tables(page).getByRole("button", { name: "Inspect row 2", exact: true }).click();
+      await tables(page).locator('[data-row-position="2"]').click();
       await expect(reader(page).locator(".world-reader__heading > p")).toHaveText("row 2 · this page only");
       await expect(reader(page)).toContainText("No registered source handle");
       await tables(page).getByRole("combobox", { name: "rows per page" }).selectOption("1");
-      await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+      await tables(page).locator('[data-row-position="1"]').click();
       await expect(reader(page).locator(".world-reader__heading > p")).toHaveText("row 1 · this page only");
       await expect(reader(page).locator(".source-cells code")).toHaveText("duplicate");
       expect(requests.some((url) => url.pathname.endsWith("/record"))).toBe(false);
@@ -475,12 +475,12 @@ for (const motion of ["reduce", "no-preference"] as const) {
 
     test("rows retain deliberate stillness while theme and subject transitions use the shared spine", async ({ page }) => {
       await mock(page); await page.goto("/source?placement=explicit"); await choose(page, "Alpha");
-      await expect(tables(page).getByRole("button", { name: "Inspect row 1", exact: true })).toBeVisible();
+      await expect(tables(page).locator('[data-row-position="1"]')).toBeVisible();
       const rowMotion = await tables(page).getByRole("row").nth(1).evaluate((node) => ({ rule: node.getAttribute("data-still"), transform: getComputedStyle(node).transform, duration: getComputedStyle(node).transitionDuration }));
       expect(rowMotion).toEqual({ rule: "rowsNeverFly", transform: "none", duration: "0s" });
       // The appearance switch is in the product bar, which the schema room (the
       // empty canvas) hides as World's does: one record takes the canvas first.
-      await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+      await tables(page).locator('[data-row-position="1"]').click();
       await reader(page).getByRole("button", { name: "show on canvas", exact: true }).click();
       await expect(page.locator("[data-field-record]")).toHaveCount(1);
       await page.getByRole("button", { name: "Use dark appearance" }).click();
@@ -516,9 +516,9 @@ for (const motion of ["reduce", "no-preference"] as const) {
     });
     await page.goto("/source"); await choose(page, "Alpha"); await reached.promise;
     await choose(page, "Beta");
-    await expect(tables(page).getByRole("button", { name: "Inspect row 2", exact: true })).toBeVisible();
+    await expect(tables(page).locator('[data-row-position="2"]')).toBeVisible();
     await choose(page, "Alpha");
-    await expect(tables(page).getByRole("button", { name: "Inspect row 2", exact: true })).toBeVisible();
+    await expect(tables(page).locator('[data-row-position="2"]')).toBeVisible();
     release.resolve(); await completed.promise;
     await expect(page.locator("#source-tables .motion-swap__was")).toHaveCount(0);
     await expect(tables(page).locator(".motion-swap__is .source-table-heading h2")).toHaveText("Alpha");
@@ -540,10 +540,10 @@ test("a row is selected by clicking anywhere on it, but not by finishing a text 
   await page.mouse.move(box.x + 1, box.y + box.height / 2); await page.mouse.down();
   await page.mouse.move(box.x + box.width - 1, box.y + box.height / 2, { steps: 5 }); await page.mouse.up();
   expect(await page.evaluate(() => window.getSelection()?.toString())).not.toBe("");
-  await expect(tables(page).getByRole("button", { name: "Inspect row 1", exact: true })).toHaveAttribute("aria-pressed", "false");
+  await expect(tables(page).locator('[data-row-position="1"]')).toHaveAttribute("aria-pressed", "false");
   // A plain click on any cell selects the row, exactly as the position control does.
   await tables(page).getByRole("row").nth(2).locator("td").nth(1).click();
-  await expect(tables(page).getByRole("button", { name: "Inspect row 2", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await expect(tables(page).locator('[data-row-position="2"]')).toHaveAttribute("aria-pressed", "true");
   await expect(reader(page).locator(".world-reader__heading > p")).toHaveText("id=9007199254740993");
 });
 
@@ -564,7 +564,7 @@ for (const motion of ["reduce", "no-preference"] as const) {
         return true;
       });
       await page.goto("/source"); await choose(page, "Alpha");
-      await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+      await tables(page).locator('[data-row-position="1"]').click();
       await expect(reader(page).locator(".world-reader__heading > p")).toHaveText("id=9007199254740992");
       const next = tables(page).getByRole("button", { name: "next rows" });
       await next.focus(); await page.keyboard.press("Enter"); await started.promise;
@@ -602,8 +602,9 @@ for (const motion of ["reduce", "no-preference"] as const) {
     const rowButtons = tables(page).locator("button[data-row]");
     // No visible number: the key beside it says which row it is (owner decision O6).
     await expect(rowButtons).toHaveText(["", ""]);
-    await expect(rowButtons.nth(0)).toHaveAccessibleName("Inspect row 1");
-    await expect(rowButtons.nth(1)).toHaveAccessibleName("Inspect row 2");
+    // Named by the record it opens, as the canvas names it, not by its position.
+    await expect(rowButtons.nth(0)).toHaveAccessibleName(/^Alpha /);
+    await expect(rowButtons.nth(1)).toHaveAccessibleName(/^Alpha /);
     await expect(tables(page).getByRole("columnheader", { name: "Window position" })).toBeVisible();
     await expect(tables(page).getByRole("row")).toHaveCount(3);
     expect(await tables(page).locator("tbody tr").evaluateAll((nodes) => nodes.every((node) => !node.hasAttribute("role") && node.querySelector("td > button")?.tagName === "BUTTON"))).toBe(true);
@@ -659,10 +660,10 @@ for (const motion of ["reduce", "no-preference"] as const) {
       release.resolve(); await completed.promise;
       if (change === "column") {
         await expect(tables(page)).toContainText("press enter to filter");
-        await expect(tables(page).getByRole("button", { name: "Inspect row 1", exact: true })).toHaveCount(0);
+        await expect(tables(page).locator('[data-row-position="1"]')).toHaveCount(0);
       } else {
-        await expect(tables(page).getByRole("button", { name: "Inspect row 2", exact: true })).toBeVisible();
-        await tables(page).getByRole("button", { name: "Inspect row 2", exact: true }).click();
+        await expect(tables(page).locator('[data-row-position="2"]')).toBeVisible();
+        await tables(page).locator('[data-row-position="2"]').click();
         await expect(reader(page).locator(".source-cells code")).toHaveText("9007199254740993");
         await expect(reader(page).locator("h2")).toContainText(change === "table" ? "Beta" : "Alpha");
       }
@@ -688,7 +689,7 @@ for (const failure of ["session", "generation", "capture_digest", "source_namesp
       await expect(tables(page)).toContainText("filter incomplete");
       await expect(tables(page)).not.toContainText("no matches");
       await tables(page).getByRole("form", { name: /^filter / }).getByRole("button", { name: "clear" }).click();
-      await expect(tables(page).getByRole("button", { name: "Inspect row 1", exact: true })).toBeVisible();
+      await expect(tables(page).locator('[data-row-position="1"]')).toBeVisible();
     } else {
       await expect(page.getByRole("heading", { name: "source reads stopped" })).toBeVisible();
       await expect(page.locator(".source-find")).toHaveCount(0);
@@ -714,7 +715,7 @@ test("a pending exact Reader reply cannot survive editing Find", async ({ page }
   await page.goto("/source"); await choose(page, "Alpha");
   await tables(page).getByRole("searchbox").fill("test");
   await tables(page).locator(".source-find input[type=search]").press("Enter");
-  await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).click();
+  await tables(page).locator('[data-row-position="1"]').click();
   await started.promise;
   await tables(page).getByRole("searchbox").fill("new draft");
   release.resolve(); await completed.promise;
@@ -732,7 +733,7 @@ for (const motion of ["reduce", "no-preference"] as const) {
     await page.goto("/source"); await choose(page, "Alpha");
     const input = tables(page).getByRole("searchbox");
     await input.fill("test"); await input.press("Enter");
-    await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).press("Enter");
+    await tables(page).locator('[data-row-position="1"]').press("Enter");
     await expect(reader(page).locator("h2")).toBeFocused();
     await input.focus(); await input.press("Backspace");
     // The edited filter runs after the pause; the Reader returns to the table.
@@ -740,7 +741,7 @@ for (const motion of ["reduce", "no-preference"] as const) {
     await expect(page.locator(".motion-swap__was")).toHaveCount(0);
     await expect(input).toBeFocused();
     await input.press("Enter");
-    await tables(page).getByRole("button", { name: "Inspect row 1", exact: true }).press("Enter");
+    await tables(page).locator('[data-row-position="1"]').press("Enter");
     await expect(reader(page).locator("h2")).toBeFocused();
     const clear = tables(page).getByRole("form", { name: /^filter / }).getByRole("button", { name: "clear" });
     await clear.press("Enter");
